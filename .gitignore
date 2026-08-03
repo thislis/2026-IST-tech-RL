@@ -1,0 +1,16 @@
+# Local Python environment
+.venv/
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local configuration and macOS metadata
+.env
+.DS_Store
