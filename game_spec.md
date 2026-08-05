@@ -196,7 +196,10 @@ Battery 약탈로 score가 감소하는 경우 `OnScoreChanged` guard가 `score 
 
 ## 9. Seed와 재현성 경계
 
-- `env.reset(seed=N)`은 SideChannel을 통해 `UnityEngine.Random.InitState(N)`을 episode 생성 전에 호출한다.
+- 실험 코드에서는 반드시 `blackout_rl.env.ContractBlackOutEnv`를 사용한다. 이 adapter는 최초 ML-Agents handshake를 끝낸 뒤 seed SideChannel을 한 exchange 먼저 전달하고, 이전 episode의 map/routing cache를 비운 다음 reset한다.
+- 고정된 upstream `BlackOutEnv.reset(seed=N)`을 직접 호출하면 seed 메시지와 reset command의 Unity 처리 순서 때문에 N이 반환 episode보다 늦게 적용될 수 있으므로 사용하지 않는다.
 - 같은 게임 commit/build/config와 같은 seed라면 procedural storage 선택 및 item 위치/수량이 같아야 한다.
 - random policy action은 별도 policy seed로 고정해야 전체 trajectory를 재현할 수 있다.
 - Unity physics/실행 플랫폼 차이까지 bitwise 동일하다고 가정하지 않는다. 초기 map/item 재현과 최종 평가의 paired seed를 별도로 검증한다.
+
+PREP-05에서 seed `40407`의 wall/storage map을 연속 reset했을 때 bitwise 동일했고, `40408`은 다른 storage layout을 생성했다.

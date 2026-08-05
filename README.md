@@ -7,12 +7,12 @@
 | ID | Todo | 산출물 및 완료 조건 |
 | --- | --- | --- |
 | PREP-01 | ☑ 게임/Python API commit, executable hash, Python·PyTorch·CUDA·Unity 버전 고정 | [`versions.md`](versions.md), [`requirements.lock`](requirements.lock), [`docker-image.env`](docker-image.env) |
-| PREP-02 | ☑ 로컬 또는 Docker에서 random policy 1경기 실행 | [`logs/prep02_random_seed_20260805.json`](logs/prep02_random_seed_20260805.json): reset부터 terminal까지 실행, seed·점수·winner 저장 및 검증 |
+| PREP-02 | ☑ 로컬 또는 Docker에서 random policy 1경기 실행 | [`logs/prep04_07_contract.json`](logs/prep04_07_contract.json): corrected seed contract로 reset부터 terminal까지 실행, seed·점수·winner 저장 및 검증 |
 | PREP-03 | ☑ 게임 규칙을 RL state/action/event 관점으로 문서화 | [`game_spec.md`](game_spec.md): 유닛, 아이템, 창고, 성소, 전투 상성, 20초 이벤트 |
-| PREP-04 | ☐ 관측값 96개 vector field와 11개 map channel 파서 작성 | field별 shape·범위·team perspective 단위 테스트 |
-| PREP-05 | ☐ PettingZoo API contract test 작성 | reset/step/termination, agent 수, dtype, action 범위, seed 재현성 통과 |
-| PREP-06 | ☐ self-ID 및 batch-order 실험 | 팀별 batch 크기와 row 순서가 reset·side swap·terminal 전후에 안정적인지 보고서 작성 |
-| PREP-07 | ☐ 행동 의미 테스트 | `(0,0)`, 작은 벡터, 큰 벡터, 8방향의 실제 displacement 측정 |
+| PREP-04 | ☑ 관측값 96개 vector field와 11개 map channel 파서 작성 | [`blackout_rl/observation.py`](blackout_rl/observation.py), [`reports/prep04_observation_contract.md`](reports/prep04_observation_contract.md): field shape·범위·team perspective 테스트 통과 |
+| PREP-05 | ☑ PettingZoo API contract test 작성 | [`tests/test_contract.py`](tests/test_contract.py), [`reports/prep05_pettingzoo_contract.md`](reports/prep05_pettingzoo_contract.md): reset/step/termination, agent 수, dtype, action 범위, seed 재현성 통과 |
+| PREP-06 | ☑ self-ID 및 batch-order 실험 | [`reports/prep06_agent_identity_order.md`](reports/prep06_agent_identity_order.md): 5+5 canonical batch·side perspective·terminal 순서 검증, slot ID 보완 확정 |
+| PREP-07 | ☑ 행동 의미 테스트 | [`reports/prep07_action_semantics.md`](reports/prep07_action_semantics.md): `(0,0)`, 작은/큰/초과 vector와 8방향 displacement 측정 |
 | PREP-08 | ☐ 실제 terminal winner 기반 evaluator 작성 | `eval/paired_series.py`; shaping reward를 승자 판정에 사용하지 않음 |
 | PREP-09 | ☐ Python score-delta team reward 구현 | 점수 증가·감소·약탈·terminal 사례에 대해 예상 부호 테스트 |
 | PREP-10 | ☐ 통합 logging schema 작성 | seed, side, opponent, score, winner, episode length, checkpoint SHA 저장 |

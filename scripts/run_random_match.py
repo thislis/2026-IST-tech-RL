@@ -12,7 +12,13 @@ from pathlib import Path
 
 import numpy as np
 
-from blackout_env import BlackOutEnv
+import sys
+
+REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
+if str(REPOSITORY_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPOSITORY_ROOT))
+
+from blackout_rl import ContractBlackOutEnv
 
 
 TARGET_SCORE = 100
@@ -61,7 +67,7 @@ def main() -> None:
 
     # On macOS, ML-Agents expects the .app bundle path and resolves the
     # Contents/MacOS executable itself. Keep ``executable`` for hashing only.
-    env = BlackOutEnv(
+    env = ContractBlackOutEnv(
         env_path=str(build),
         no_graphics=False,
         time_scale=args.time_scale,
