@@ -53,6 +53,12 @@ file because their declared PettingZoo constraints conflict. `grpcio 1.51.3`
 is used because the upstream `1.48.2` pin does not provide a usable Apple
 Silicon wheel for this setup.
 
+All experiment entry points use the repository's
+`blackout_rl.env.ContractBlackOutEnv` adapter. It completes the first ML-Agents
+handshake, delivers the seed before the Unity reset, and clears reset-spanning
+map/routing caches. Direct use of the fixed upstream `BlackOutEnv.reset(seed)`
+does not satisfy this seed contract.
+
 ## Linux / Docker identity
 
 The fixed experiment image identity is stored in `docker-image.env`:
@@ -68,19 +74,23 @@ validated with the local Universal player rather than a locally built image.
 
 ## Verified smoke match
 
-`logs/prep02_random_seed_20260805.json` records the successful reset-to-terminal
+`logs/prep04_07_contract.json` records the successful seeded reset-to-terminal
 run against the exact executable hash above:
 
 - environment seed: `20260805`
 - random-policy seed: `20260805`
-- episode steps: `21004`
-- final score: Team A `21`, Team B `27`
+- episode steps: `21003`
+- final score: Team A `19`, Team B `24`
 - winner: `1` (`team_b`)
 - terminal/score consistency check: passed
 
 The Unity scene resets score scalars to zero on the terminal frame. The runner
 therefore records both those terminal-frame zeros and the final pre-terminal
 score used to verify the terminal winner.
+
+The earlier `logs/prep02_random_seed_20260805.json` was produced before the
+same-exchange seed ordering and stale-map cache were detected. Its executable
+hash remains valid, but it is superseded and must not be used as seed evidence.
 
 ## Reproduction commands
 
