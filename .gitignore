@@ -1,0 +1,22 @@
+# Local Python environment
+.venv/
+
+# Local Unity editor and standalone build artifacts
+.unity/
+builds/
+logs/*.log
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local configuration and macOS metadata
+.env
+.DS_Store
+files_directory.md
