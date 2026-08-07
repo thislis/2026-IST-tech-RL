@@ -3,28 +3,37 @@
 from __future__ import annotations
 
 import json
+import tempfile
 import unittest
 from pathlib import Path
 
 import numpy as np
+import torch
+from blackout_env import load_checkpoint as load_upstream_checkpoint
 
 from blackout_rl import (
     GRAPHIC_CHANNEL_NAMES,
+    CanonicalTeamModel,
+    ReferenceActorCritic,
+    SubmissionPolicy,
     VECTOR_SIZE,
     canonical_agents,
+    categorical_action,
+    checkpoint_payload,
     hwc_to_chw,
+    load_checkpoint,
     parse_graphic,
     parse_vector,
     stack_observations,
+    save_checkpoint,
     team_agents,
+    team_model_input,
 )
 from blackout_rl.logging_schema import (
     EPISODE_SCHEMA_VERSION,
     model_result,
-    sha256_file,
     validate_episode_log,
 )
-from blackout_rl.policy import PolicyArtifact
 from blackout_rl.reward import ScoreDeltaRewardTracker
 from eval.evaluator import summarize_episodes
 
@@ -141,17 +150,39 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertEqual(round_tripped, record)
 
     def test_checkpoint_round_trip(self) -> None:
-        checkpoint = ROOT / "configs" / "policies" / "random_v1.json"
-        artifact = PolicyArtifact.from_file("random-v1", "policy-config", checkpoint)
-        payload = json.loads(json.dumps(artifact.to_dict()))
-        self.assertEqual(payload["checkpoint_sha256"], sha256_file(checkpoint))
-        self.assertEqual(len(payload["checkpoint_sha256"]), 64)
+        torch.manual_seed(1213)
+        model = SubmissionPolicy(hidden_dim=32, slot_embedding_dim=8)
+        payload = checkpoint_payload(
+            model,
+            global_step=1234,
+            training_seed=1213,
+            source={"game_commit": "d2220a7", "python_api_commit": "6ba7d99"},
+        )
+        vector = torch.zeros((5, 96), dtype=torch.float32)
+        graphic = torch.zeros((5, 11, 96, 96), dtype=torch.float32)
+        before = model(vector, graphic)
+        with tempfile.TemporaryDirectory() as directory:
+            checkpoint = Path(directory) / "checkpoint.pt"
+            save_checkpoint(checkpoint, payload)
+            loaded, restored = load_checkpoint(checkpoint)
+            after = loaded(vector, graphic)
+            upstream = load_upstream_checkpoint(
+                SubmissionPolicy,
+                str(checkpoint),
+                vector_size=96,
+                n_channels=11,
+                hidden_dim=32,
+                slot_embedding_dim=8,
+            )
+            upstream_after = upstream._net(vector, graphic)
+        self.assertTrue(torch.equal(before, after))
+        self.assertTrue(torch.equal(before, upstream_after))
+        self.assertEqual(restored["training"], {"global_step": 1234, "seed": 1213})
+        self.assertEqual(restored["schema_version"], "blackout.checkpoint.v1")
 
-        episode_schema = json.loads((ROOT / "schemas" / "episode_v1.schema.json").read_text())
-        series_schema = json.loads((ROOT / "schemas" / "paired_series_v1.schema.json").read_text())
-        self.assertIn("seed", episode_schema["required"])
-        self.assertIn("opponent", episode_schema["required"])
-        self.assertIn("episodes", series_schema["required"])
+        schema = json.loads((ROOT / "schemas" / "checkpoint_v1.schema.json").read_text())
+        self.assertIn("policy_state", schema["required"])
+        self.assertIn("observation_contract", schema["required"])
 
     def test_paired_seed_evaluation(self) -> None:
         episodes = [
@@ -172,6 +203,52 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertEqual(summary["by_model_side"]["A"]["wins"], 1)
         self.assertEqual(summary["by_model_side"]["B"]["wins"], 1)
         self.assertFalse(summary["winner_derived_from_unity_shaping"])
+
+
+class ModelInterfaceTests(unittest.TestCase):
+    def team_observations(self, team: int = 0) -> dict[str, dict[str, np.ndarray]]:
+        vector = synthetic_vector()
+        tile_ids = np.arange(96 * 96, dtype=np.int64).reshape(96, 96) % 11
+        graphic = np.eye(11, dtype=np.float32)[tile_ids]
+        return {
+            agent: {"vector": vector.copy(), "graphic": graphic.copy()}
+            for agent in reversed(team_agents(team))
+        }
+
+    def test_actor_critic_input_output_and_slot_contract(self) -> None:
+        batch = team_model_input(self.team_observations(), team=0)
+        self.assertEqual(batch.agent_names, team_agents(0))
+        self.assertEqual(tuple(batch.vector.shape), (5, 96))
+        self.assertEqual(tuple(batch.graphic.shape), (5, 11, 96, 96))
+        self.assertEqual(batch.vector.dtype, torch.float32)
+        self.assertEqual(batch.graphic.dtype, torch.float32)
+        self.assertEqual(batch.slot_id.dtype, torch.int64)
+        self.assertTrue(torch.equal(batch.slot_id, torch.arange(5)))
+
+        model = ReferenceActorCritic(hidden_dim=32, slot_embedding_dim=8)
+        output = model(batch.vector, batch.graphic, batch.slot_id)
+        self.assertEqual(tuple(output.action_logits.shape), (5, 9))
+        self.assertEqual(tuple(output.value.shape), (5,))
+
+    def test_categorical_action_adapter(self) -> None:
+        action = categorical_action(torch.arange(9, dtype=torch.int64))
+        self.assertEqual(tuple(action.shape), (9, 2))
+        self.assertTrue(torch.equal(action[0], torch.zeros(2)))
+        self.assertTrue(bool(torch.all(action >= -1.0) and torch.all(action <= 1.0)))
+        self.assertTrue(
+            torch.allclose(torch.linalg.vector_norm(action[1:], dim=-1), torch.ones(8))
+        )
+
+    def test_canonical_submission_adapter_ignores_dict_order(self) -> None:
+        policy = SubmissionPolicy(hidden_dim=32, slot_embedding_dim=8)
+        observations = self.team_observations(team=1)
+        adapter = CanonicalTeamModel(policy, team=1)
+        actions = adapter.act(observations)
+        self.assertEqual(tuple(actions), team_agents(1))
+        for action in actions.values():
+            self.assertEqual(action.shape, (2,))
+            self.assertEqual(action.dtype, np.float32)
+            self.assertTrue(np.all((-1.0 <= action) & (action <= 1.0)))
 
 
 @unittest.skipUnless(EVIDENCE_PATH.exists(), "run scripts/verify_prep04_07.py first")

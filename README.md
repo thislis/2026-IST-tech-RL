@@ -16,9 +16,9 @@
 | PREP-08 | ☑ 실제 terminal winner 기반 evaluator 작성 | [`eval/paired_series.py`](eval/paired_series.py), [`reports/prep08_terminal_evaluator.md`](reports/prep08_terminal_evaluator.md): terminal winner만 사용하고 side-swapped model 결과 검증 |
 | PREP-09 | ☑ Python score-delta team reward 구현 | [`blackout_rl/reward.py`](blackout_rl/reward.py), [`reports/prep09_score_delta_reward.md`](reports/prep09_score_delta_reward.md): 증가·감소·약탈·terminal 부호 테스트 통과 |
 | PREP-10 | ☑ 통합 logging schema 작성 | [`schemas/episode_v1.schema.json`](schemas/episode_v1.schema.json), [`reports/prep10_logging_schema.md`](reports/prep10_logging_schema.md), [`logs/prep08_10_paired_seed_810.json`](logs/prep08_10_paired_seed_810.json): seed·side·opponent·score·winner·length·checkpoint SHA 검증 |
-| PREP-11 | ☐ 처리량 benchmark | 환경 1개/복수 개의 steps/sec, GPU utilization, episode 실행 비용 측정 |
-| PREP-12 | ☐ 첫 actor/critic 인터페이스 설계 | 입력 tensor shape, slot embedding, action adapter, checkpoint schema 명세 |
-| PREP-13 | ☐ 평가 계약에 없는 항목 확인 | batch 순서, stateful policy 허용 여부, inference 제한, 모델 크기 제한을 확인 목록으로 관리 |
+| PREP-11 | ☑ 처리량 benchmark | [`scripts/benchmark_env.py`](scripts/benchmark_env.py), [`logs/prep11_benchmark.json`](logs/prep11_benchmark.json), [`reports/prep11_throughput_benchmark.md`](reports/prep11_throughput_benchmark.md): 환경 1/2개의 steps/sec, host CPU/RSS, Apple GPU utilization, full-episode 비용 측정 |
+| PREP-12 | ☑ 첫 actor/critic 인터페이스 설계 | [`blackout_rl/model_contract.py`](blackout_rl/model_contract.py), [`schemas/checkpoint_v1.schema.json`](schemas/checkpoint_v1.schema.json), [`reports/prep12_actor_critic_interface.md`](reports/prep12_actor_critic_interface.md): tensor/slot/action/checkpoint 계약과 실제 torch round-trip 검증 |
+| PREP-13 | ☑ 평가 계약에 없는 항목 확인 | [`reports/prep13_evaluation_contract_checklist.md`](reports/prep13_evaluation_contract_checklist.md): 확인된 계약, 공식 미정 항목, 확인 전 fail-closed 결정을 분리 관리 |
 | PREP-14 | ☐ random-vs-random paired-seed 평가 | side별 승률·점수 차를 측정하고 evaluator가 특정 side에 편향되지 않는지 확인 |
 
 #### 준비 단계의 필수 테스트

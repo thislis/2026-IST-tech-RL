@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "blackout.checkpoint.v1",
+  "title": "BlackOut versioned PyTorch checkpoint manifest",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "policy_state",
+    "model_config",
+    "training",
+    "observation_contract",
+    "action_contract",
+    "source"
+  ],
+  "properties": {
+    "schema_version": {"const": "blackout.checkpoint.v1"},
+    "policy_state": {
+      "description": "PyTorch state_dict mapping; tensors are validated by load_state_dict",
+      "type": "object"
+    },
+    "optimizer_state": {
+      "description": "Optional PyTorch optimizer state for training resume",
+      "type": "object"
+    },
+    "model_config": {
+      "type": "object",
+      "required": ["vector_size", "n_channels", "slot_embedding_dim", "hidden_dim", "n_actions"],
+      "properties": {
+        "vector_size": {"const": 96},
+        "n_channels": {"const": 11},
+        "slot_embedding_dim": {"type": "integer", "minimum": 1},
+        "hidden_dim": {"type": "integer", "minimum": 1},
+        "n_actions": {"const": 9}
+      }
+    },
+    "training": {
+      "type": "object",
+      "required": ["global_step", "seed"],
+      "properties": {
+        "global_step": {"type": "integer", "minimum": 0},
+        "seed": {"type": "integer"}
+      }
+    },
+    "observation_contract": {
+      "type": "object",
+      "required": ["vector_shape", "graphic_hwc_shape", "model_graphic_chw_shape", "team_batch_size", "slot_ids"]
+    },
+    "action_contract": {
+      "type": "object",
+      "required": ["distribution", "output_shape", "range", "inference"]
+    },
+    "source": {"type": "object", "additionalProperties": {"type": "string"}}
+  },
+  "additionalProperties": false
+}
