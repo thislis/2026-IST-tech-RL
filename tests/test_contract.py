@@ -18,6 +18,15 @@ from blackout_rl import (
     stack_observations,
     team_agents,
 )
+from blackout_rl.logging_schema import (
+    EPISODE_SCHEMA_VERSION,
+    model_result,
+    sha256_file,
+    validate_episode_log,
+)
+from blackout_rl.policy import PolicyArtifact
+from blackout_rl.reward import ScoreDeltaRewardTracker
+from eval.evaluator import summarize_episodes
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -77,6 +86,92 @@ class ObservationParserTests(unittest.TestCase):
         self.assertTrue(np.array_equal(batch.slot_ids, np.array([0, 1, 2, 3, 4] * 2)))
         self.assertEqual(batch.vectors.shape, (10, 96))
         self.assertEqual(batch.graphics_chw.shape, (10, 11, 4, 4))
+
+
+class EvaluationContractTests(unittest.TestCase):
+    def test_score_delta_sign(self) -> None:
+        tracker = ScoreDeltaRewardTracker()
+        increase = tracker.update_points((5, 0))
+        self.assertEqual(increase.score_delta, (5, 0))
+        self.assertAlmostEqual(increase.competitive_reward[0], 0.05)
+        self.assertAlmostEqual(increase.competitive_reward[1], -0.05)
+
+        decrease = tracker.update_points((2, 0))
+        self.assertEqual(decrease.score_delta, (-3, 0))
+        self.assertLess(decrease.competitive_reward[0], 0.0)
+        self.assertGreater(decrease.competitive_reward[1], 0.0)
+
+    def test_score_delta_theft_and_terminal(self) -> None:
+        tracker = ScoreDeltaRewardTracker()
+        tracker.reset((5, 0))
+        theft = tracker.update_points((2, 0))
+        stolen_deposit = tracker.update_points((2, 3))
+        terminal = tracker.update_points(terminated=True, winner=1)
+        self.assertEqual(theft.score_delta, (-3, 0))
+        self.assertEqual(stolen_deposit.score_delta, (0, 3))
+        self.assertLess(theft.total_reward[0], 0.0)
+        self.assertLess(stolen_deposit.total_reward[0], 0.0)
+        self.assertEqual(terminal.current_score, (2, 3))
+        self.assertEqual(terminal.score_delta, (0, 0))
+        self.assertEqual(terminal.terminal_bonus, (-1.0, 1.0))
+
+    def test_logging_schema_round_trip(self) -> None:
+        digest = "a" * 64
+        record = {
+            "schema_version": EPISODE_SCHEMA_VERSION,
+            "episode_id": "episode-1",
+            "pair_id": "seed-1",
+            "pair_index": 0,
+            "seed": 1,
+            "policy_seeds": {"model": 10, "opponent": 11},
+            "side_assignment": {"model_team": 0, "opponent_team": 1},
+            "model": {"checkpoint_sha256": digest},
+            "opponent": {"checkpoint_sha256": digest},
+            "environment": {"executable_sha256": digest},
+            "episode_length": {"steps": 123},
+            "score": {"team_a": 5, "team_b": 3},
+            "winner": {"team": 0},
+            "model_result": "win",
+            "rewards": {},
+            "termination": {"score_is_preterminal": False},
+        }
+        validate_episode_log(record)
+        round_tripped = json.loads(json.dumps(record))
+        validate_episode_log(round_tripped)
+        self.assertEqual(round_tripped, record)
+
+    def test_checkpoint_round_trip(self) -> None:
+        checkpoint = ROOT / "configs" / "policies" / "random_v1.json"
+        artifact = PolicyArtifact.from_file("random-v1", "policy-config", checkpoint)
+        payload = json.loads(json.dumps(artifact.to_dict()))
+        self.assertEqual(payload["checkpoint_sha256"], sha256_file(checkpoint))
+        self.assertEqual(len(payload["checkpoint_sha256"]), 64)
+
+        episode_schema = json.loads((ROOT / "schemas" / "episode_v1.schema.json").read_text())
+        series_schema = json.loads((ROOT / "schemas" / "paired_series_v1.schema.json").read_text())
+        self.assertIn("seed", episode_schema["required"])
+        self.assertIn("opponent", episode_schema["required"])
+        self.assertIn("episodes", series_schema["required"])
+
+    def test_paired_seed_evaluation(self) -> None:
+        episodes = [
+            {
+                "model_result": model_result(0, 0),
+                "score": {"model_minus_opponent": 2},
+                "side_assignment": {"model_side": "A"},
+            },
+            {
+                "model_result": model_result(1, 1),
+                "score": {"model_minus_opponent": 4},
+                "side_assignment": {"model_side": "B"},
+            },
+        ]
+        summary = summarize_episodes(episodes)
+        self.assertEqual((summary["wins"], summary["draws"], summary["losses"]), (2, 0, 0))
+        self.assertEqual(summary["mean_model_score_diff"], 3.0)
+        self.assertEqual(summary["by_model_side"]["A"]["wins"], 1)
+        self.assertEqual(summary["by_model_side"]["B"]["wins"], 1)
+        self.assertFalse(summary["winner_derived_from_unity_shaping"])
 
 
 @unittest.skipUnless(EVIDENCE_PATH.exists(), "run scripts/verify_prep04_07.py first")

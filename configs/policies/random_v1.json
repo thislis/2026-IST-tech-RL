@@ -1,0 +1,9 @@
+{
+  "policy_id": "random-v1",
+  "kind": "numpy-uniform-random",
+  "rng": "numpy.random.default_rng",
+  "action_shape": [2],
+  "action_low": -1.0,
+  "action_high": 1.0,
+  "dtype": "float32"
+}

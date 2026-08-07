@@ -13,9 +13,9 @@
 | PREP-05 | ☑ PettingZoo API contract test 작성 | [`tests/test_contract.py`](tests/test_contract.py), [`reports/prep05_pettingzoo_contract.md`](reports/prep05_pettingzoo_contract.md): reset/step/termination, agent 수, dtype, action 범위, seed 재현성 통과 |
 | PREP-06 | ☑ self-ID 및 batch-order 실험 | [`reports/prep06_agent_identity_order.md`](reports/prep06_agent_identity_order.md): 5+5 canonical batch·side perspective·terminal 순서 검증, slot ID 보완 확정 |
 | PREP-07 | ☑ 행동 의미 테스트 | [`reports/prep07_action_semantics.md`](reports/prep07_action_semantics.md): `(0,0)`, 작은/큰/초과 vector와 8방향 displacement 측정 |
-| PREP-08 | ☐ 실제 terminal winner 기반 evaluator 작성 | `eval/paired_series.py`; shaping reward를 승자 판정에 사용하지 않음 |
-| PREP-09 | ☐ Python score-delta team reward 구현 | 점수 증가·감소·약탈·terminal 사례에 대해 예상 부호 테스트 |
-| PREP-10 | ☐ 통합 logging schema 작성 | seed, side, opponent, score, winner, episode length, checkpoint SHA 저장 |
+| PREP-08 | ☑ 실제 terminal winner 기반 evaluator 작성 | [`eval/paired_series.py`](eval/paired_series.py), [`reports/prep08_terminal_evaluator.md`](reports/prep08_terminal_evaluator.md): terminal winner만 사용하고 side-swapped model 결과 검증 |
+| PREP-09 | ☑ Python score-delta team reward 구현 | [`blackout_rl/reward.py`](blackout_rl/reward.py), [`reports/prep09_score_delta_reward.md`](reports/prep09_score_delta_reward.md): 증가·감소·약탈·terminal 부호 테스트 통과 |
+| PREP-10 | ☑ 통합 logging schema 작성 | [`schemas/episode_v1.schema.json`](schemas/episode_v1.schema.json), [`reports/prep10_logging_schema.md`](reports/prep10_logging_schema.md), [`logs/prep08_10_paired_seed_810.json`](logs/prep08_10_paired_seed_810.json): seed·side·opponent·score·winner·length·checkpoint SHA 검증 |
 | PREP-11 | ☐ 처리량 benchmark | 환경 1개/복수 개의 steps/sec, GPU utilization, episode 실행 비용 측정 |
 | PREP-12 | ☐ 첫 actor/critic 인터페이스 설계 | 입력 tensor shape, slot embedding, action adapter, checkpoint schema 명세 |
 | PREP-13 | ☐ 평가 계약에 없는 항목 확인 | batch 순서, stateful policy 허용 여부, inference 제한, 모델 크기 제한을 확인 목록으로 관리 |
