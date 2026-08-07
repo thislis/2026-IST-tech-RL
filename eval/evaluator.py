@@ -203,17 +203,53 @@ def summarize_episodes(episodes: list[dict[str, Any]]) -> dict[str, Any]:
     by_side = {}
     for side in ("A", "B"):
         selected = [episode for episode in episodes if episode["side_assignment"]["model_side"] == side]
+        side_wins = sum(episode["model_result"] == "win" for episode in selected)
         by_side[side] = {
             "episodes": len(selected),
-            "wins": sum(episode["model_result"] == "win" for episode in selected),
+            "wins": side_wins,
             "draws": sum(episode["model_result"] == "draw" for episode in selected),
             "losses": sum(episode["model_result"] == "loss" for episode in selected),
+            "win_rate": side_wins / len(selected) if selected else None,
             "mean_model_score_diff": (
                 sum(episode["score"]["model_minus_opponent"] for episode in selected) / len(selected)
                 if selected
                 else None
             ),
         }
+
+    by_physical_side = {}
+    for team, side in ((0, "A"), (1, "B")):
+        side_wins = sum(episode["winner"]["team"] == team for episode in episodes)
+        draws_for_side = sum(episode["winner"]["team"] == -1 for episode in episodes)
+        side_losses = len(episodes) - side_wins - draws_for_side
+        differences = [
+            (episode["score"]["team_a"] - episode["score"]["team_b"])
+            * (1 if team == 0 else -1)
+            for episode in episodes
+        ]
+        by_physical_side[side] = {
+            "episodes": len(episodes),
+            "wins": side_wins,
+            "draws": draws_for_side,
+            "losses": side_losses,
+            "win_rate": side_wins / len(episodes),
+            "mean_score_diff": sum(differences) / len(differences),
+        }
+
+    expected_results = [
+        model_result(episode["winner"]["team"], episode["side_assignment"]["model_team"])
+        for episode in episodes
+    ]
+    attribution_consistent = all(
+        expected == episode["model_result"]
+        for expected, episode in zip(expected_results, episodes)
+    )
+    balanced_model_side_exposure = by_side["A"]["episodes"] == by_side["B"]["episodes"]
+    model_side_win_rate_gap = (
+        by_side["A"]["win_rate"] - by_side["B"]["win_rate"]
+        if by_side["A"]["win_rate"] is not None and by_side["B"]["win_rate"] is not None
+        else None
+    )
     return {
         "episodes": len(episodes),
         "wins": wins,
@@ -222,5 +258,18 @@ def summarize_episodes(episodes: list[dict[str, Any]]) -> dict[str, Any]:
         "win_rate": wins / len(episodes),
         "mean_model_score_diff": sum(score_diffs) / len(score_diffs),
         "by_model_side": by_side,
+        "by_physical_side": by_physical_side,
+        "side_bias_diagnostics": {
+            "model_side_win_rate_gap_a_minus_b": model_side_win_rate_gap,
+            "physical_win_rate_gap_a_minus_b": (
+                by_physical_side["A"]["win_rate"] - by_physical_side["B"]["win_rate"]
+            ),
+            "mean_score_diff_a_minus_b": by_physical_side["A"]["mean_score_diff"],
+            "balanced_model_side_exposure": balanced_model_side_exposure,
+            "model_result_attribution_consistent": attribution_consistent,
+            "evaluator_side_attribution_passed": (
+                balanced_model_side_exposure and attribution_consistent
+            ),
+        },
         "winner_derived_from_unity_shaping": False,
     }

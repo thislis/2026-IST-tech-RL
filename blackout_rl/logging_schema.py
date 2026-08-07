@@ -114,6 +114,9 @@ def validate_series_log(record: Mapping[str, Any]) -> None:
     result_count = sum(record["summary"][key] for key in ("wins", "draws", "losses"))
     if result_count != len(record["episodes"]):
         raise ValueError("summary W/D/L count mismatch")
+    diagnostics = record["summary"].get("side_bias_diagnostics")
+    if diagnostics is not None and diagnostics.get("evaluator_side_attribution_passed") is not True:
+        raise ValueError("evaluator side-attribution audit failed")
     if record.get("series_config", {}).get("side_swap") is True:
         pairs: dict[str, list[Mapping[str, Any]]] = {}
         for episode in record["episodes"]:

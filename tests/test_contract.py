@@ -33,6 +33,7 @@ from blackout_rl.logging_schema import (
     EPISODE_SCHEMA_VERSION,
     model_result,
     validate_episode_log,
+    validate_series_log,
 )
 from blackout_rl.reward import ScoreDeltaRewardTracker
 from eval.evaluator import summarize_episodes
@@ -40,6 +41,7 @@ from eval.evaluator import summarize_episodes
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_PATH = ROOT / "logs" / "prep04_07_contract.json"
+PREP14_PATH = ROOT / "logs" / "prep14_random_paired_5seeds.json"
 
 
 def synthetic_vector() -> np.ndarray:
@@ -188,13 +190,29 @@ class EvaluationContractTests(unittest.TestCase):
         episodes = [
             {
                 "model_result": model_result(0, 0),
-                "score": {"model_minus_opponent": 2},
-                "side_assignment": {"model_side": "A"},
+                "pair_id": "seed-1",
+                "pair_index": 0,
+                "seed": 1,
+                "winner": {"team": 0},
+                "score": {
+                    "team_a": 5,
+                    "team_b": 3,
+                    "model_minus_opponent": 2,
+                },
+                "side_assignment": {"model_side": "A", "model_team": 0},
             },
             {
                 "model_result": model_result(1, 1),
-                "score": {"model_minus_opponent": 4},
-                "side_assignment": {"model_side": "B"},
+                "pair_id": "seed-1",
+                "pair_index": 1,
+                "seed": 1,
+                "winner": {"team": 1},
+                "score": {
+                    "team_a": 2,
+                    "team_b": 6,
+                    "model_minus_opponent": 4,
+                },
+                "side_assignment": {"model_side": "B", "model_team": 1},
             },
         ]
         summary = summarize_episodes(episodes)
@@ -202,6 +220,10 @@ class EvaluationContractTests(unittest.TestCase):
         self.assertEqual(summary["mean_model_score_diff"], 3.0)
         self.assertEqual(summary["by_model_side"]["A"]["wins"], 1)
         self.assertEqual(summary["by_model_side"]["B"]["wins"], 1)
+        self.assertEqual(summary["by_physical_side"]["A"]["wins"], 1)
+        self.assertEqual(summary["by_physical_side"]["B"]["wins"], 1)
+        self.assertEqual(summary["side_bias_diagnostics"]["physical_win_rate_gap_a_minus_b"], 0.0)
+        self.assertTrue(summary["side_bias_diagnostics"]["evaluator_side_attribution_passed"])
         self.assertFalse(summary["winner_derived_from_unity_shaping"])
 
 
@@ -249,6 +271,40 @@ class ModelInterfaceTests(unittest.TestCase):
             self.assertEqual(action.shape, (2,))
             self.assertEqual(action.dtype, np.float32)
             self.assertTrue(np.all((-1.0 <= action) & (action <= 1.0)))
+
+
+@unittest.skipUnless(PREP14_PATH.exists(), "run eval/paired_series.py for PREP-14 first")
+class PairedRandomEvidenceTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.series = json.loads(PREP14_PATH.read_text())
+
+    def test_random_paired_series_side_attribution(self) -> None:
+        validate_series_log(self.series)
+        summary = self.series["summary"]
+        self.assertEqual(summary["episodes"], 10)
+        self.assertEqual(summary["by_model_side"]["A"]["episodes"], 5)
+        self.assertEqual(summary["by_model_side"]["B"]["episodes"], 5)
+        self.assertTrue(summary["side_bias_diagnostics"]["balanced_model_side_exposure"])
+        self.assertTrue(
+            summary["side_bias_diagnostics"]["model_result_attribution_consistent"]
+        )
+        self.assertTrue(summary["side_bias_diagnostics"]["evaluator_side_attribution_passed"])
+        self.assertFalse(summary["winner_derived_from_unity_shaping"])
+
+    def test_random_paired_series_has_complete_terminal_episodes(self) -> None:
+        pairs: dict[str, list[dict]] = {}
+        for episode in self.series["episodes"]:
+            pairs.setdefault(episode["pair_id"], []).append(episode)
+            self.assertEqual(episode["episode_length"]["steps"], 21_003)
+            self.assertTrue(episode["termination"]["all_agents_terminated"])
+            self.assertFalse(episode["termination"]["truncated"])
+        self.assertEqual(len(pairs), 5)
+        for episodes in pairs.values():
+            self.assertEqual(
+                {episode["side_assignment"]["model_team"] for episode in episodes},
+                {0, 1},
+            )
 
 
 @unittest.skipUnless(EVIDENCE_PATH.exists(), "run scripts/verify_prep04_07.py first")

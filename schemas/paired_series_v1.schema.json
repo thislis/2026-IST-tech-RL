@@ -32,7 +32,25 @@
         "draws": {"type": "integer", "minimum": 0},
         "losses": {"type": "integer", "minimum": 0},
         "win_rate": {"type": "number", "minimum": 0, "maximum": 1},
-        "mean_model_score_diff": {"type": "number"}
+        "mean_model_score_diff": {"type": "number"},
+        "by_model_side": {"type": "object", "required": ["A", "B"]},
+        "by_physical_side": {"type": "object", "required": ["A", "B"]},
+        "side_bias_diagnostics": {
+          "type": "object",
+          "required": [
+            "model_side_win_rate_gap_a_minus_b",
+            "physical_win_rate_gap_a_minus_b",
+            "mean_score_diff_a_minus_b",
+            "balanced_model_side_exposure",
+            "model_result_attribution_consistent",
+            "evaluator_side_attribution_passed"
+          ],
+          "properties": {
+            "balanced_model_side_exposure": {"const": true},
+            "model_result_attribution_consistent": {"const": true},
+            "evaluator_side_attribution_passed": {"const": true}
+          }
+        }
       }
     }
   }
