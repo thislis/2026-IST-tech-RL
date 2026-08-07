@@ -180,6 +180,11 @@ Team B map은 Python에서 storage와 unit의 ally/enemy channel을 swap해 만�
 
 실제 승패와 점수는 `infos`를 기준으로 평가하고 shaping reward 합으로 winner를 추론하지 않는다.
 
+프로젝트의 Python 학습 reward는 `blackout_rl.reward.ScoreDeltaRewardTracker`가
+`Team A=(Δscore_A-Δscore_B)/100`, `Team B=-Team A`로 계산해 각 팀 5개 agent에
+공유한다. terminal에서는 reset된 `(0,0)` score를 무시하고 실제 terminal winner에
+따른 `+1/-1/0` bonus만 별도로 추가한다.
+
 | 이벤트 | reward 수신자 | 값 |
 | --- | --- | ---: |
 | 필드/적 창고에서 아이템 pickup | 집은 agent | item reward (`Battery=0.2`, 그 외 기본 0.1) |

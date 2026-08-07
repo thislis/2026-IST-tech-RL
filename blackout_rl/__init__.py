@@ -2,6 +2,7 @@
 
 from .batching import ObservationBatch, canonical_agents, stack_observations, team_agents
 from .env import ContractBlackOutEnv
+from .reward import ScoreDeltaEvent, ScoreDeltaRewardTracker
 from .observation import (
     GRAPHIC_CHANNEL_NAMES,
     VECTOR_SIZE,
@@ -18,6 +19,8 @@ __all__ = [
     "GraphicObservation",
     "ObservationBatch",
     "ContractBlackOutEnv",
+    "ScoreDeltaEvent",
+    "ScoreDeltaRewardTracker",
     "VectorObservation",
     "canonical_agents",
     "hwc_to_chw",

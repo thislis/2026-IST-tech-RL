@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blackout.local/schemas/paired_series_v1.schema.json",
+  "title": "BlackOut paired evaluation series v1",
+  "type": "object",
+  "required": ["schema_version", "series_id", "created_at_utc", "series_config", "episodes", "summary"],
+  "properties": {
+    "schema_version": {"const": "blackout.paired_series.v1"},
+    "series_id": {"type": "string"},
+    "created_at_utc": {"type": "string"},
+    "series_config": {
+      "type": "object",
+      "required": ["seeds", "side_swap", "model_policy_seed_base", "opponent_policy_seed_base"],
+      "properties": {
+        "seeds": {"type": "array", "items": {"type": "integer", "minimum": 0}, "minItems": 1},
+        "side_swap": {"const": true},
+        "model_policy_seed_base": {"type": "integer", "minimum": 0},
+        "opponent_policy_seed_base": {"type": "integer", "minimum": 0}
+      }
+    },
+    "episodes": {
+      "type": "array",
+      "items": {"$ref": "episode_v1.schema.json"},
+      "minItems": 2
+    },
+    "summary": {
+      "type": "object",
+      "required": ["episodes", "wins", "draws", "losses", "win_rate", "mean_model_score_diff", "by_model_side"],
+      "properties": {
+        "episodes": {"type": "integer", "minimum": 1},
+        "wins": {"type": "integer", "minimum": 0},
+        "draws": {"type": "integer", "minimum": 0},
+        "losses": {"type": "integer", "minimum": 0},
+        "win_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "mean_model_score_diff": {"type": "number"}
+      }
+    }
+  }
+}
