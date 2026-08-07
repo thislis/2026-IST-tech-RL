@@ -2,7 +2,7 @@
 
 ## To-Do
 
-- [ ]  Phase 1
+- [x]  Phase 1
 
 | ID | Todo | 산출물 및 완료 조건 |
 | --- | --- | --- |
@@ -19,7 +19,7 @@
 | PREP-11 | ☑ 처리량 benchmark | [`scripts/benchmark_env.py`](scripts/benchmark_env.py), [`logs/prep11_benchmark.json`](logs/prep11_benchmark.json), [`reports/prep11_throughput_benchmark.md`](reports/prep11_throughput_benchmark.md): 환경 1/2개의 steps/sec, host CPU/RSS, Apple GPU utilization, full-episode 비용 측정 |
 | PREP-12 | ☑ 첫 actor/critic 인터페이스 설계 | [`blackout_rl/model_contract.py`](blackout_rl/model_contract.py), [`schemas/checkpoint_v1.schema.json`](schemas/checkpoint_v1.schema.json), [`reports/prep12_actor_critic_interface.md`](reports/prep12_actor_critic_interface.md): tensor/slot/action/checkpoint 계약과 실제 torch round-trip 검증 |
 | PREP-13 | ☑ 평가 계약에 없는 항목 확인 | [`reports/prep13_evaluation_contract_checklist.md`](reports/prep13_evaluation_contract_checklist.md): 확인된 계약, 공식 미정 항목, 확인 전 fail-closed 결정을 분리 관리 |
-| PREP-14 | ☐ random-vs-random paired-seed 평가 | side별 승률·점수 차를 측정하고 evaluator가 특정 side에 편향되지 않는지 확인 |
+| PREP-14 | ☑ random-vs-random paired-seed 평가 | [`logs/prep14_random_paired_5seeds.json`](logs/prep14_random_paired_5seeds.json), [`reports/prep14_random_paired_evaluation.md`](reports/prep14_random_paired_evaluation.md): 5 paired seeds·10경기의 side별 승률/점수 차 측정, 균형 side 배정과 evaluator attribution 검증 |
 
 #### 준비 단계의 필수 테스트
 
