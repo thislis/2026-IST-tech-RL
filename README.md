@@ -63,9 +63,9 @@ win / draw / loss, 평균 최종 점수 차
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
-    | BASE-S01 | ☐ `Random`, `NoOp`, `FixedDirection` policy 구현 | smoke test와 evaluator 회귀 테스트에 사용 |
-    | BASE-S02 | ☐ semantic map decoder 구현 | 벽, 아군·적군 창고, 유닛, 배터리, 특수 아이템 위치 추출 |
-    | BASE-S03 | ☐ 이동 가능 영역과 path planner 구현 | 우선 A* 또는 flow field, waypoint 추종, 충돌 시 재계획 |
+    | BASE-S01 | ☑ `Random`, `NoOp`, `FixedDirection` policy 구현 | [`blackout_rl/policy.py`](blackout_rl/policy.py), [`reports/base_s01_policy_primitives.md`](reports/base_s01_policy_primitives.md): 공통 evaluator protocol, deterministic/범위/누락-agent 회귀 테스트 통과 |
+    | BASE-S02 | ☑ semantic map decoder 구현 | [`blackout_rl/semantic_map.py`](blackout_rl/semantic_map.py), [`reports/base_s02_semantic_decoder.md`](reports/base_s02_semantic_decoder.md): 좌표 반전 계약과 벽·창고·유닛·Battery·특수 아이템 위치 추출 검증 |
+    | BASE-S03 | ☑ 이동 가능 영역과 path planner 구현 | [`blackout_rl/navigation.py`](blackout_rl/navigation.py), [`scripts/verify_base_s01_s03.py`](scripts/verify_base_s01_s03.py), [`logs/base_s01_s03_live_navigation.json`](logs/base_s01_s03_live_navigation.json), [`reports/base_s03_single_unit_navigation.md`](reports/base_s03_single_unit_navigation.md): A*·waypoint·replan 신호 및 실제 단일 유닛 wall 우회 Battery pickup 통과 |
     | BASE-S04 | ☐ stuck detector 구현 | 일정 시간 위치 변화가 없으면 경로 또는 목표 재선정 |
     | BASE-S05 | ☐ team-local slot과 unit state 추적 | 각 유닛의 위치·보유 아이템·클래스·현재 역할 관리 |
     | BASE-S06 | ☐ task assignment 구현 | 배터리와 유닛 간 path distance 기반 greedy 또는 Hungarian 할당 |

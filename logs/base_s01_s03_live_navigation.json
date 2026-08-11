@@ -1,0 +1,466 @@
+{
+  "schema_version": "blackout.base_s01_s03_navigation.v1",
+  "created_at_utc": "2026-08-11T08:11:16.014200+00:00",
+  "environment": {
+    "seed": 210301,
+    "requested_seed_start": 210301,
+    "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+    "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+    "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+    "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+    "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+    "adapter": "blackout_rl.env.ContractBlackOutEnv",
+    "time_scale": 50.0,
+    "map_ready_after_steps": 0
+  },
+  "semantic_decode": {
+    "resolution_scale": 4,
+    "pixel_shape": [
+      96,
+      96
+    ],
+    "grid_shape": [
+      24,
+      24
+    ],
+    "wall_cells": 168,
+    "ally_storage_cells": 20,
+    "enemy_storage_cells": 20,
+    "battery_cells": 48,
+    "special_item_cells": 0,
+    "coordinate_calibration": {
+      "vector_position_normalized": [
+        0.0625,
+        0.9375
+      ],
+      "nearest_ally_unit_pixel": [
+        5,
+        6
+      ],
+      "nearest_ally_unit_position_normalized": [
+        0.06770833333333333,
+        0.9427083333333334
+      ],
+      "euclidean_error_normalized": 0.00736568309366703,
+      "euclidean_error_pixels": 0.7071055769920349,
+      "passed": true
+    }
+  },
+  "plan": {
+    "agent": "unit_0",
+    "start_position_normalized": [
+      0.0625,
+      0.9375
+    ],
+    "start_cell": [
+      1,
+      22
+    ],
+    "target_battery_cell": [
+      9,
+      17
+    ],
+    "target_center_normalized": [
+      0.3958333432674408,
+      0.7291666865348816
+    ],
+    "direct_grid_line": [
+      [
+        1,
+        22
+      ],
+      [
+        2,
+        21
+      ],
+      [
+        3,
+        21
+      ],
+      [
+        4,
+        20
+      ],
+      [
+        5,
+        19
+      ],
+      [
+        6,
+        19
+      ],
+      [
+        7,
+        18
+      ],
+      [
+        8,
+        18
+      ],
+      [
+        9,
+        17
+      ]
+    ],
+    "direct_line_blocked_cells": [
+      [
+        7,
+        18
+      ],
+      [
+        8,
+        18
+      ]
+    ],
+    "astar_path": [
+      [
+        1,
+        22
+      ],
+      [
+        2,
+        21
+      ],
+      [
+        3,
+        20
+      ],
+      [
+        4,
+        19
+      ],
+      [
+        5,
+        18
+      ],
+      [
+        6,
+        17
+      ],
+      [
+        7,
+        17
+      ],
+      [
+        8,
+        17
+      ],
+      [
+        9,
+        17
+      ]
+    ],
+    "astar_path_cells": 9,
+    "astar_path_cost": 10.071067811865476,
+    "astar_path_wall_free": true,
+    "safe_diagonal_corner_rule": true
+  },
+  "execution": {
+    "started_at_utc": "2026-08-11T08:11:13.819277+00:00",
+    "wall_seconds": 2.195,
+    "navigation_steps": 119,
+    "pickup_item_id": 1,
+    "battery_pickup_confirmed": true,
+    "end_position_normalized": [
+      0.37324103713035583,
+      0.7291674017906189
+    ],
+    "end_cell": [
+      8,
+      17
+    ],
+    "unique_visited_cells": 8,
+    "visited_wall_cells": 0,
+    "non_target_policy": "NoOpPolicy",
+    "max_non_target_displacement_normalized": 0.0,
+    "non_target_displacement_by_agent": {
+      "unit_1": 0.0,
+      "unit_2": 0.0,
+      "unit_3": 0.0,
+      "unit_4": 0.0,
+      "unit_5": 0.0,
+      "unit_6": 0.0,
+      "unit_7": 0.0,
+      "unit_8": 0.0,
+      "unit_9": 0.0
+    },
+    "single_unit_motion_passed": true,
+    "replans": [],
+    "final_active_path": [
+      [
+        1,
+        22
+      ],
+      [
+        2,
+        21
+      ],
+      [
+        3,
+        20
+      ],
+      [
+        4,
+        19
+      ],
+      [
+        5,
+        18
+      ],
+      [
+        6,
+        17
+      ],
+      [
+        7,
+        17
+      ],
+      [
+        8,
+        17
+      ],
+      [
+        9,
+        17
+      ]
+    ],
+    "sampled_trajectory": [
+      {
+        "step": 1,
+        "position_normalized": [
+          0.0625,
+          0.9375
+        ],
+        "cell": [
+          1,
+          22
+        ],
+        "action": [
+          0.7071065902709961,
+          -0.7071070075035095
+        ],
+        "waypoint": [
+          2,
+          21
+        ]
+      },
+      {
+        "step": 10,
+        "position_normalized": [
+          0.08371316641569138,
+          0.9162869453430176
+        ],
+        "cell": [
+          2,
+          21
+        ],
+        "action": [
+          0.707104504108429,
+          -0.7071091532707214
+        ],
+        "waypoint": [
+          2,
+          21
+        ]
+      },
+      {
+        "step": 20,
+        "position_normalized": [
+          0.10728326439857483,
+          0.8927167057991028
+        ],
+        "cell": [
+          2,
+          21
+        ],
+        "action": [
+          0.7071071863174438,
+          -0.707106351852417
+        ],
+        "waypoint": [
+          3,
+          20
+        ]
+      },
+      {
+        "step": 30,
+        "position_normalized": [
+          0.13085345923900604,
+          0.8691466450691223
+        ],
+        "cell": [
+          3,
+          20
+        ],
+        "action": [
+          0.7071046233177185,
+          -0.7071088552474976
+        ],
+        "waypoint": [
+          3,
+          20
+        ]
+      },
+      {
+        "step": 40,
+        "position_normalized": [
+          0.1544235497713089,
+          0.8455765247344971
+        ],
+        "cell": [
+          3,
+          20
+        ],
+        "action": [
+          0.7071059942245483,
+          -0.7071076035499573
+        ],
+        "waypoint": [
+          4,
+          19
+        ]
+      },
+      {
+        "step": 50,
+        "position_normalized": [
+          0.17799365520477295,
+          0.8220064640045166
+        ],
+        "cell": [
+          4,
+          19
+        ],
+        "action": [
+          0.7071022987365723,
+          -0.7071111798286438
+        ],
+        "waypoint": [
+          4,
+          19
+        ]
+      },
+      {
+        "step": 60,
+        "position_normalized": [
+          0.20156382024288177,
+          0.7984363436698914
+        ],
+        "cell": [
+          4,
+          19
+        ],
+        "action": [
+          0.707104504108429,
+          -0.7071090936660767
+        ],
+        "waypoint": [
+          5,
+          18
+        ]
+      },
+      {
+        "step": 70,
+        "position_normalized": [
+          0.22513385117053986,
+          0.7748661637306213
+        ],
+        "cell": [
+          5,
+          18
+        ],
+        "action": [
+          0.7071041464805603,
+          -0.7071093916893005
+        ],
+        "waypoint": [
+          5,
+          18
+        ]
+      },
+      {
+        "step": 80,
+        "position_normalized": [
+          0.24870406091213226,
+          0.7512961030006409
+        ],
+        "cell": [
+          5,
+          18
+        ],
+        "action": [
+          0.7071046233177185,
+          -0.7071089148521423
+        ],
+        "waypoint": [
+          6,
+          17
+        ]
+      },
+      {
+        "step": 90,
+        "position_normalized": [
+          0.27324965596199036,
+          0.7300112843513489
+        ],
+        "cell": [
+          6,
+          17
+        ],
+        "action": [
+          0.9997685551643372,
+          -0.02151324786245823
+        ],
+        "waypoint": [
+          7,
+          17
+        ]
+      },
+      {
+        "step": 100,
+        "position_normalized": [
+          0.306575208902359,
+          0.7292942404747009
+        ],
+        "cell": [
+          7,
+          17
+        ],
+        "action": [
+          0.9997683763504028,
+          -0.021523863077163696
+        ],
+        "waypoint": [
+          7,
+          17
+        ]
+      },
+      {
+        "step": 110,
+        "position_normalized": [
+          0.3399077355861664,
+          0.7291845679283142
+        ],
+        "cell": [
+          8,
+          17
+        ],
+        "action": [
+          0.9999992251396179,
+          -0.001254048547707498
+        ],
+        "waypoint": [
+          8,
+          17
+        ]
+      }
+    ]
+  },
+  "verification": {
+    "semantic_coordinate_alignment_passed": true,
+    "direct_route_intersects_wall": true,
+    "planned_route_avoids_walls": true,
+    "battery_pickup_confirmed": true,
+    "single_unit_motion_passed": true,
+    "obstacle_avoidance_passed": true
+  }
+}
