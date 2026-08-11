@@ -18,7 +18,7 @@ from blackout_rl.logging_schema import (
     validate_episode_log,
     winner_from_scores,
 )
-from blackout_rl.policy import PolicyArtifact, RandomPolicy
+from blackout_rl.policy import ActionPolicy, PolicyArtifact
 from blackout_rl.reward import ScoreDeltaRewardTracker
 
 
@@ -39,8 +39,8 @@ def evaluate_episode(
     python_api_commit: str,
     seed: int,
     model_team: int,
-    model_policy: RandomPolicy,
-    opponent_policy: RandomPolicy,
+    model_policy: ActionPolicy,
+    opponent_policy: ActionPolicy,
     model_artifact: PolicyArtifact,
     opponent_artifact: PolicyArtifact,
     pair_id: str,
