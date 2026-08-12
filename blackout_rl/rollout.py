@@ -73,6 +73,7 @@ class RolloutBatch:
     return_: torch.Tensor
     time_steps: int
     n_agents: int
+    teacher_action_index: torch.Tensor | None = None
 
     def __len__(self) -> int:
         return int(self.vector.shape[0])
@@ -83,6 +84,49 @@ class RolloutBatch:
             value = getattr(self, name)
             values[name] = value.to(device) if isinstance(value, torch.Tensor) else value
         return RolloutBatch(**values)
+
+
+def concatenate_rollout_batches(batches: Sequence[RolloutBatch]) -> RolloutBatch:
+    """Concatenate same-schema batches so both physical sides share every update."""
+
+    if not batches:
+        raise ValueError("at least one rollout batch is required")
+    n_agents = batches[0].n_agents
+    if any(batch.n_agents != n_agents for batch in batches):
+        raise ValueError("rollout batches have different agent counts")
+    optional_presence = [batch.teacher_action_index is not None for batch in batches]
+    if any(optional_presence) and not all(optional_presence):
+        raise ValueError("teacher labels must be present in every batch or none")
+    tensor_names = (
+        "vector",
+        "graphic",
+        "slot_id",
+        "action_index",
+        "old_log_prob",
+        "old_value",
+        "reward",
+        "next_value",
+        "terminated",
+        "truncated",
+        "episode_start",
+        "advantage",
+        "return_",
+    )
+    values = {
+        name: torch.cat([getattr(batch, name) for batch in batches], dim=0)
+        for name in tensor_names
+    }
+    teacher = (
+        torch.cat([batch.teacher_action_index for batch in batches], dim=0)
+        if all(optional_presence)
+        else None
+    )
+    return RolloutBatch(
+        **values,
+        time_steps=sum(batch.time_steps for batch in batches),
+        n_agents=n_agents,
+        teacher_action_index=teacher,
+    )
 
 
 def generalized_advantage_estimate(
@@ -150,6 +194,7 @@ class EpisodicRolloutBuffer:
         terminated: torch.Tensor,
         truncated: torch.Tensor,
         episode_start: torch.Tensor,
+        teacher_action_index: torch.Tensor | None = None,
     ) -> None:
         fields = {
             "vector": vector,
@@ -164,11 +209,15 @@ class EpisodicRolloutBuffer:
             "truncated": truncated,
             "episode_start": episode_start,
         }
+        if teacher_action_index is not None:
+            fields["teacher_action_index"] = teacher_action_index
         for name, tensor in fields.items():
             if tensor.ndim == 0 or tensor.shape[0] != self.n_agents:
                 raise ValueError(f"{name} must have leading shape ({self.n_agents},)")
         if slot_id.dtype != torch.int64 or action_index.dtype != torch.int64:
             raise TypeError("slot_id and action_index must be int64")
+        if teacher_action_index is not None and teacher_action_index.dtype != torch.int64:
+            raise TypeError("teacher_action_index must be int64")
         if any(fields[name].dtype != torch.bool for name in ("terminated", "truncated", "episode_start")):
             raise TypeError("termination, truncation, and episode_start masks must be boolean")
         if bool(torch.any(terminated & truncated)):
@@ -220,6 +269,11 @@ class EpisodicRolloutBuffer:
             return_=return_.flatten(),
             time_steps=time_steps,
             n_agents=self.n_agents,
+            teacher_action_index=(
+                stacked["teacher_action_index"].flatten()
+                if "teacher_action_index" in stacked
+                else None
+            ),
         )
 
 
@@ -245,6 +299,7 @@ class ParallelRolloutCollector:
         learning_team: int,
         device: str | torch.device = "cpu",
         reward_transform: RewardTransform | None = None,
+        teacher: OpponentPolicy | None = None,
     ) -> None:
         self.env = env
         self.model = model.to(device)
@@ -254,6 +309,7 @@ class ParallelRolloutCollector:
         self.controlled_agents = team_agents(learning_team)
         self.opponent_agents = team_agents(1 - learning_team)
         self.reward_transform = reward_transform or _unity_reward_transform
+        self.teacher = teacher
         self._observations: dict[str, dict[str, np.ndarray]] | None = None
         self._episode_start = True
         self.episodes_completed = 0
@@ -263,6 +319,8 @@ class ParallelRolloutCollector:
         self._require_live_agents(observations)
         _reset_if_supported(self.opponent)
         _reset_if_supported(self.reward_transform)
+        if self.teacher is not None:
+            _reset_if_supported(self.teacher)
         self._observations = observations
         self._episode_start = True
 
@@ -292,6 +350,21 @@ class ParallelRolloutCollector:
                 agent: selection.action[row].cpu().numpy().astype(np.float32, copy=False)
                 for row, agent in enumerate(model_input.agent_names)
             }
+            teacher_action_index = None
+            if self.teacher is not None:
+                from .behavior_cloning import action_vector_to_index
+
+                teacher_actions = self.teacher.act(observations, self.controlled_agents)
+                if set(teacher_actions) != set(self.controlled_agents):
+                    raise ValueError("teacher policy must return exactly its five agent actions")
+                teacher_action_index = torch.tensor(
+                    [
+                        action_vector_to_index(teacher_actions[agent])
+                        for agent in self.controlled_agents
+                    ],
+                    dtype=torch.int64,
+                    device=self.device,
+                )
             opponent_actions = self.opponent.act(observations, self.opponent_agents)
             if set(opponent_actions) != set(self.opponent_agents):
                 raise ValueError("opponent policy must return exactly its five agent actions")
@@ -348,6 +421,7 @@ class ParallelRolloutCollector:
                 terminated=terminated,
                 truncated=truncated,
                 episode_start=torch.full_like(terminated, self._episode_start),
+                teacher_action_index=teacher_action_index,
             )
 
             if bool(torch.all(boundary)):
@@ -356,6 +430,8 @@ class ParallelRolloutCollector:
                 self._require_live_agents(observations_after_reset)
                 _reset_if_supported(self.opponent)
                 _reset_if_supported(self.reward_transform)
+                if self.teacher is not None:
+                    _reset_if_supported(self.teacher)
                 self._observations = observations_after_reset
                 self._episode_start = True
             else:

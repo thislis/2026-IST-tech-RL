@@ -19,6 +19,7 @@ from blackout_rl import (
     PPODiagnosticLogger,
     ParallelRolloutCollector,
     TeamTrainingReward,
+    concatenate_rollout_batches,
     generalized_advantage_estimate,
     ppo_update,
 )
@@ -153,6 +154,22 @@ class GAEAndBufferTests(unittest.TestCase):
         )
         self.assertAlmostEqual(float(advantage), 1.5)
 
+    def test_side_batches_concatenate_with_teacher_labels(self) -> None:
+        batches = []
+        for seed in (1, 2):
+            collector = ParallelRolloutCollector(
+                MockParallelEnv(), small_model(), NoOpPolicy(),
+                learning_team=0, teacher=NoOpPolicy(),
+            )
+            batches.append(
+                collector.collect(2, seed=seed).as_batch(gamma=0.99, gae_lambda=0.95)
+            )
+        merged = concatenate_rollout_batches(batches)
+        self.assertEqual(len(merged), 20)
+        self.assertEqual(merged.time_steps, 4)
+        self.assertIsNotNone(merged.teacher_action_index)
+        self.assertEqual(len(merged.teacher_action_index), 20)
+
 
 class ParallelCollectorTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -221,6 +238,18 @@ class ParallelCollectorTests(unittest.TestCase):
         rewards = batch.reward.reshape(2, 5)
         self.assertTrue(torch.allclose(rewards[0], torch.full((5,), 0.01)))
         self.assertTrue(torch.allclose(rewards[1], torch.full((5,), 1.0)))
+
+    def test_optional_teacher_actions_are_recorded_as_categorical_labels(self) -> None:
+        collector = ParallelRolloutCollector(
+            MockParallelEnv(),
+            small_model(),
+            NoOpPolicy(),
+            learning_team=0,
+            teacher=NoOpPolicy(),
+        )
+        batch = collector.collect(2, seed=11).as_batch(gamma=0.99, gae_lambda=0.95)
+        self.assertIsNotNone(batch.teacher_action_index)
+        self.assertTrue(torch.equal(batch.teacher_action_index, torch.zeros(10, dtype=torch.int64)))
 
 
 class PPOUpdateTests(unittest.TestCase):
