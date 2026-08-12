@@ -70,9 +70,9 @@ win / draw / loss, 평균 최종 점수 차
     | BASE-S05 | ☑ team-local slot과 unit state 추적 | [`blackout_rl/team_state.py`](blackout_rl/team_state.py), [`reports/base_s05_team_state.md`](reports/base_s05_team_state.md): 위치·보유 item·class·역할·목표를 canonical team slot으로 추적 |
     | BASE-S06 | ☑ task assignment 구현 | [`blackout_rl/coordination.py`](blackout_rl/coordination.py), [`reports/base_s06_s07_assignment_roles.md`](reports/base_s06_s07_assignment_roles.md): A* path distance 기반 deterministic greedy 고유 할당 및 도달 불가/예약 목표 테스트 |
     | BASE-S07 | ☑ 기본 역할 구성 | [`blackout_rl/team_state.py`](blackout_rl/team_state.py), [`logs/base_s04_s07_s13_coordination.json`](logs/base_s04_s07_s13_coordination.json): worker 3·guard 1·carrier 1 역할과 실제 5유닛 동시 Battery 회수 검증 |
-    | BASE-S08 | ☐ 노동자 FSM 구현 | `SEEK_BATTERY → PICKUP → DELIVER → RETARGET` |
-    | BASE-S09 | ☐ 경비원 FSM 구현 | 중앙 성소 이동, 변신, 주요 창고·운반 경로 순찰, 적 추격 |
-    | BASE-S10 | ☐ 전달자 FSM 구현 | 본진 성소 변신, 먼 배터리 운반, 적 접근 시 회피 |
+    | BASE-S08 | ☑ 노동자 FSM 구현 | [`blackout_rl/scripted_fsm.py`](blackout_rl/scripted_fsm.py), [`reports/base_s08_worker_fsm.md`](reports/base_s08_worker_fsm.md): 노동자 3명의 고유 Battery 회수→창고 적재→재탐색 및 포화 창고 재배정 검증 |
+    | BASE-S09 | ☑ 경비원 FSM 구현 | [`reports/base_s09_guard_fsm.md`](reports/base_s09_guard_fsm.md), [`logs/base_s08_s10_role_fsm.json`](logs/base_s08_s10_role_fsm.json): 중앙 성소 Hunter 변신→창고 순찰과 적 추격 전환 검증 |
+    | BASE-S10 | ☑ 전달자 FSM 구현 | [`reports/base_s10_carrier_fsm.md`](reports/base_s10_carrier_fsm.md), [`logs/base_s08_s10_role_fsm_trajectory.jsonl`](logs/base_s08_s10_role_fsm_trajectory.jsonl): 본진 Carrier 변신→원거리 Battery 회수·적재 및 적 접근 회피 검증 |
     | BASE-S11 | ☐ 20초 흡수 주기 전략 구현 | 흡수 직전 안전한 적재, 직후 새 수집, 상황별 약탈 시도 |
     | BASE-S12 | ☐ 위험 지도 구현 | 적 위치 주변 회피 비용과 경비 경로 비용 반영 |
     | BASE-S13 | ☑ scripted trajectory recorder 구현 | [`blackout_rl/trajectory.py`](blackout_rl/trajectory.py), [`logs/base_s13_coordination_trajectory.jsonl`](logs/base_s13_coordination_trajectory.jsonl), [`reports/base_s13_trajectory_recorder.md`](reports/base_s13_trajectory_recorder.md): obs/action/role/target/reward/score/seed JSONL 기록과 hash·round-trip 검증 |
