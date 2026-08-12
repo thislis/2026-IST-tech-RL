@@ -1,0 +1,1028 @@
+{
+  "schema_version": "blackout.paired_series.v1",
+  "series_id": "57ca1c65-6cc9-48c8-89c1-62a1303d8deb",
+  "created_at_utc": "2026-08-12T14:50:07.073363+00:00",
+  "series_config": {
+    "seeds": [
+      7171,
+      7172,
+      7173,
+      7174,
+      7175
+    ],
+    "held_out": true,
+    "side_swap": true,
+    "opponent": "scripted-battery-v1",
+    "model_policy_seed_base": 707001,
+    "opponent_policy_seed_base": 707002,
+    "time_scale": 50.0,
+    "max_steps": 22000,
+    "workers": 5,
+    "training_global_step": 0
+  },
+  "episodes": [
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "0c25f536-ca62-4e84-afa2-c4dc1b41b039",
+      "pair_id": "ippo-vs-scripted-seed-7171",
+      "pair_index": 0,
+      "seed": 7171,
+      "policy_seeds": {
+        "model": 714172,
+        "opponent": 714173
+      },
+      "side_assignment": {
+        "model_team": 0,
+        "model_side": "A",
+        "opponent_team": 1,
+        "opponent_side": "B"
+      },
+      "model": {
+        "policy_id": "win-70-vs-scripted-candidate",
+        "kind": "ippo-checkpoint",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/ippo_vs_scripted_latest.pt",
+        "checkpoint_sha256": "cab99043d4f518063ea1f4d31d5bb77fdf8db89a052c596af77d3cff4cd849f6"
+      },
+      "opponent": {
+        "policy_id": "scripted-battery-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_battery_v1.json",
+        "checkpoint_sha256": "775ee441d4037c41b50b24c890fa2e63163dc6687b062a27b87e81a651b8df29"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 777,
+        "wall_seconds": 19.333,
+        "started_at_utc": "2026-08-12T14:49:18.337489+00:00",
+        "finished_at_utc": "2026-08-12T14:49:37.670295+00:00",
+        "last_time_left_normalized": 0.9629995822906494
+      },
+      "score": {
+        "team_a": 0,
+        "team_b": 96,
+        "model": 0,
+        "opponent": 96,
+        "model_minus_opponent": -96,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 1,
+        "side": "B",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "loss",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": -4.800000041723251,
+          "unit_1": -4.800000041723251,
+          "unit_2": -4.800000041723251,
+          "unit_3": -4.800000041723251,
+          "unit_4": -4.800000041723251,
+          "unit_5": 5.800000108778477,
+          "unit_6": 6.400000117719173,
+          "unit_7": 6.400000110268593,
+          "unit_8": 5.300000041723251,
+          "unit_9": 6.400000117719173
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 23,
+        "python_score_delta_cumulative": {
+          "team_a": -0.9600000000000002,
+          "team_b": 0.9600000000000002
+        },
+        "python_terminal_bonus": {
+          "team_a": -1.0,
+          "team_b": 1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "0c05682a-40a1-48c5-982b-5cfd895cd0ab",
+      "pair_id": "ippo-vs-scripted-seed-7171",
+      "pair_index": 1,
+      "seed": 7171,
+      "policy_seeds": {
+        "model": 714172,
+        "opponent": 714173
+      },
+      "side_assignment": {
+        "model_team": 1,
+        "model_side": "B",
+        "opponent_team": 0,
+        "opponent_side": "A"
+      },
+      "model": {
+        "policy_id": "win-70-vs-scripted-candidate",
+        "kind": "ippo-checkpoint",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/ippo_vs_scripted_latest.pt",
+        "checkpoint_sha256": "cab99043d4f518063ea1f4d31d5bb77fdf8db89a052c596af77d3cff4cd849f6"
+      },
+      "opponent": {
+        "policy_id": "scripted-battery-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_battery_v1.json",
+        "checkpoint_sha256": "775ee441d4037c41b50b24c890fa2e63163dc6687b062a27b87e81a651b8df29"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 818,
+        "wall_seconds": 20.283,
+        "started_at_utc": "2026-08-12T14:49:37.713357+00:00",
+        "finished_at_utc": "2026-08-12T14:49:57.996745+00:00",
+        "last_time_left_normalized": 0.9610471725463867
+      },
+      "score": {
+        "team_a": 98,
+        "team_b": 0,
+        "model": 0,
+        "opponent": 98,
+        "model_minus_opponent": -98,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 0,
+        "side": "A",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "loss",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": 8.60000018030405,
+          "unit_1": 6.200000114738941,
+          "unit_2": 6.200000092387199,
+          "unit_3": 4.200000047683716,
+          "unit_4": 5.4000000804662704,
+          "unit_5": -4.000000044703484,
+          "unit_6": -4.000000044703484,
+          "unit_7": -4.000000044703484,
+          "unit_8": -4.000000044703484,
+          "unit_9": -4.000000044703484
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 24,
+        "python_score_delta_cumulative": {
+          "team_a": 0.9800000000000002,
+          "team_b": -0.9800000000000002
+        },
+        "python_terminal_bonus": {
+          "team_a": 1.0,
+          "team_b": -1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.029999999329447746,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "c97bef91-3f6e-4890-9720-34883d7540a1",
+      "pair_id": "ippo-vs-scripted-seed-7172",
+      "pair_index": 0,
+      "seed": 7172,
+      "policy_seeds": {
+        "model": 714173,
+        "opponent": 714174
+      },
+      "side_assignment": {
+        "model_team": 0,
+        "model_side": "A",
+        "opponent_team": 1,
+        "opponent_side": "B"
+      },
+      "model": {
+        "policy_id": "win-70-vs-scripted-candidate",
+        "kind": "ippo-checkpoint",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/ippo_vs_scripted_latest.pt",
+        "checkpoint_sha256": "cab99043d4f518063ea1f4d31d5bb77fdf8db89a052c596af77d3cff4cd849f6"
+      },
+      "opponent": {
+        "policy_id": "scripted-battery-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_battery_v1.json",
+        "checkpoint_sha256": "775ee441d4037c41b50b24c890fa2e63163dc6687b062a27b87e81a651b8df29"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 898,
+        "wall_seconds": 22.023,
+        "started_at_utc": "2026-08-12T14:49:18.343197+00:00",
+        "finished_at_utc": "2026-08-12T14:49:40.366725+00:00",
+        "last_time_left_normalized": 0.9572376012802124
+      },
+      "score": {
+        "team_a": 8,
+        "team_b": 96,
+        "model": 8,
+        "opponent": 96,
+        "model_minus_opponent": -88,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 1,
+        "side": "B",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "loss",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": -14.600000359117985,
+          "unit_1": -14.600000359117985,
+          "unit_2": -14.600000359117985,
+          "unit_3": -14.200000338256359,
+          "unit_4": -14.600000359117985,
+          "unit_5": 5.400000117719173,
+          "unit_6": 6.80000014603138,
+          "unit_7": 6.200000122189522,
+          "unit_8": 20.30000066012144,
+          "unit_9": 4.600000083446503
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 20,
+        "python_score_delta_cumulative": {
+          "team_a": -0.8800000000000003,
+          "team_b": 0.8800000000000003
+        },
+        "python_terminal_bonus": {
+          "team_a": -1.0,
+          "team_b": 1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "ab05d3d4-050a-4f88-8e4a-3ae009cc3104",
+      "pair_id": "ippo-vs-scripted-seed-7172",
+      "pair_index": 1,
+      "seed": 7172,
+      "policy_seeds": {
+        "model": 714173,
+        "opponent": 714174
+      },
+      "side_assignment": {
+        "model_team": 1,
+        "model_side": "B",
+        "opponent_team": 0,
+        "opponent_side": "A"
+      },
+      "model": {
+        "policy_id": "win-70-vs-scripted-candidate",
+        "kind": "ippo-checkpoint",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/ippo_vs_scripted_latest.pt",
+        "checkpoint_sha256": "cab99043d4f518063ea1f4d31d5bb77fdf8db89a052c596af77d3cff4cd849f6"
+      },
+      "opponent": {
+        "policy_id": "scripted-battery-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_battery_v1.json",
+        "checkpoint_sha256": "775ee441d4037c41b50b24c890fa2e63163dc6687b062a27b87e81a651b8df29"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 946,
+        "wall_seconds": 23.21,
+        "started_at_utc": "2026-08-12T14:49:40.410708+00:00",
+        "finished_at_utc": "2026-08-12T14:50:03.621156+00:00",
+        "last_time_left_normalized": 0.954951822757721
+      },
+      "score": {
+        "team_a": 98,
+        "team_b": 0,
+        "model": 0,
+        "opponent": 98,
+        "model_minus_opponent": -98,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 0,
+        "side": "A",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "loss",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": 8.10000016540289,
+          "unit_1": 6.300000101327896,
+          "unit_2": 7.1000001430511475,
+          "unit_3": 4.300000049173832,
+          "unit_4": 5.900000102818012,
+          "unit_5": -4.1000000461936,
+          "unit_6": -4.1000000461936,
+          "unit_7": -4.1000000461936,
+          "unit_8": -4.1000000461936,
+          "unit_9": -4.1000000461936
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 26,
+        "python_score_delta_cumulative": {
+          "team_a": 0.9800000000000003,
+          "team_b": -0.9800000000000003
+        },
+        "python_terminal_bonus": {
+          "team_a": 1.0,
+          "team_b": -1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "22428ca2-31b3-465a-9c1d-8f549aca5d37",
+      "pair_id": "ippo-vs-scripted-seed-7173",
+      "pair_index": 0,
+      "seed": 7173,
+      "policy_seeds": {
+        "model": 714174,
+        "opponent": 714175
+      },
+      "side_assignment": {
+        "model_team": 0,
+        "model_side": "A",
+        "opponent_team": 1,
+        "opponent_side": "B"
+      },
+      "model": {
+        "policy_id": "win-70-vs-scripted-candidate",
+        "kind": "ippo-checkpoint",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/ippo_vs_scripted_latest.pt",
+        "checkpoint_sha256": "cab99043d4f518063ea1f4d31d5bb77fdf8db89a052c596af77d3cff4cd849f6"
+      },
+      "opponent": {
+        "policy_id": "scripted-battery-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_battery_v1.json",
+        "checkpoint_sha256": "775ee441d4037c41b50b24c890fa2e63163dc6687b062a27b87e81a651b8df29"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 890,
+        "wall_seconds": 22.773,
+        "started_at_utc": "2026-08-12T14:49:18.340098+00:00",
+        "finished_at_utc": "2026-08-12T14:49:41.113218+00:00",
+        "last_time_left_normalized": 0.9576185345649719
+      },
+      "score": {
+        "team_a": 0,
+        "team_b": 98,
+        "model": 0,
+        "opponent": 98,
+        "model_minus_opponent": -98,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 1,
+        "side": "B",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "loss",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": -14.90000033378601,
+          "unit_1": -14.90000033378601,
+          "unit_2": -14.90000033378601,
+          "unit_3": -14.90000033378601,
+          "unit_4": -14.90000033378601,
+          "unit_5": 6.500000111758709,
+          "unit_6": 6.1000001057982445,
+          "unit_7": 6.5000001192092896,
+          "unit_8": 20.60000066459179,
+          "unit_9": 5.900000087916851
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 22,
+        "python_score_delta_cumulative": {
+          "team_a": -0.9800000000000002,
+          "team_b": 0.9800000000000002
+        },
+        "python_terminal_bonus": {
+          "team_a": -1.0,
+          "team_b": 1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.009999999776482582
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "a285dff8-12dc-4c09-8791-51271f451330",
+      "pair_id": "ippo-vs-scripted-seed-7173",
+      "pair_index": 1,
+      "seed": 7173,
+      "policy_seeds": {
+        "model": 714174,
+        "opponent": 714175
+      },
+      "side_assignment": {
+        "model_team": 1,
+        "model_side": "B",
+        "opponent_team": 0,
+        "opponent_side": "A"
+      },
+      "model": {
+        "policy_id": "win-70-vs-scripted-candidate",
+        "kind": "ippo-checkpoint",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/ippo_vs_scripted_latest.pt",
+        "checkpoint_sha256": "cab99043d4f518063ea1f4d31d5bb77fdf8db89a052c596af77d3cff4cd849f6"
+      },
+      "opponent": {
+        "policy_id": "scripted-battery-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_battery_v1.json",
+        "checkpoint_sha256": "775ee441d4037c41b50b24c890fa2e63163dc6687b062a27b87e81a651b8df29"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 577,
+        "wall_seconds": 14.579,
+        "started_at_utc": "2026-08-12T14:49:41.158048+00:00",
+        "finished_at_utc": "2026-08-12T14:49:55.737588+00:00",
+        "last_time_left_normalized": 0.9725236296653748
+      },
+      "score": {
+        "team_a": 99,
+        "team_b": 0,
+        "model": 0,
+        "opponent": 99,
+        "model_minus_opponent": -99,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 0,
+        "side": "A",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "loss",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": 5.600000075995922,
+          "unit_1": 7.000000134110451,
+          "unit_2": 5.400000087916851,
+          "unit_3": 4.000000044703484,
+          "unit_4": 5.800000101327896,
+          "unit_5": -3.8000000417232513,
+          "unit_6": -3.8000000417232513,
+          "unit_7": -3.8000000417232513,
+          "unit_8": -3.8000000417232513,
+          "unit_9": -3.8000000417232513
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 21,
+        "python_score_delta_cumulative": {
+          "team_a": 0.99,
+          "team_b": -0.99
+        },
+        "python_terminal_bonus": {
+          "team_a": 1.0,
+          "team_b": -1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "40d4ebd0-c9a5-476d-a16a-8a874a3ba61b",
+      "pair_id": "ippo-vs-scripted-seed-7174",
+      "pair_index": 0,
+      "seed": 7174,
+      "policy_seeds": {
+        "model": 714175,
+        "opponent": 714176
+      },
+      "side_assignment": {
+        "model_team": 0,
+        "model_side": "A",
+        "opponent_team": 1,
+        "opponent_side": "B"
+      },
+      "model": {
+        "policy_id": "win-70-vs-scripted-candidate",
+        "kind": "ippo-checkpoint",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/ippo_vs_scripted_latest.pt",
+        "checkpoint_sha256": "cab99043d4f518063ea1f4d31d5bb77fdf8db89a052c596af77d3cff4cd849f6"
+      },
+      "opponent": {
+        "policy_id": "scripted-battery-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_battery_v1.json",
+        "checkpoint_sha256": "775ee441d4037c41b50b24c890fa2e63163dc6687b062a27b87e81a651b8df29"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 803,
+        "wall_seconds": 20.036,
+        "started_at_utc": "2026-08-12T14:49:18.339911+00:00",
+        "finished_at_utc": "2026-08-12T14:49:38.375984+00:00",
+        "last_time_left_normalized": 0.961761474609375
+      },
+      "score": {
+        "team_a": 8,
+        "team_b": 92,
+        "model": 8,
+        "opponent": 92,
+        "model_minus_opponent": -84,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 1,
+        "side": "B",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "loss",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": -12.60000029206276,
+          "unit_1": -12.60000029206276,
+          "unit_2": -12.60000029206276,
+          "unit_3": -12.200000278651714,
+          "unit_4": -12.60000029206276,
+          "unit_5": 6.200000129640102,
+          "unit_6": 6.200000129640102,
+          "unit_7": 5.800000108778477,
+          "unit_8": 17.10000056028366,
+          "unit_9": 5.000000096857548
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 20,
+        "python_score_delta_cumulative": {
+          "team_a": -0.8399999999999999,
+          "team_b": 0.8399999999999999
+        },
+        "python_terminal_bonus": {
+          "team_a": -1.0,
+          "team_b": 1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "98c202ff-adbe-430e-97f8-4f33cabf52d9",
+      "pair_id": "ippo-vs-scripted-seed-7174",
+      "pair_index": 1,
+      "seed": 7174,
+      "policy_seeds": {
+        "model": 714175,
+        "opponent": 714176
+      },
+      "side_assignment": {
+        "model_team": 1,
+        "model_side": "B",
+        "opponent_team": 0,
+        "opponent_side": "A"
+      },
+      "model": {
+        "policy_id": "win-70-vs-scripted-candidate",
+        "kind": "ippo-checkpoint",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/ippo_vs_scripted_latest.pt",
+        "checkpoint_sha256": "cab99043d4f518063ea1f4d31d5bb77fdf8db89a052c596af77d3cff4cd849f6"
+      },
+      "opponent": {
+        "policy_id": "scripted-battery-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_battery_v1.json",
+        "checkpoint_sha256": "775ee441d4037c41b50b24c890fa2e63163dc6687b062a27b87e81a651b8df29"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 548,
+        "wall_seconds": 13.765,
+        "started_at_utc": "2026-08-12T14:49:38.420031+00:00",
+        "finished_at_utc": "2026-08-12T14:49:52.185510+00:00",
+        "last_time_left_normalized": 0.9739046096801758
+      },
+      "score": {
+        "team_a": 97,
+        "team_b": 0,
+        "model": 0,
+        "opponent": 97,
+        "model_minus_opponent": -97,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 0,
+        "side": "A",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "loss",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": 6.500000104308128,
+          "unit_1": 5.300000078976154,
+          "unit_2": 5.100000075995922,
+          "unit_3": 3.9000000432133675,
+          "unit_4": 6.1000001057982445,
+          "unit_5": -3.7000000402331352,
+          "unit_6": -3.7000000402331352,
+          "unit_7": -3.7000000402331352,
+          "unit_8": -3.7000000402331352,
+          "unit_9": -3.7000000402331352
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 19,
+        "python_score_delta_cumulative": {
+          "team_a": 0.9700000000000002,
+          "team_b": -0.9700000000000002
+        },
+        "python_terminal_bonus": {
+          "team_a": 1.0,
+          "team_b": -1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.009999999776482582,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "8f78925d-347b-4079-a522-5ba0fd750f67",
+      "pair_id": "ippo-vs-scripted-seed-7175",
+      "pair_index": 0,
+      "seed": 7175,
+      "policy_seeds": {
+        "model": 714176,
+        "opponent": 714177
+      },
+      "side_assignment": {
+        "model_team": 0,
+        "model_side": "A",
+        "opponent_team": 1,
+        "opponent_side": "B"
+      },
+      "model": {
+        "policy_id": "win-70-vs-scripted-candidate",
+        "kind": "ippo-checkpoint",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/ippo_vs_scripted_latest.pt",
+        "checkpoint_sha256": "cab99043d4f518063ea1f4d31d5bb77fdf8db89a052c596af77d3cff4cd849f6"
+      },
+      "opponent": {
+        "policy_id": "scripted-battery-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_battery_v1.json",
+        "checkpoint_sha256": "775ee441d4037c41b50b24c890fa2e63163dc6687b062a27b87e81a651b8df29"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 1008,
+        "wall_seconds": 24.96,
+        "started_at_utc": "2026-08-12T14:49:18.339548+00:00",
+        "finished_at_utc": "2026-08-12T14:49:43.299537+00:00",
+        "last_time_left_normalized": 0.9519993662834167
+      },
+      "score": {
+        "team_a": 0,
+        "team_b": 97,
+        "model": 0,
+        "opponent": 97,
+        "model_minus_opponent": -97,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 1,
+        "side": "B",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "loss",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": -4.700000040233135,
+          "unit_1": -4.700000040233135,
+          "unit_2": -4.700000040233135,
+          "unit_3": -4.700000040233135,
+          "unit_4": -4.700000040233135,
+          "unit_5": 8.100000381469727,
+          "unit_6": 8.500000387430191,
+          "unit_7": 8.100000396370888,
+          "unit_8": 7.600000329315662,
+          "unit_9": 7.7000003680586815
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 20,
+        "python_score_delta_cumulative": {
+          "team_a": -0.9700000000000001,
+          "team_b": 0.9700000000000001
+        },
+        "python_terminal_bonus": {
+          "team_a": -1.0,
+          "team_b": 1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "0e98333b-bb90-471a-9c03-b6930cd37306",
+      "pair_id": "ippo-vs-scripted-seed-7175",
+      "pair_index": 1,
+      "seed": 7175,
+      "policy_seeds": {
+        "model": 714176,
+        "opponent": 714177
+      },
+      "side_assignment": {
+        "model_team": 1,
+        "model_side": "B",
+        "opponent_team": 0,
+        "opponent_side": "A"
+      },
+      "model": {
+        "policy_id": "win-70-vs-scripted-candidate",
+        "kind": "ippo-checkpoint",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/ippo_vs_scripted_latest.pt",
+        "checkpoint_sha256": "cab99043d4f518063ea1f4d31d5bb77fdf8db89a052c596af77d3cff4cd849f6"
+      },
+      "opponent": {
+        "policy_id": "scripted-battery-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_battery_v1.json",
+        "checkpoint_sha256": "775ee441d4037c41b50b24c890fa2e63163dc6687b062a27b87e81a651b8df29"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 942,
+        "wall_seconds": 22.995,
+        "started_at_utc": "2026-08-12T14:49:43.345026+00:00",
+        "finished_at_utc": "2026-08-12T14:50:06.339954+00:00",
+        "last_time_left_normalized": 0.9551422595977783
+      },
+      "score": {
+        "team_a": 95,
+        "team_b": 0,
+        "model": 0,
+        "opponent": 95,
+        "model_minus_opponent": -95,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 0,
+        "side": "A",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "loss",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": 5.900000095367432,
+          "unit_1": 6.50000012665987,
+          "unit_2": 5.900000095367432,
+          "unit_3": 3.9000000432133675,
+          "unit_4": 5.300000086426735,
+          "unit_5": -3.7000000402331352,
+          "unit_6": -3.7000000402331352,
+          "unit_7": -3.7000000402331352,
+          "unit_8": -3.7000000402331352,
+          "unit_9": -3.7000000402331352
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 21,
+        "python_score_delta_cumulative": {
+          "team_a": 0.9500000000000002,
+          "team_b": -0.9500000000000002
+        },
+        "python_terminal_bonus": {
+          "team_a": 1.0,
+          "team_b": -1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      }
+    }
+  ],
+  "summary": {
+    "episodes": 10,
+    "wins": 0,
+    "draws": 0,
+    "losses": 10,
+    "win_rate": 0.0,
+    "mean_model_score_diff": -95.0,
+    "by_model_side": {
+      "A": {
+        "episodes": 5,
+        "wins": 0,
+        "draws": 0,
+        "losses": 5,
+        "win_rate": 0.0,
+        "mean_model_score_diff": -92.6
+      },
+      "B": {
+        "episodes": 5,
+        "wins": 0,
+        "draws": 0,
+        "losses": 5,
+        "win_rate": 0.0,
+        "mean_model_score_diff": -97.4
+      }
+    },
+    "by_physical_side": {
+      "A": {
+        "episodes": 10,
+        "wins": 5,
+        "draws": 0,
+        "losses": 5,
+        "win_rate": 0.5,
+        "mean_score_diff": 2.4
+      },
+      "B": {
+        "episodes": 10,
+        "wins": 5,
+        "draws": 0,
+        "losses": 5,
+        "win_rate": 0.5,
+        "mean_score_diff": -2.4
+      }
+    },
+    "side_bias_diagnostics": {
+      "model_side_win_rate_gap_a_minus_b": 0.0,
+      "physical_win_rate_gap_a_minus_b": 0.0,
+      "mean_score_diff_a_minus_b": 2.4,
+      "balanced_model_side_exposure": true,
+      "model_result_attribution_consistent": true,
+      "evaluator_side_attribution_passed": true
+    },
+    "winner_derived_from_unity_shaping": false
+  }
+}

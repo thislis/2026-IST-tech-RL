@@ -111,6 +111,7 @@ from .rollout import (
     EpisodicRolloutBuffer,
     ParallelRolloutCollector,
     RolloutBatch,
+    concatenate_rollout_batches,
     generalized_advantage_estimate,
 )
 from .ppo import (
@@ -122,6 +123,14 @@ from .ppo import (
     ppo_update,
 )
 from .training_reward import RewardMode, TeamTrainingReward, TrainingRewardConfig
+from .ippo_training import (
+    DeviceSelection,
+    OnlineImitationMetrics,
+    online_imitation_update,
+    passed_win_rate,
+    required_wins,
+    select_training_device,
+)
 from .frozen_opponent import FrozenScriptedOpponent
 from .behavior_cloning import (
     BCExperimentResult,
@@ -203,6 +212,7 @@ __all__ = [
     "PPO_DIAGNOSTIC_SCHEMA_VERSION",
     "PPODiagnostics",
     "RolloutBatch",
+    "concatenate_rollout_batches",
     "SemanticCNNEncoder",
     "SubmissionPolicy",
     "TeamModelInput",
@@ -272,6 +282,12 @@ __all__ = [
     "ScriptedTrajectoryDataset",
     "TeamTrainingReward",
     "TrainingRewardConfig",
+    "DeviceSelection",
+    "OnlineImitationMetrics",
+    "online_imitation_update",
+    "passed_win_rate",
+    "required_wins",
+    "select_training_device",
     "action_vector_to_index",
     "behavior_clone",
     "evaluate_behavior_cloning",
