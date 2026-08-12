@@ -11,7 +11,13 @@ from .coordination import (
     greedy_path_assignment,
 )
 from .navigation import AStarPlanner, PathNotFound, WaypointFollower, grid_line, path_cost
-from .policy import ActionPolicy, FixedDirectionPolicy, NoOpPolicy, RandomPolicy
+from .policy import (
+    ActionPolicy,
+    DeterministicCheckpointPolicy,
+    FixedDirectionPolicy,
+    NoOpPolicy,
+    RandomPolicy,
+)
 from .semantic_map import (
     DEFAULT_RESOLUTION_SCALE,
     DecodedSemanticMap,
@@ -115,6 +121,27 @@ from .ppo import (
     explained_variance,
     ppo_update,
 )
+from .training_reward import RewardMode, TeamTrainingReward, TrainingRewardConfig
+from .frozen_opponent import FrozenScriptedOpponent
+from .behavior_cloning import (
+    BCExperimentResult,
+    BCMetrics,
+    ScriptedTrajectoryDataset,
+    action_vector_to_index,
+    behavior_clone,
+    evaluate_behavior_cloning,
+    run_bc_warm_start_experiment,
+    write_bc_experiment,
+)
+from .experiment_registry import (
+    EXPERIMENT_ENTRY_SCHEMA_VERSION,
+    EXPERIMENT_REGISTRY_SCHEMA_VERSION,
+    ExperimentIdentity,
+    canonical_config_sha256,
+    read_registry,
+    register_checkpoint,
+    validate_registry_entry,
+)
 from .observation import (
     GRAPHIC_CHANNEL_NAMES,
     VECTOR_SIZE,
@@ -146,6 +173,7 @@ __all__ = [
     "DEFAULT_ABSORPTION_INTERVAL_SECONDS",
     "DEFAULT_EPISODE_SECONDS",
     "DecodedSemanticMap",
+    "DeterministicCheckpointPolicy",
     "DangerMap",
     "FixedDirectionPolicy",
     "EntityVectorEncoder",
@@ -237,4 +265,23 @@ __all__ = [
     "build_danger_map",
     "choose_strategy_mode",
     "weighted_path_cost",
+    "BCExperimentResult",
+    "BCMetrics",
+    "FrozenScriptedOpponent",
+    "RewardMode",
+    "ScriptedTrajectoryDataset",
+    "TeamTrainingReward",
+    "TrainingRewardConfig",
+    "action_vector_to_index",
+    "behavior_clone",
+    "evaluate_behavior_cloning",
+    "run_bc_warm_start_experiment",
+    "write_bc_experiment",
+    "EXPERIMENT_ENTRY_SCHEMA_VERSION",
+    "EXPERIMENT_REGISTRY_SCHEMA_VERSION",
+    "ExperimentIdentity",
+    "canonical_config_sha256",
+    "read_registry",
+    "register_checkpoint",
+    "validate_registry_entry",
 ]

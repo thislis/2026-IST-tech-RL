@@ -119,3 +119,36 @@ class FixedDirectionPolicy:
             agent: self.direction.copy()
             for agent in _require_agents(observations, agents)
         }
+
+
+class DeterministicCheckpointPolicy:
+    """Stateless canonical-team adapter for a registered IPPO checkpoint."""
+
+    def __init__(
+        self,
+        checkpoint: str | Path,
+        *,
+        team: int,
+        seed: int = 0,
+        device: str = "cpu",
+    ) -> None:
+        from .model_contract import CanonicalTeamModel, load_checkpoint
+
+        model, payload = load_checkpoint(checkpoint, device=device)
+        self._adapter = CanonicalTeamModel(model, team=team, device=device)
+        self.checkpoint_payload = payload
+        self.team = team
+        self.seed = seed
+
+    def act(
+        self,
+        observations: Mapping[str, Mapping[str, np.ndarray]],
+        agents: Sequence[str],
+    ) -> dict[str, np.ndarray]:
+        from .batching import team_agents
+
+        expected = team_agents(self.team)
+        if tuple(agents) != expected:
+            raise ValueError(f"checkpoint policy expected canonical agents {expected}")
+        selected = {agent: observations[agent] for agent in expected}
+        return self._adapter.act(selected)

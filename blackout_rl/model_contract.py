@@ -114,6 +114,7 @@ def checkpoint_payload(
     training_seed: int,
     optimizer: torch.optim.Optimizer | None = None,
     source: Mapping[str, str] | None = None,
+    experiment: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build an upstream-loader-compatible, versioned training checkpoint."""
     payload: dict[str, Any] = {
@@ -136,6 +137,8 @@ def checkpoint_payload(
         },
         "source": dict(source or {}),
     }
+    if experiment is not None:
+        payload["experiment"] = dict(experiment)
     if optimizer is not None:
         payload["optimizer_state"] = optimizer.state_dict()
     validate_checkpoint(payload)
@@ -163,6 +166,21 @@ def validate_checkpoint(payload: Mapping[str, Any]) -> None:
         raise ValueError("checkpoint team batch size does not match runtime contract")
     if payload["action_contract"].get("distribution") != "categorical_9":
         raise ValueError("checkpoint action distribution does not match runtime contract")
+    if "experiment" in payload:
+        experiment = payload["experiment"]
+        required_experiment = {"run_id", "config", "seed", "git_sha", "opponent_id"}
+        if not isinstance(experiment, Mapping):
+            raise TypeError("checkpoint experiment must be a mapping")
+        missing_experiment = required_experiment - set(experiment)
+        if missing_experiment:
+            raise ValueError(
+                f"checkpoint experiment missing keys: {sorted(missing_experiment)}"
+            )
+        git_sha = experiment["git_sha"]
+        if not isinstance(git_sha, str) or len(git_sha) != 40:
+            raise ValueError("checkpoint experiment git_sha must have 40 characters")
+        if int(experiment["seed"]) != int(payload["training"]["seed"]):
+            raise ValueError("checkpoint experiment and training seeds differ")
 
 
 def save_checkpoint(path: str | Path, payload: Mapping[str, Any]) -> None:
