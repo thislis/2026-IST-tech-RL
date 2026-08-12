@@ -1,0 +1,1264 @@
+{
+  "schema_version": "blackout.paired_series.v1",
+  "series_id": "ec79dc19-e603-4ebc-a4bc-4db559ca82bb",
+  "created_at_utc": "2026-08-12T04:24:39.219048+00:00",
+  "series_config": {
+    "seeds": [
+      5141,
+      5142,
+      5143,
+      5144,
+      5145
+    ],
+    "held_out": true,
+    "side_swap": true,
+    "variant": "special",
+    "special_items_enabled": true,
+    "model_policy_seed_base": 514001,
+    "opponent_policy_seed_base": 514002,
+    "time_scale": 50.0,
+    "max_steps": 22000,
+    "workers": 5
+  },
+  "episodes": [
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "4edf0e82-3111-4045-9eb2-b1787169a501",
+      "pair_id": "special-seed-5141",
+      "pair_index": 0,
+      "seed": 5141,
+      "policy_seeds": {
+        "model": 519142,
+        "opponent": 519143
+      },
+      "side_assignment": {
+        "model_team": 0,
+        "model_side": "A",
+        "opponent_team": 1,
+        "opponent_side": "B"
+      },
+      "model": {
+        "policy_id": "scripted-special-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_special_v1.json",
+        "checkpoint_sha256": "566d07e270e7e2334a6dde2993944f76030ea018817ead06bff2115a5c732598"
+      },
+      "opponent": {
+        "policy_id": "random-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/random_v1.json",
+        "checkpoint_sha256": "08326e77ea3ed37e18948e5098de228157ed430e490c2cd4717a11fa3260c6d1"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 932,
+        "wall_seconds": 19.516,
+        "started_at_utc": "2026-08-12T04:23:50.476915+00:00",
+        "finished_at_utc": "2026-08-12T04:24:09.993178+00:00",
+        "last_time_left_normalized": 0.9556185007095337
+      },
+      "score": {
+        "team_a": 92,
+        "team_b": 0,
+        "model": 92,
+        "opponent": 0,
+        "model_minus_opponent": 92,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 0,
+        "side": "A",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "win",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": 7.400000169873238,
+          "unit_1": 6.8000001311302185,
+          "unit_2": 6.80000014603138,
+          "unit_3": 4.700000084936619,
+          "unit_4": 6.80000014603138,
+          "unit_5": -4.40000007301569,
+          "unit_6": -4.40000007301569,
+          "unit_7": -4.40000007301569,
+          "unit_8": -4.200000070035458,
+          "unit_9": -4.40000007301569
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 25,
+        "python_score_delta_cumulative": {
+          "team_a": 0.9200000000000002,
+          "team_b": -0.9200000000000002
+        },
+        "python_terminal_bonus": {
+          "team_a": 1.0,
+          "team_b": -1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      },
+      "scripted_diagnostics": {
+        "variant": "special",
+        "special_items_enabled": true,
+        "event_counts": {
+          "strategy_mode": 15,
+          "battery_assigned": 31,
+          "fsm_transition": 129,
+          "shrine_assigned": 2,
+          "class_transform": 2,
+          "battery_pickup": 28,
+          "storage_assigned": 33,
+          "battery_deposit": 26,
+          "patrol_assigned": 4,
+          "patrol_waypoint_reached": 3,
+          "special_item_assigned": 2,
+          "enemy_chase": 1,
+          "evade_started": 1,
+          "evade_target": 3,
+          "evade_finished": 1,
+          "special_item_pickup": 1,
+          "storage_retarget": 4,
+          "special_item_deposit": 1,
+          "stuck_replan": 1
+        }
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "fa042d60-2cff-4953-bf7a-5baaad82900b",
+      "pair_id": "special-seed-5141",
+      "pair_index": 1,
+      "seed": 5141,
+      "policy_seeds": {
+        "model": 519142,
+        "opponent": 519143
+      },
+      "side_assignment": {
+        "model_team": 1,
+        "model_side": "B",
+        "opponent_team": 0,
+        "opponent_side": "A"
+      },
+      "model": {
+        "policy_id": "scripted-special-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_special_v1.json",
+        "checkpoint_sha256": "566d07e270e7e2334a6dde2993944f76030ea018817ead06bff2115a5c732598"
+      },
+      "opponent": {
+        "policy_id": "random-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/random_v1.json",
+        "checkpoint_sha256": "08326e77ea3ed37e18948e5098de228157ed430e490c2cd4717a11fa3260c6d1"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 711,
+        "wall_seconds": 14.98,
+        "started_at_utc": "2026-08-12T04:24:10.033490+00:00",
+        "finished_at_utc": "2026-08-12T04:24:25.013828+00:00",
+        "last_time_left_normalized": 0.9661425352096558
+      },
+      "score": {
+        "team_a": 0,
+        "team_b": 98,
+        "model": 98,
+        "opponent": 0,
+        "model_minus_opponent": 98,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 1,
+        "side": "B",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "win",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": -3.8000000417232513,
+          "unit_1": -3.8000000417232513,
+          "unit_2": -3.8000000417232513,
+          "unit_3": -3.8000000417232513,
+          "unit_4": -3.8000000417232513,
+          "unit_5": 6.400000125169754,
+          "unit_6": 6.200000114738941,
+          "unit_7": 5.500000081956387,
+          "unit_8": 4.000000044703484,
+          "unit_9": 6.20000009983778
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 22,
+        "python_score_delta_cumulative": {
+          "team_a": -0.9800000000000004,
+          "team_b": 0.9800000000000004
+        },
+        "python_terminal_bonus": {
+          "team_a": -1.0,
+          "team_b": 1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      },
+      "scripted_diagnostics": {
+        "variant": "special",
+        "special_items_enabled": true,
+        "event_counts": {
+          "strategy_mode": 10,
+          "battery_assigned": 27,
+          "fsm_transition": 107,
+          "shrine_assigned": 2,
+          "class_transform": 2,
+          "battery_pickup": 23,
+          "storage_assigned": 26,
+          "battery_deposit": 22,
+          "patrol_assigned": 6,
+          "patrol_waypoint_reached": 5,
+          "special_item_assigned": 1,
+          "special_item_pickup": 1,
+          "storage_retarget": 2,
+          "evade_started": 2,
+          "evade_target": 5,
+          "evade_finished": 1
+        }
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "54f57546-c462-47c2-b91d-df6815df01ff",
+      "pair_id": "special-seed-5142",
+      "pair_index": 0,
+      "seed": 5142,
+      "policy_seeds": {
+        "model": 519143,
+        "opponent": 519144
+      },
+      "side_assignment": {
+        "model_team": 0,
+        "model_side": "A",
+        "opponent_team": 1,
+        "opponent_side": "B"
+      },
+      "model": {
+        "policy_id": "scripted-special-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_special_v1.json",
+        "checkpoint_sha256": "566d07e270e7e2334a6dde2993944f76030ea018817ead06bff2115a5c732598"
+      },
+      "opponent": {
+        "policy_id": "random-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/random_v1.json",
+        "checkpoint_sha256": "08326e77ea3ed37e18948e5098de228157ed430e490c2cd4717a11fa3260c6d1"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 1007,
+        "wall_seconds": 20.8,
+        "started_at_utc": "2026-08-12T04:23:50.460525+00:00",
+        "finished_at_utc": "2026-08-12T04:24:11.260522+00:00",
+        "last_time_left_normalized": 0.9520469903945923
+      },
+      "score": {
+        "team_a": 98,
+        "team_b": 0,
+        "model": 98,
+        "opponent": 0,
+        "model_minus_opponent": 98,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 0,
+        "side": "A",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "win",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": 8.400000341236591,
+          "unit_1": 7.800000324845314,
+          "unit_2": 7.800000324845314,
+          "unit_3": 6.200000278651714,
+          "unit_4": 8.200000330805779,
+          "unit_5": -3.500000037252903,
+          "unit_6": -3.500000037252903,
+          "unit_7": -3.500000037252903,
+          "unit_8": -3.500000037252903,
+          "unit_9": -3.500000037252903
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 19,
+        "python_score_delta_cumulative": {
+          "team_a": 0.9800000000000002,
+          "team_b": -0.9800000000000002
+        },
+        "python_terminal_bonus": {
+          "team_a": 1.0,
+          "team_b": -1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      },
+      "scripted_diagnostics": {
+        "variant": "special",
+        "special_items_enabled": true,
+        "event_counts": {
+          "strategy_mode": 20,
+          "battery_assigned": 24,
+          "fsm_transition": 98,
+          "shrine_assigned": 2,
+          "class_transform": 2,
+          "battery_pickup": 21,
+          "storage_assigned": 22,
+          "battery_deposit": 19,
+          "patrol_assigned": 7,
+          "patrol_waypoint_reached": 6,
+          "evade_started": 1,
+          "evade_target": 3,
+          "evade_finished": 1,
+          "special_item_assigned": 2,
+          "special_item_pickup": 1,
+          "special_item_deposit": 1
+        }
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "96b32f85-3067-4681-becc-b83820616f35",
+      "pair_id": "special-seed-5142",
+      "pair_index": 1,
+      "seed": 5142,
+      "policy_seeds": {
+        "model": 519143,
+        "opponent": 519144
+      },
+      "side_assignment": {
+        "model_team": 1,
+        "model_side": "B",
+        "opponent_team": 0,
+        "opponent_side": "A"
+      },
+      "model": {
+        "policy_id": "scripted-special-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_special_v1.json",
+        "checkpoint_sha256": "566d07e270e7e2334a6dde2993944f76030ea018817ead06bff2115a5c732598"
+      },
+      "opponent": {
+        "policy_id": "random-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/random_v1.json",
+        "checkpoint_sha256": "08326e77ea3ed37e18948e5098de228157ed430e490c2cd4717a11fa3260c6d1"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 1322,
+        "wall_seconds": 27.189,
+        "started_at_utc": "2026-08-12T04:24:11.300497+00:00",
+        "finished_at_utc": "2026-08-12T04:24:38.489571+00:00",
+        "last_time_left_normalized": 0.9370466470718384
+      },
+      "score": {
+        "team_a": 0,
+        "team_b": 97,
+        "model": 97,
+        "opponent": 0,
+        "model_minus_opponent": 97,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 1,
+        "side": "B",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "win",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": -3.8000000417232513,
+          "unit_1": -3.8000000417232513,
+          "unit_2": -3.8000000417232513,
+          "unit_3": -3.8000000417232513,
+          "unit_4": -3.8000000417232513,
+          "unit_5": 8.100000277161598,
+          "unit_6": 7.300000257790089,
+          "unit_7": 8.900000296533108,
+          "unit_8": 5.700000211596489,
+          "unit_9": 7.100000262260437
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 22,
+        "python_score_delta_cumulative": {
+          "team_a": -0.9700000000000003,
+          "team_b": 0.9700000000000003
+        },
+        "python_terminal_bonus": {
+          "team_a": -1.0,
+          "team_b": 1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      },
+      "scripted_diagnostics": {
+        "variant": "special",
+        "special_items_enabled": true,
+        "event_counts": {
+          "strategy_mode": 25,
+          "battery_assigned": 31,
+          "fsm_transition": 127,
+          "shrine_assigned": 2,
+          "class_transform": 2,
+          "battery_pickup": 24,
+          "storage_assigned": 28,
+          "battery_deposit": 22,
+          "patrol_assigned": 6,
+          "patrol_waypoint_reached": 5,
+          "storage_retarget": 3,
+          "special_item_assigned": 2,
+          "special_item_pickup": 1,
+          "special_item_deposit": 1,
+          "enemy_chase": 1,
+          "evade_started": 3,
+          "evade_target": 9,
+          "evade_finished": 3,
+          "stuck_replan": 4
+        }
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "6d692a3b-4e56-46e5-ad23-aea3574084d9",
+      "pair_id": "special-seed-5143",
+      "pair_index": 0,
+      "seed": 5143,
+      "policy_seeds": {
+        "model": 519144,
+        "opponent": 519145
+      },
+      "side_assignment": {
+        "model_team": 0,
+        "model_side": "A",
+        "opponent_team": 1,
+        "opponent_side": "B"
+      },
+      "model": {
+        "policy_id": "scripted-special-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_special_v1.json",
+        "checkpoint_sha256": "566d07e270e7e2334a6dde2993944f76030ea018817ead06bff2115a5c732598"
+      },
+      "opponent": {
+        "policy_id": "random-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/random_v1.json",
+        "checkpoint_sha256": "08326e77ea3ed37e18948e5098de228157ed430e490c2cd4717a11fa3260c6d1"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 1106,
+        "wall_seconds": 23.081,
+        "started_at_utc": "2026-08-12T04:23:50.477841+00:00",
+        "finished_at_utc": "2026-08-12T04:24:13.559252+00:00",
+        "last_time_left_normalized": 0.9473325610160828
+      },
+      "score": {
+        "team_a": 95,
+        "team_b": 0,
+        "model": 95,
+        "opponent": 0,
+        "model_minus_opponent": 95,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 0,
+        "side": "A",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "win",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": 9.200000330805779,
+          "unit_1": 8.200000308454037,
+          "unit_2": 8.60000029951334,
+          "unit_3": 6.200000233948231,
+          "unit_4": 7.600000262260437,
+          "unit_5": -3.7000000402331352,
+          "unit_6": -3.7000000402331352,
+          "unit_7": -3.7000000402331352,
+          "unit_8": -3.7000000402331352,
+          "unit_9": -3.7000000402331352
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 22,
+        "python_score_delta_cumulative": {
+          "team_a": 0.9500000000000004,
+          "team_b": -0.9500000000000004
+        },
+        "python_terminal_bonus": {
+          "team_a": 1.0,
+          "team_b": -1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      },
+      "scripted_diagnostics": {
+        "variant": "special",
+        "special_items_enabled": true,
+        "event_counts": {
+          "strategy_mode": 20,
+          "battery_assigned": 28,
+          "fsm_transition": 109,
+          "shrine_assigned": 2,
+          "class_transform": 2,
+          "battery_pickup": 25,
+          "storage_assigned": 27,
+          "battery_deposit": 22,
+          "patrol_assigned": 12,
+          "patrol_waypoint_reached": 11,
+          "special_item_assigned": 1,
+          "special_item_pickup": 1,
+          "special_item_deposit": 1,
+          "storage_retarget": 1
+        }
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "49b4abf9-8bab-4e43-a05c-cafed8db246a",
+      "pair_id": "special-seed-5143",
+      "pair_index": 1,
+      "seed": 5143,
+      "policy_seeds": {
+        "model": 519144,
+        "opponent": 519145
+      },
+      "side_assignment": {
+        "model_team": 1,
+        "model_side": "B",
+        "opponent_team": 0,
+        "opponent_side": "A"
+      },
+      "model": {
+        "policy_id": "scripted-special-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_special_v1.json",
+        "checkpoint_sha256": "566d07e270e7e2334a6dde2993944f76030ea018817ead06bff2115a5c732598"
+      },
+      "opponent": {
+        "policy_id": "random-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/random_v1.json",
+        "checkpoint_sha256": "08326e77ea3ed37e18948e5098de228157ed430e490c2cd4717a11fa3260c6d1"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 634,
+        "wall_seconds": 13.292,
+        "started_at_utc": "2026-08-12T04:24:13.598751+00:00",
+        "finished_at_utc": "2026-08-12T04:24:26.891294+00:00",
+        "last_time_left_normalized": 0.9698092937469482
+      },
+      "score": {
+        "team_a": 0,
+        "team_b": 98,
+        "model": 98,
+        "opponent": 0,
+        "model_minus_opponent": 98,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 1,
+        "side": "B",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "win",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": -3.400000035762787,
+          "unit_1": -3.400000035762787,
+          "unit_2": -3.400000035762787,
+          "unit_3": -3.400000035762787,
+          "unit_4": -3.400000035762787,
+          "unit_5": 6.200000114738941,
+          "unit_6": 4.800000071525574,
+          "unit_7": 5.000000074505806,
+          "unit_8": 3.400000035762787,
+          "unit_9": 4.800000064074993
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 17,
+        "python_score_delta_cumulative": {
+          "team_a": -0.98,
+          "team_b": 0.98
+        },
+        "python_terminal_bonus": {
+          "team_a": -1.0,
+          "team_b": 1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      },
+      "scripted_diagnostics": {
+        "variant": "special",
+        "special_items_enabled": true,
+        "event_counts": {
+          "strategy_mode": 10,
+          "battery_assigned": 21,
+          "fsm_transition": 81,
+          "shrine_assigned": 2,
+          "class_transform": 2,
+          "battery_pickup": 19,
+          "storage_assigned": 20,
+          "battery_deposit": 17,
+          "patrol_assigned": 7,
+          "patrol_waypoint_reached": 6,
+          "special_item_assigned": 1,
+          "storage_retarget": 1
+        }
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "c4028e5b-92ad-476d-83aa-7eb0c8df93c7",
+      "pair_id": "special-seed-5144",
+      "pair_index": 0,
+      "seed": 5144,
+      "policy_seeds": {
+        "model": 519145,
+        "opponent": 519146
+      },
+      "side_assignment": {
+        "model_team": 0,
+        "model_side": "A",
+        "opponent_team": 1,
+        "opponent_side": "B"
+      },
+      "model": {
+        "policy_id": "scripted-special-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_special_v1.json",
+        "checkpoint_sha256": "566d07e270e7e2334a6dde2993944f76030ea018817ead06bff2115a5c732598"
+      },
+      "opponent": {
+        "policy_id": "random-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/random_v1.json",
+        "checkpoint_sha256": "08326e77ea3ed37e18948e5098de228157ed430e490c2cd4717a11fa3260c6d1"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 863,
+        "wall_seconds": 18.159,
+        "started_at_utc": "2026-08-12T04:23:50.489721+00:00",
+        "finished_at_utc": "2026-08-12T04:24:08.648924+00:00",
+        "last_time_left_normalized": 0.9589042663574219
+      },
+      "score": {
+        "team_a": 92,
+        "team_b": 0,
+        "model": 92,
+        "opponent": 0,
+        "model_minus_opponent": 92,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 0,
+        "side": "A",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "win",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": 7.500000171363354,
+          "unit_1": 7.3000001683831215,
+          "unit_2": 6.700000144541264,
+          "unit_3": 4.300000071525574,
+          "unit_4": 5.900000117719173,
+          "unit_5": -4.1000000685453415,
+          "unit_6": -4.1000000685453415,
+          "unit_7": -4.1000000685453415,
+          "unit_8": -3.9000000655651093,
+          "unit_9": -4.1000000685453415
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 26,
+        "python_score_delta_cumulative": {
+          "team_a": 0.9200000000000004,
+          "team_b": -0.9200000000000004
+        },
+        "python_terminal_bonus": {
+          "team_a": 1.0,
+          "team_b": -1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      },
+      "scripted_diagnostics": {
+        "variant": "special",
+        "special_items_enabled": true,
+        "event_counts": {
+          "strategy_mode": 15,
+          "battery_assigned": 30,
+          "fsm_transition": 121,
+          "shrine_assigned": 2,
+          "class_transform": 2,
+          "battery_pickup": 29,
+          "storage_assigned": 32,
+          "battery_deposit": 26,
+          "storage_retarget": 3,
+          "patrol_assigned": 9,
+          "patrol_waypoint_reached": 8,
+          "special_item_assigned": 2
+        }
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "cd6c6d36-cfe0-46a4-b7cc-957f5fafb058",
+      "pair_id": "special-seed-5144",
+      "pair_index": 1,
+      "seed": 5144,
+      "policy_seeds": {
+        "model": 519145,
+        "opponent": 519146
+      },
+      "side_assignment": {
+        "model_team": 1,
+        "model_side": "B",
+        "opponent_team": 0,
+        "opponent_side": "A"
+      },
+      "model": {
+        "policy_id": "scripted-special-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_special_v1.json",
+        "checkpoint_sha256": "566d07e270e7e2334a6dde2993944f76030ea018817ead06bff2115a5c732598"
+      },
+      "opponent": {
+        "policy_id": "random-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/random_v1.json",
+        "checkpoint_sha256": "08326e77ea3ed37e18948e5098de228157ed430e490c2cd4717a11fa3260c6d1"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 738,
+        "wall_seconds": 15.702,
+        "started_at_utc": "2026-08-12T04:24:08.689283+00:00",
+        "finished_at_utc": "2026-08-12T04:24:24.391793+00:00",
+        "last_time_left_normalized": 0.9648568034172058
+      },
+      "score": {
+        "team_a": 0,
+        "team_b": 99,
+        "model": 99,
+        "opponent": 0,
+        "model_minus_opponent": 99,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 1,
+        "side": "B",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "win",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": -4.000000044703484,
+          "unit_1": -4.000000044703484,
+          "unit_2": -4.000000044703484,
+          "unit_3": -3.8000000417232513,
+          "unit_4": -4.000000044703484,
+          "unit_5": 6.8000001311302185,
+          "unit_6": 6.400000117719173,
+          "unit_7": 5.800000101327896,
+          "unit_8": 4.200000047683716,
+          "unit_9": 6.600000098347664
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 23,
+        "python_score_delta_cumulative": {
+          "team_a": -0.9900000000000002,
+          "team_b": 0.9900000000000002
+        },
+        "python_terminal_bonus": {
+          "team_a": -1.0,
+          "team_b": 1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      },
+      "scripted_diagnostics": {
+        "variant": "special",
+        "special_items_enabled": true,
+        "event_counts": {
+          "strategy_mode": 10,
+          "battery_assigned": 29,
+          "fsm_transition": 117,
+          "shrine_assigned": 2,
+          "class_transform": 2,
+          "battery_pickup": 24,
+          "storage_assigned": 33,
+          "battery_deposit": 23,
+          "patrol_assigned": 10,
+          "patrol_waypoint_reached": 9,
+          "storage_retarget": 8,
+          "special_item_assigned": 3,
+          "special_item_deposit": 1,
+          "special_item_pickup": 1
+        }
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "64f9dad4-e281-4135-8298-c52b001a9ae7",
+      "pair_id": "special-seed-5145",
+      "pair_index": 0,
+      "seed": 5145,
+      "policy_seeds": {
+        "model": 519146,
+        "opponent": 519147
+      },
+      "side_assignment": {
+        "model_team": 0,
+        "model_side": "A",
+        "opponent_team": 1,
+        "opponent_side": "B"
+      },
+      "model": {
+        "policy_id": "scripted-special-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_special_v1.json",
+        "checkpoint_sha256": "566d07e270e7e2334a6dde2993944f76030ea018817ead06bff2115a5c732598"
+      },
+      "opponent": {
+        "policy_id": "random-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/random_v1.json",
+        "checkpoint_sha256": "08326e77ea3ed37e18948e5098de228157ed430e490c2cd4717a11fa3260c6d1"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 1089,
+        "wall_seconds": 23.638,
+        "started_at_utc": "2026-08-12T04:23:50.476883+00:00",
+        "finished_at_utc": "2026-08-12T04:24:14.114950+00:00",
+        "last_time_left_normalized": 0.9481421113014221
+      },
+      "score": {
+        "team_a": 93,
+        "team_b": 0,
+        "model": 93,
+        "opponent": 0,
+        "model_minus_opponent": 93,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 0,
+        "side": "A",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "win",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": 8.000000312924385,
+          "unit_1": 9.000000335276127,
+          "unit_2": 8.200000315904617,
+          "unit_3": 6.2000002562999725,
+          "unit_4": 7.200000271201134,
+          "unit_5": -3.700000062584877,
+          "unit_6": -3.700000062584877,
+          "unit_7": -3.700000062584877,
+          "unit_8": -3.700000062584877,
+          "unit_9": -3.700000062584877
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 20,
+        "python_score_delta_cumulative": {
+          "team_a": 0.9300000000000003,
+          "team_b": -0.9300000000000003
+        },
+        "python_terminal_bonus": {
+          "team_a": 1.0,
+          "team_b": -1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      },
+      "scripted_diagnostics": {
+        "variant": "special",
+        "special_items_enabled": true,
+        "event_counts": {
+          "strategy_mode": 20,
+          "battery_assigned": 30,
+          "fsm_transition": 127,
+          "shrine_assigned": 2,
+          "class_transform": 2,
+          "battery_pickup": 20,
+          "storage_assigned": 26,
+          "battery_deposit": 19,
+          "patrol_assigned": 9,
+          "storage_retarget": 5,
+          "patrol_waypoint_reached": 8,
+          "special_item_assigned": 3,
+          "evade_started": 6,
+          "evade_target": 21,
+          "evade_finished": 5,
+          "special_item_pickup": 1,
+          "special_item_deposit": 1
+        }
+      }
+    },
+    {
+      "schema_version": "blackout.episode.v1",
+      "episode_id": "a64e6f68-7aa6-4454-bd34-c1b9d0503db7",
+      "pair_id": "special-seed-5145",
+      "pair_index": 1,
+      "seed": 5145,
+      "policy_seeds": {
+        "model": 519146,
+        "opponent": 519147
+      },
+      "side_assignment": {
+        "model_team": 1,
+        "model_side": "B",
+        "opponent_team": 0,
+        "opponent_side": "A"
+      },
+      "model": {
+        "policy_id": "scripted-special-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/scripted_special_v1.json",
+        "checkpoint_sha256": "566d07e270e7e2334a6dde2993944f76030ea018817ead06bff2115a5c732598"
+      },
+      "opponent": {
+        "policy_id": "random-v1",
+        "kind": "policy-config",
+        "checkpoint_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/configs/policies/random_v1.json",
+        "checkpoint_sha256": "08326e77ea3ed37e18948e5098de228157ed430e490c2cd4717a11fa3260c6d1"
+      },
+      "environment": {
+        "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+        "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+        "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+        "adapter": "blackout_rl.env.ContractBlackOutEnv"
+      },
+      "episode_length": {
+        "steps": 750,
+        "wall_seconds": 15.594,
+        "started_at_utc": "2026-08-12T04:24:14.166367+00:00",
+        "finished_at_utc": "2026-08-12T04:24:29.760522+00:00",
+        "last_time_left_normalized": 0.9642853736877441
+      },
+      "score": {
+        "team_a": 0,
+        "team_b": 98,
+        "model": 98,
+        "opponent": 0,
+        "model_minus_opponent": 98,
+        "source": "last_nonterminal_info"
+      },
+      "winner": {
+        "team": 1,
+        "side": "B",
+        "source": "terminal_info.winner"
+      },
+      "model_result": "win",
+      "rewards": {
+        "winner_source": "terminal_info.winner",
+        "unity_shaping_used_for_winner": false,
+        "unity_shaping_sum_by_agent": {
+          "unit_0": -3.400000035762787,
+          "unit_1": -3.400000035762787,
+          "unit_2": -3.400000035762787,
+          "unit_3": -3.400000035762787,
+          "unit_4": -3.400000035762787,
+          "unit_5": 5.200000070035458,
+          "unit_6": 5.000000089406967,
+          "unit_7": 5.40000007301569,
+          "unit_8": 3.600000038743019,
+          "unit_9": 5.200000092387199
+        },
+        "score_delta_formula": "team=(delta_own-delta_opponent)/100",
+        "score_events": 17,
+        "python_score_delta_cumulative": {
+          "team_a": -0.9800000000000004,
+          "team_b": 0.9800000000000004
+        },
+        "python_terminal_bonus": {
+          "team_a": -1.0,
+          "team_b": 1.0
+        }
+      },
+      "termination": {
+        "kind": "target_score_or_time_limit",
+        "all_agents_terminated": true,
+        "truncated": false,
+        "terminal_frame_scores_normalized": {
+          "team_a": 0.0,
+          "team_b": 0.0
+        },
+        "score_is_preterminal": true,
+        "score_limitation": "Unity resets score scalars on the terminal frame; a target-score-ending deposit may not be represented in the last observable score."
+      },
+      "scripted_diagnostics": {
+        "variant": "special",
+        "special_items_enabled": true,
+        "event_counts": {
+          "strategy_mode": 10,
+          "battery_assigned": 22,
+          "fsm_transition": 87,
+          "shrine_assigned": 2,
+          "class_transform": 2,
+          "battery_pickup": 19,
+          "storage_assigned": 25,
+          "battery_deposit": 17,
+          "patrol_assigned": 6,
+          "patrol_waypoint_reached": 5,
+          "storage_retarget": 6,
+          "evade_started": 1,
+          "evade_target": 2,
+          "evade_finished": 1,
+          "special_item_assigned": 1,
+          "enemy_chase": 1
+        }
+      }
+    }
+  ],
+  "summary": {
+    "episodes": 10,
+    "wins": 10,
+    "draws": 0,
+    "losses": 0,
+    "win_rate": 1.0,
+    "mean_model_score_diff": 96.0,
+    "by_model_side": {
+      "A": {
+        "episodes": 5,
+        "wins": 5,
+        "draws": 0,
+        "losses": 0,
+        "win_rate": 1.0,
+        "mean_model_score_diff": 94.0
+      },
+      "B": {
+        "episodes": 5,
+        "wins": 5,
+        "draws": 0,
+        "losses": 0,
+        "win_rate": 1.0,
+        "mean_model_score_diff": 98.0
+      }
+    },
+    "by_physical_side": {
+      "A": {
+        "episodes": 10,
+        "wins": 5,
+        "draws": 0,
+        "losses": 5,
+        "win_rate": 0.5,
+        "mean_score_diff": -2.0
+      },
+      "B": {
+        "episodes": 10,
+        "wins": 5,
+        "draws": 0,
+        "losses": 5,
+        "win_rate": 0.5,
+        "mean_score_diff": 2.0
+      }
+    },
+    "side_bias_diagnostics": {
+      "model_side_win_rate_gap_a_minus_b": 0.0,
+      "physical_win_rate_gap_a_minus_b": 0.0,
+      "mean_score_diff_a_minus_b": -2.0,
+      "balanced_model_side_exposure": true,
+      "model_result_attribution_consistent": true,
+      "evaluator_side_attribution_passed": true
+    },
+    "winner_derived_from_unity_shaping": false,
+    "scripted_event_totals": {
+      "strategy_mode": 155,
+      "battery_assigned": 273,
+      "fsm_transition": 1103,
+      "shrine_assigned": 20,
+      "class_transform": 20,
+      "battery_pickup": 232,
+      "storage_assigned": 272,
+      "battery_deposit": 213,
+      "patrol_assigned": 76,
+      "patrol_waypoint_reached": 66,
+      "special_item_assigned": 18,
+      "enemy_chase": 3,
+      "evade_started": 14,
+      "evade_target": 43,
+      "evade_finished": 12,
+      "special_item_pickup": 7,
+      "storage_retarget": 33,
+      "special_item_deposit": 6,
+      "stuck_replan": 5
+    }
+  }
+}

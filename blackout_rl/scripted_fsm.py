@@ -34,6 +34,12 @@ COLLECTOR_CLASS_ID = 0
 HUNTER_CLASS_ID = 1
 CARRIER_CLASS_ID = 2
 BATTERY_ITEM_ID = 1
+SPECIAL_ITEM_CHANNELS = (
+    ("buff_speed", 2),
+    ("debuff_speed", 3),
+    ("buff_size", 4),
+    ("debuff_size", 5),
+)
 
 HUNTER_SHRINE_CELLS = (
     GridCell(11, 11),
@@ -94,6 +100,7 @@ class _Runtime:
     resume_phase: CarrierPhase | None = None
     delivery_wait_steps: int = 0
     failed_storage_cells: set[GridCell] = field(default_factory=set)
+    expected_item_id: int = BATTERY_ITEM_ID
 
 
 def carrier_shrine_cell(team: int) -> GridCell:
@@ -114,21 +121,22 @@ def neutral_battery_cells(decoded: DecodedSemanticMap) -> tuple[GridCell, ...]:
     return tuple(sorted(set(decoded.cells("battery")) - excluded))
 
 
-def battery_cells_from_graphic(
+def item_cells_from_graphic(
     graphic: np.ndarray,
     *,
+    channel: int = 6,
     resolution_scale: int = 4,
 ) -> tuple[GridCell, ...]:
-    """Vectorized extraction of current Battery cells from a top-down HWC map."""
+    """Vectorized extraction of one item channel from a top-down HWC map."""
     array = np.asarray(graphic)
-    if array.ndim != 3 or array.shape[-1] < 7:
-        raise ValueError(f"graphic must have shape (H,W,C>=7), got {array.shape}")
+    if array.ndim != 3 or not 0 <= channel < array.shape[-1]:
+        raise ValueError(f"invalid graphic/channel: shape={array.shape}, channel={channel}")
     height, width = array.shape[:2]
     if height % resolution_scale or width % resolution_scale:
         raise ValueError("graphic size must be divisible by resolution_scale")
     height_cells = height // resolution_scale
     width_cells = width // resolution_scale
-    mask = array[..., 6] == 1.0
+    mask = array[..., channel] == 1.0
     active = mask.reshape(
         height_cells,
         resolution_scale,
@@ -140,6 +148,18 @@ def battery_cells_from_graphic(
             GridCell(int(column), height_cells - 1 - int(row))
             for row, column in np.argwhere(active)
         )
+    )
+
+
+def battery_cells_from_graphic(
+    graphic: np.ndarray,
+    *,
+    resolution_scale: int = 4,
+) -> tuple[GridCell, ...]:
+    return item_cells_from_graphic(
+        graphic,
+        channel=6,
+        resolution_scale=resolution_scale,
     )
 
 
@@ -231,6 +251,7 @@ class ScriptedTeamController:
         evade_release_radius_cells: int = 5,
         enable_absorption_strategy: bool = True,
         enable_danger_map: bool = True,
+        enable_special_items: bool = False,
     ) -> None:
         self.team = team
         self.agents = team_agents(team)
@@ -240,6 +261,7 @@ class ScriptedTeamController:
         self.evade_release_radius_cells = evade_release_radius_cells
         self.enable_absorption_strategy = enable_absorption_strategy
         self.enable_danger_map = enable_danger_map
+        self.enable_special_items = enable_special_items
         self._decoder = SemanticMapDecoder()
         self.reset()
 
@@ -419,10 +441,12 @@ class ScriptedTeamController:
             runtime = self._runtimes[state.agent]
             if runtime.role == Role.WORKER:
                 if runtime.phase == WorkerPhase.PICKUP and state.is_carrying:
+                    is_special = state.holding_item_id != BATTERY_ITEM_ID
                     self._emit(
                         state.agent,
-                        "battery_pickup",
+                        "special_item_pickup" if is_special else "battery_pickup",
                         item_id=state.holding_item_id,
+                        expected_item_id=runtime.expected_item_id,
                         cell=[state.cell.x, state.cell.y],
                     )
                     self._transition(state.agent, WorkerPhase.DELIVER, "item_acquired")
@@ -431,17 +455,21 @@ class ScriptedTeamController:
                     runtime.phase == WorkerPhase.PICKUP
                     and runtime.target not in battery_cells
                 ):
-                    self._transition(state.agent, WorkerPhase.RETARGET, "battery_unavailable")
+                    self._transition(state.agent, WorkerPhase.RETARGET, "item_unavailable")
+                    runtime.expected_item_id = BATTERY_ITEM_ID
                     self._clear_target(state.agent)
                 elif runtime.phase == WorkerPhase.DELIVER and not state.is_carrying:
+                    was_special = runtime.expected_item_id != BATTERY_ITEM_ID
                     self._emit(
                         state.agent,
-                        "battery_deposit",
+                        "special_item_deposit" if was_special else "battery_deposit",
+                        item_id=runtime.expected_item_id,
                         cell=[state.cell.x, state.cell.y],
                     )
                     self._transition(state.agent, WorkerPhase.RETARGET, "item_deposited")
                     runtime.delivery_wait_steps = 0
                     runtime.failed_storage_cells.clear()
+                    runtime.expected_item_id = BATTERY_ITEM_ID
                     self._clear_target(state.agent)
                 elif runtime.phase == WorkerPhase.DELIVER:
                     self._update_blocked_delivery(state)
@@ -604,6 +632,60 @@ class ScriptedTeamController:
                 selection=selection,
             )
             self._transition(state.agent, WorkerPhase.PICKUP, "battery_assigned")
+
+    def _assign_special_item(
+        self,
+        snapshot: TeamSnapshot,
+        special_items: tuple[tuple[str, int, GridCell], ...],
+    ) -> None:
+        """Give at most one idle worker a currently active special item."""
+        if not self.enable_special_items or not special_items:
+            return
+        seeking = tuple(
+            state
+            for state in snapshot.units
+            if self._runtimes[state.agent].role == Role.WORKER
+            and self._runtimes[state.agent].phase == WorkerPhase.SEEK_BATTERY
+        )
+        if not seeking:
+            return
+        reserved = {
+            runtime.target
+            for runtime in self._runtimes.values()
+            if runtime.target is not None
+        }
+        planner = self._planner_avoiding(
+            set(HUNTER_SHRINE_CELLS) | {carrier_shrine_cell(self.team)},
+            role=Role.WORKER,
+        )
+        candidates = []
+        for state in seeking:
+            for name, item_id, target in special_items:
+                if target in reserved:
+                    continue
+                try:
+                    route = planner.plan(state.cell, target)
+                except PathNotFound:
+                    continue
+                cost = planner.path_cost(route) if hasattr(planner, "path_cost") else path_cost(route)
+                candidates.append(
+                    (cost, state.slot_id, item_id, target.x, target.y, state, name, target, route)
+                )
+        if not candidates:
+            return
+        cost, _, item_id, _, _, state, name, target, route = min(candidates)
+        runtime = self._runtimes[state.agent]
+        runtime.expected_item_id = item_id
+        self._set_target(state, target, route=route)
+        self._emit(
+            state.agent,
+            "special_item_assigned",
+            item=name,
+            item_id=item_id,
+            target=[target.x, target.y],
+            path_cost=cost,
+        )
+        self._transition(state.agent, WorkerPhase.PICKUP, "special_item_assigned")
 
     def _assign_delivery(self, state: UnitState) -> None:
         runtime = self._runtimes[state.agent]
@@ -932,6 +1014,15 @@ class ScriptedTeamController:
             observations[self.agents[0]]["graphic"],
             resolution_scale=self._static_map.resolution_scale,
         )
+        dynamic_special_items = tuple(
+            (name, item_id, cell)
+            for channel, (name, item_id) in enumerate(SPECIAL_ITEM_CHANNELS, start=7)
+            for cell in item_cells_from_graphic(
+                observations[self.agents[0]]["graphic"],
+                channel=channel,
+                resolution_scale=self._static_map.resolution_scale,
+            )
+        )
         enemy_storage_battery_cells = tuple(
             sorted(set(dynamic_batteries) & set(self._static_map.cells("enemy_storage")))
         )
@@ -944,7 +1035,11 @@ class ScriptedTeamController:
         batteries = tuple(sorted(set(dynamic_batteries) - excluded))
         # A target in enemy storage remains a valid Battery target while RAID is
         # active; only assignment eligibility is strategy-gated below.
-        battery_set = set(batteries) | set(enemy_storage_battery_cells)
+        battery_set = (
+            set(batteries)
+            | set(enemy_storage_battery_cells)
+            | {cell for _, _, cell in dynamic_special_items}
+        )
         self.last_events = []
 
         self._observed_transitions(snapshot, battery_set)
@@ -966,6 +1061,7 @@ class ScriptedTeamController:
         # During the final four seconds, do not start another collection trip;
         # carriers already holding an item still follow their delivery route.
         if self.last_strategy_mode != StrategyMode.SECURE:
+            self._assign_special_item(snapshot, dynamic_special_items)
             self._assign_workers(
                 snapshot,
                 assignment_batteries,
