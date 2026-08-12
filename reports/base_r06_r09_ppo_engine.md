@@ -83,5 +83,5 @@ OK
 ```
 
 실제 Unity의 reset/step/동시 terminal 계약은 기존 PREP-05 live evidence 회귀 테스트가 함께
-통과했다. reward transform hook은 열어 두었지만 이번 단계의 기본값은 Unity 반환 reward이며,
-score-delta/terminal reward 선택은 BASE-R10에서 연결한다.
+통과했다. Collector의 기본 reward는 Unity 반환값을 유지하며, BASE-R10에서 구현한
+`TeamTrainingReward`를 전달하면 score-delta/terminal reward 또는 shaping 조합을 선택할 수 있다.

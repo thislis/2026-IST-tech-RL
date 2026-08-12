@@ -115,6 +115,18 @@ from .ppo import (
     explained_variance,
     ppo_update,
 )
+from .training_reward import RewardMode, TeamTrainingReward, TrainingRewardConfig
+from .frozen_opponent import FrozenScriptedOpponent
+from .behavior_cloning import (
+    BCExperimentResult,
+    BCMetrics,
+    ScriptedTrajectoryDataset,
+    action_vector_to_index,
+    behavior_clone,
+    evaluate_behavior_cloning,
+    run_bc_warm_start_experiment,
+    write_bc_experiment,
+)
 from .observation import (
     GRAPHIC_CHANNEL_NAMES,
     VECTOR_SIZE,
@@ -237,4 +249,16 @@ __all__ = [
     "build_danger_map",
     "choose_strategy_mode",
     "weighted_path_cost",
+    "BCExperimentResult",
+    "BCMetrics",
+    "FrozenScriptedOpponent",
+    "RewardMode",
+    "ScriptedTrajectoryDataset",
+    "TeamTrainingReward",
+    "TrainingRewardConfig",
+    "action_vector_to_index",
+    "behavior_clone",
+    "evaluate_behavior_cloning",
+    "run_bc_warm_start_experiment",
+    "write_bc_experiment",
 ]

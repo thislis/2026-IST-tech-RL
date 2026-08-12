@@ -18,6 +18,7 @@ from blackout_rl import (
     PPO_DIAGNOSTIC_SCHEMA_VERSION,
     PPODiagnosticLogger,
     ParallelRolloutCollector,
+    TeamTrainingReward,
     generalized_advantage_estimate,
     ppo_update,
 )
@@ -89,7 +90,14 @@ class MockParallelEnv:
         }
         terminations = {agent: terminated for agent in canonical_agents()}
         truncations = {agent: truncated for agent in canonical_agents()}
-        infos = {agent: {"episode": self.episode} for agent in canonical_agents()}
+        info = {
+            "episode": self.episode,
+            "score_0": self.step_in_episode / 100.0,
+            "score_1": 0.0,
+        }
+        if terminated:
+            info["winner"] = 0
+        infos = {agent: dict(info) for agent in canonical_agents()}
         if boundary:
             self.agents = []
         return observations, rewards, terminations, truncations, infos
@@ -196,6 +204,23 @@ class ParallelCollectorTests(unittest.TestCase):
         self.assertEqual(self.env.reset_seeds, [7, None])
         with self.assertRaisesRegex(ValueError, "only be supplied"):
             self.collector.collect(1, seed=8)
+
+    def test_score_delta_team_reward_is_connected_to_collector(self) -> None:
+        env = MockParallelEnv()
+        reward_transform = TeamTrainingReward(learning_team=0)
+        collector = ParallelRolloutCollector(
+            env,
+            small_model(),
+            NoOpPolicy(),
+            learning_team=0,
+            reward_transform=reward_transform,
+        )
+        batch = collector.collect(2, seed=10).as_batch(
+            gamma=0.99, gae_lambda=0.95, normalize_advantage=False
+        )
+        rewards = batch.reward.reshape(2, 5)
+        self.assertTrue(torch.allclose(rewards[0], torch.full((5,), 0.01)))
+        self.assertTrue(torch.allclose(rewards[1], torch.full((5,), 1.0)))
 
 
 class PPOUpdateTests(unittest.TestCase):

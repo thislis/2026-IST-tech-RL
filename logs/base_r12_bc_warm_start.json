@@ -1,0 +1,29 @@
+{
+  "schema_version": "blackout.bc_experiment.v1",
+  "seed": 1212,
+  "epochs": 5,
+  "batch_size": 32,
+  "train_samples": 325,
+  "held_out_samples": 155,
+  "train_sources": [
+    "logs/base_s08_s10_role_fsm_trajectory.jsonl"
+  ],
+  "held_out_sources": [
+    "logs/base_s13_coordination_trajectory.jsonl"
+  ],
+  "demonstration_sample_budget": 1625,
+  "downstream_environment_step_budget": {
+    "scratch": 0,
+    "bc_pretrained": 0
+  },
+  "scratch": {
+    "loss": 2.1737625614289313,
+    "accuracy": 0.2645161290322581,
+    "samples": 155
+  },
+  "bc_pretrained": {
+    "loss": 2.1144842332409275,
+    "accuracy": 0.2645161290322581,
+    "samples": 155
+  }
+}

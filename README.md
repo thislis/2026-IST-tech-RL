@@ -100,9 +100,9 @@ win / draw / loss, 평균 최종 점수 차
     | BASE-R07 | ☑ GAE와 episodic buffer 구현 | 여러 episode를 가로지르는 rollout, truncation bootstrap과 termination 차단 검증 |
     | BASE-R08 | ☑ PPO update 구현 | [`blackout_rl/ppo.py`](blackout_rl/ppo.py): clipped policy/value loss, entropy, minibatch epoch, gradient clipping과 parameter update 검증 |
     | BASE-R09 | ☑ PPO 진단 logging | [`tests/test_ppo_training.py`](tests/test_ppo_training.py): KL, clip fraction, entropy, explained variance, gradient norm의 strict JSONL round-trip 검증 |
-    | BASE-R10 | ☐ score-delta team reward와 terminal reward 연결 | Unity shaping reward on/off 비교 가능 |
-    | BASE-R11 | ☐ 고정 scripted opponent 연결 | 학습 대상 팀만 update하고 상대는 완전히 freeze |
-    | BASE-R12 | ☐ scripted trajectory 기반 BC pretraining 실험 | scratch 학습과 동일 환경 step 기준 비교 |
+    | BASE-R10 | ☑ score-delta team reward와 terminal reward 연결 | [`blackout_rl/training_reward.py`](blackout_rl/training_reward.py), [`reports/base_r10_r12_fixed_opponent_bc.md`](reports/base_r10_r12_fixed_opponent_bc.md): 팀 공유 score-delta·winner bonus와 Unity shaping off/on/combined 검증 |
+    | BASE-R11 | ☑ 고정 scripted opponent 연결 | [`blackout_rl/frozen_opponent.py`](blackout_rl/frozen_opponent.py): trainable state 없는 battery-only scripted opponent와 episode reset·fingerprint 불변 검증 |
+    | BASE-R12 | ☑ scripted trajectory 기반 BC pretraining 실험 | [`blackout_rl/behavior_cloning.py`](blackout_rl/behavior_cloning.py), [`logs/base_r12_bc_warm_start.json`](logs/base_r12_bc_warm_start.json): 별도 held-out trajectory에서 scratch 대비 NLL `2.1738→2.1145`, 동일 environment-step budget 기록 |
     | BASE-R13 | ☐ checkpoint와 experiment registry 구현 | config, seed, git SHA, 상대 ID를 checkpoint와 함께 저장 |
     | BASE-R14 | ☑ 제출용 deterministic policy wrapper 구현 | [`blackout_rl/model_contract.py`](blackout_rl/model_contract.py), [`tests/test_ippo_model.py`](tests/test_ippo_model.py): `forward(vector, graphic) → (B,2)`, argmax와 `[-1,1]` 계약 검증 |
     | BASE-R15 | ☐ random/scripted/IPPO 평가 matrix 작성 | 같은 seed와 side swap으로 성능 비교 |

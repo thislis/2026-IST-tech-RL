@@ -48,6 +48,12 @@ RewardTransform = Callable[
 ]
 
 
+def _reset_if_supported(component: object) -> None:
+    reset = getattr(component, "reset", None)
+    if callable(reset):
+        reset()
+
+
 @dataclass(frozen=True)
 class RolloutBatch:
     """Flattened PPO batch with old-policy statistics and episode masks."""
@@ -255,6 +261,8 @@ class ParallelRolloutCollector:
     def reset(self, *, seed: int | None = None) -> None:
         observations, _ = self.env.reset(seed=seed)
         self._require_live_agents(observations)
+        _reset_if_supported(self.opponent)
+        _reset_if_supported(self.reward_transform)
         self._observations = observations
         self._episode_start = True
 
@@ -346,6 +354,8 @@ class ParallelRolloutCollector:
                 self.episodes_completed += 1
                 observations_after_reset, _ = self.env.reset()
                 self._require_live_agents(observations_after_reset)
+                _reset_if_supported(self.opponent)
+                _reset_if_supported(self.reward_transform)
                 self._observations = observations_after_reset
                 self._episode_start = True
             else:
