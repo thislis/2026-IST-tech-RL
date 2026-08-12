@@ -59,7 +59,7 @@ win / draw / loss, 평균 최종 점수 차
 ```
 
 - [ ]  Phase 2
-    - [ ]  2-1
+    - [x]  2-1
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
@@ -76,8 +76,8 @@ win / draw / loss, 평균 최종 점수 차
     | BASE-S11 | ☑ 20초 흡수 주기 전략 구현 | [`blackout_rl/strategy.py`](blackout_rl/strategy.py), [`reports/base_s11_absorption_strategy.md`](reports/base_s11_absorption_strategy.md): `time_left` 기반 20초 phase 복원, 직전 적재·직후 수집·조건부 약탈과 실제 첫 흡수 통과 검증 |
     | BASE-S12 | ☑ 위험 지도 구현 | [`reports/base_s12_danger_map.md`](reports/base_s12_danger_map.md), [`logs/base_s11_s12_strategy.json`](logs/base_s11_s12_strategy.json): 적 위치 거리 비용과 역할별 weighted A*를 실제 중앙 적 위치에서 경로 비교 검증 |
     | BASE-S13 | ☑ scripted trajectory recorder 구현 | [`blackout_rl/trajectory.py`](blackout_rl/trajectory.py), [`logs/base_s13_coordination_trajectory.jsonl`](logs/base_s13_coordination_trajectory.jsonl), [`reports/base_s13_trajectory_recorder.md`](reports/base_s13_trajectory_recorder.md): obs/action/role/target/reward/score/seed JSONL 기록과 hash·round-trip 검증 |
-    | BASE-S14 | ☐ scripted-vs-random 평가 | paired held-out seeds에서 일관된 우세 및 side 편향 없음 |
-    | BASE-S15 | ☐ 특수 아이템 정책을 선택적으로 추가 | 배터리-only agent보다 실제 성능이 좋아질 때만 유지 |
+    | BASE-S14 | ☑ scripted-vs-random 평가 | [`eval/scripted_series.py`](eval/scripted_series.py), [`logs/base_s14_scripted_vs_random.json`](logs/base_s14_scripted_vs_random.json), [`reports/base_s14_scripted_vs_random.md`](reports/base_s14_scripted_vs_random.md): held-out 5 paired seeds·10경기 전승, 평균 점수 차 +97.7, model A/B 모두 전승 및 물리 side 50/50 |
+    | BASE-S15 | ☑ 특수 아이템 정책을 선택적으로 추가 | [`logs/base_s15_special_item_ablation.json`](logs/base_s15_special_item_ablation.json), [`reports/base_s15_special_item_ablation.md`](reports/base_s15_special_item_ablation.md): 옵션 동작 검증 후 평균 점수 차 −1.7·평균 +74.1 step으로 개선 없어 기본 battery-only 유지 |
     
     첫 scripted agent- 특수 아이템과 적극적인 약탈을 우선 제외. 아래 동작 확인 우선
     

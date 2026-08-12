@@ -1,0 +1,9 @@
+{
+  "policy_id": "scripted-special-v1",
+  "kind": "deterministic-role-fsm",
+  "roles": ["worker", "worker", "worker", "guard", "carrier"],
+  "absorption_strategy": true,
+  "danger_map": true,
+  "special_items": true,
+  "special_item_worker_limit": 1
+}

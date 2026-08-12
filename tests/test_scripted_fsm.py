@@ -18,6 +18,7 @@ from blackout_rl import (
     ScriptedTeamController,
     WorkerPhase,
     battery_cells_from_graphic,
+    item_cells_from_graphic,
     carrier_shrine_cell,
     farthest_reachable_cell,
     nearest_reachable_cell,
@@ -137,8 +138,38 @@ class TargetSelectionTests(unittest.TestCase):
             (GridCell(2, 18), GridCell(20, 3)),
         )
 
+    def test_vectorized_special_item_channel_extraction(self) -> None:
+        graphic = map_graphic(batteries=())
+        cell = GridCell(6, 7)
+        row = 96 - (cell.y + 1) * 4
+        graphic[row : row + 4, cell.x * 4 : (cell.x + 1) * 4, 0] = 0.0
+        graphic[row : row + 4, cell.x * 4 : (cell.x + 1) * 4, 7] = 1.0
+        self.assertEqual(item_cells_from_graphic(graphic, channel=7), (cell,))
+
 
 class RoleFSMTests(unittest.TestCase):
+    def test_special_items_are_opt_in_and_use_only_one_worker(self) -> None:
+        obs = observations(batteries=BATTERIES)
+        cell = GridCell(3, 18)
+        row = 96 - (cell.y + 1) * 4
+        for agent_obs in obs.values():
+            graphic = agent_obs["graphic"]
+            graphic[row : row + 4, cell.x * 4 : (cell.x + 1) * 4, 0] = 0.0
+            graphic[row : row + 4, cell.x * 4 : (cell.x + 1) * 4, 7] = 1.0
+
+        battery_only = ScriptedTeamController(0)
+        battery_only.act(obs, team_agents(0))
+        self.assertNotIn("special_item_assigned", {e["kind"] for e in battery_only.last_events})
+
+        special = ScriptedTeamController(0, enable_special_items=True)
+        special.act(obs, team_agents(0))
+        assigned = [e for e in special.last_events if e["kind"] == "special_item_assigned"]
+        self.assertEqual(len(assigned), 1)
+        self.assertEqual(assigned[0]["item_id"], 2)
+        self.assertEqual(assigned[0]["target"], [3, 18])
+        battery_assignments = [e for e in special.last_events if e["kind"] == "battery_assigned"]
+        self.assertEqual(len(battery_assignments), 2)
+
     def test_workers_get_unique_batteries_without_crossing_shrines(self) -> None:
         controller = ScriptedTeamController(0)
         actions = controller.act(observations(batteries=BATTERIES), team_agents(0))
