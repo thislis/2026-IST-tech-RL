@@ -4,32 +4,24 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping, NamedTuple
+from typing import Any, Mapping
 
 import numpy as np
 import torch
 from blackout_env import BaseModel
 from torch import nn
 
+from .action_distribution import (
+    ACTION_DIRECTIONS,
+    categorical_action,
+    deterministic_action,
+)
 from .batching import N_TEAM_AGENTS, ObservationBatch, stack_observations, team_agents
+from .ippo_model import ActorCriticOutput, IPPOActorCritic, ReferenceActorCritic
 from .observation import GRAPHIC_CHANNEL_NAMES, VECTOR_SIZE
 
 
 CHECKPOINT_SCHEMA_VERSION = "blackout.checkpoint.v1"
-ACTION_DIRECTIONS = torch.tensor(
-    [
-        [0.0, 0.0],
-        [1.0, 0.0],
-        [1.0, 1.0],
-        [0.0, 1.0],
-        [-1.0, 1.0],
-        [-1.0, 0.0],
-        [-1.0, -1.0],
-        [0.0, -1.0],
-        [1.0, -1.0],
-    ],
-    dtype=torch.float32,
-)
 
 
 @dataclass(frozen=True)
@@ -40,13 +32,6 @@ class TeamModelInput:
     vector: torch.Tensor
     graphic: torch.Tensor
     slot_id: torch.Tensor
-
-
-class ActorCriticOutput(NamedTuple):
-    """Training output: categorical actor logits and one local value per row."""
-
-    action_logits: torch.Tensor
-    value: torch.Tensor
 
 
 def team_model_input(
@@ -65,100 +50,6 @@ def team_model_input(
     )
 
 
-def categorical_action(index: torch.Tensor) -> torch.Tensor:
-    """Convert NoOp+8-direction indices to normalized continuous `(dx,dy)`."""
-    if index.dtype not in (torch.int8, torch.int16, torch.int32, torch.int64, torch.uint8):
-        raise TypeError(f"action index must be integer, got {index.dtype}")
-    if torch.any((index < 0) | (index >= len(ACTION_DIRECTIONS))):
-        raise ValueError("action index must be in [0,8]")
-    table = ACTION_DIRECTIONS.to(device=index.device)
-    action = table[index.to(torch.int64)]
-    norm = torch.linalg.vector_norm(action, dim=-1, keepdim=True).clamp_min(1.0)
-    return action / norm
-
-
-def deterministic_action(logits: torch.Tensor) -> torch.Tensor:
-    """Choose categorical argmax and adapt it to the official continuous space."""
-    if logits.ndim != 2 or logits.shape[1] != len(ACTION_DIRECTIONS):
-        raise ValueError(f"logits must have shape (B,9), got {tuple(logits.shape)}")
-    return categorical_action(torch.argmax(logits, dim=-1))
-
-
-class ReferenceActorCritic(nn.Module):
-    """Small shared IPPO-style reference network that proves the interface."""
-
-    def __init__(
-        self,
-        vector_size: int = VECTOR_SIZE,
-        n_channels: int = len(GRAPHIC_CHANNEL_NAMES),
-        slot_embedding_dim: int = 16,
-        hidden_dim: int = 128,
-    ) -> None:
-        super().__init__()
-        self.model_config = {
-            "vector_size": vector_size,
-            "n_channels": n_channels,
-            "slot_embedding_dim": slot_embedding_dim,
-            "hidden_dim": hidden_dim,
-            "n_actions": len(ACTION_DIRECTIONS),
-        }
-        self.vector_encoder = nn.Sequential(
-            nn.Linear(vector_size, hidden_dim),
-            nn.ReLU(),
-        )
-        self.graphic_encoder = nn.Sequential(
-            nn.Conv2d(n_channels, 16, kernel_size=5, stride=4, padding=2),
-            nn.ReLU(),
-            nn.Conv2d(16, 32, kernel_size=3, stride=2, padding=1),
-            nn.ReLU(),
-            nn.AdaptiveAvgPool2d((4, 4)),
-            nn.Flatten(),
-            nn.Linear(32 * 4 * 4, hidden_dim),
-            nn.ReLU(),
-        )
-        self.slot_embedding = nn.Embedding(N_TEAM_AGENTS, slot_embedding_dim)
-        self.fusion = nn.Sequential(
-            nn.Linear(hidden_dim * 2 + slot_embedding_dim, hidden_dim),
-            nn.ReLU(),
-        )
-        self.actor = nn.Linear(hidden_dim, len(ACTION_DIRECTIONS))
-        self.critic = nn.Linear(hidden_dim, 1)
-
-    def forward(
-        self,
-        vector: torch.Tensor,
-        graphic: torch.Tensor,
-        slot_id: torch.Tensor,
-    ) -> ActorCriticOutput:
-        if vector.ndim != 2 or vector.shape[1] != self.model_config["vector_size"]:
-            raise ValueError(f"vector must have shape (B,{self.model_config['vector_size']})")
-        if graphic.ndim != 4 or graphic.shape[1] != self.model_config["n_channels"]:
-            raise ValueError(
-                f"graphic must have shape (B,{self.model_config['n_channels']},H,W)"
-            )
-        if slot_id.shape != (vector.shape[0],) or slot_id.dtype != torch.int64:
-            raise ValueError("slot_id must be int64 with shape (B,)")
-        if vector.shape[0] != graphic.shape[0]:
-            raise ValueError("vector and graphic batch sizes differ")
-        if torch.any((slot_id < 0) | (slot_id >= N_TEAM_AGENTS)):
-            raise ValueError("slot_id must be in [0,4]")
-
-        latent = self.fusion(
-            torch.cat(
-                [
-                    self.vector_encoder(vector),
-                    self.graphic_encoder(graphic),
-                    self.slot_embedding(slot_id),
-                ],
-                dim=-1,
-            )
-        )
-        return ActorCriticOutput(
-            action_logits=self.actor(latent),
-            value=self.critic(latent).squeeze(-1),
-        )
-
-
 class SubmissionPolicy(nn.Module):
     """Official two-input policy facade around the actor/critic.
 
@@ -171,7 +62,7 @@ class SubmissionPolicy(nn.Module):
 
     def __init__(self, **model_kwargs: Any) -> None:
         super().__init__()
-        self.actor_critic = ReferenceActorCritic(**model_kwargs)
+        self.actor_critic = IPPOActorCritic(**model_kwargs)
 
     def forward_with_slots(
         self,

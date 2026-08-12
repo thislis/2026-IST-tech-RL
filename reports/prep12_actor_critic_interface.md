@@ -18,9 +18,12 @@
 명시적으로 함께 전달해야 한다. `team_model_input()`은 입력 dict 순서를 사용하지 않고 agent
 이름을 기준으로 canonical order를 만들며, 이 단계에서 shape/dtype/누락 agent도 검증한다.
 
-## 첫 reference 구조
+## PREP-12 당시 첫 reference 구조
 
-`ReferenceActorCritic`은 다음을 결합하는 shared actor/local critic smoke baseline이다.
+PREP-12에서는 다음 shared actor/local critic smoke baseline으로 인터페이스를 먼저 검증했다.
+현재 `ReferenceActorCritic` 이름은 하위 호환 alias로 유지되지만 실제 구현은 Phase 2-2에서
+완료한 entity-aware `IPPOActorCritic`이다. 현재 구조와 검증 결과는
+[`base_r01_r05_r14_policy_model.md`](base_r01_r05_r14_policy_model.md)를 따른다.
 
 ```text
 vector[96] ─ MLP(128) ───────────┐
@@ -28,9 +31,9 @@ graphic[11,96,96] ─ CNN(128) ────┼─ fusion(128) ─ actor logits[9
 slot_id ─ embedding(16) ─────────┘              └─ local value[1]
 ```
 
-기본 구성은 123,450 parameters다. CPU에서 팀 5명 batch의 reference deterministic inference는
-로컬 100회 단순 측정 평균 약 0.517 ms였고, metadata 포함 checkpoint는 약 0.50 MB였다. 이는
-성능 제한이 아니라 개발 기준값이며 공식 evaluator 제한이 확인되면 다시 판정한다.
+당시 기본 구성은 123,450 parameters였다. CPU에서 팀 5명 batch의 reference deterministic
+inference는 로컬 100회 단순 측정 평균 약 0.517 ms였고, metadata 포함 checkpoint는 약 0.50
+MB였다. 이는 PREP-12 시점의 개발 기준값이며 현재 entity-aware 모델의 크기와 혼동하지 않는다.
 
 ## Action adapter
 

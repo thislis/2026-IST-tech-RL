@@ -30,6 +30,9 @@
         "n_channels": {"const": 11},
         "slot_embedding_dim": {"type": "integer", "minimum": 1},
         "hidden_dim": {"type": "integer", "minimum": 1},
+        "entity_dim": {"type": "integer", "minimum": 1},
+        "context_dim": {"type": "integer", "minimum": 1},
+        "graphic_dim": {"type": "integer", "minimum": 1},
         "n_actions": {"const": 9}
       }
     },
