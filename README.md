@@ -91,11 +91,11 @@ win / draw / loss, 평균 최종 점수 차
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
-    | BASE-R01 | ☐ 9-way categorical action distribution 구현 | sampled action과 deterministic argmax를 `(dx,dy)`로 변환 |
-    | BASE-R02 | ☐ vector/entity encoder 구현 | 10개 유닛 block과 score·time·class를 분리 인코딩 |
-    | BASE-R03 | ☐ semantic CNN encoder 구현 | `11×96×96` 입력을 고정 길이 latent로 변환 |
-    | BASE-R04 | ☐ slot embedding 또는 specialized head 구현 | 5개 유닛이 서로 다른 역할을 학습할 수 있음 |
-    | BASE-R05 | ☐ shared actor와 local critic 구현 | 팀 내 5개 유닛이 actor parameter 공유 |
+    | BASE-R01 | ☑ 9-way categorical action distribution 구현 | [`blackout_rl/action_distribution.py`](blackout_rl/action_distribution.py), [`reports/base_r01_r05_r14_policy_model.md`](reports/base_r01_r05_r14_policy_model.md): sampling·argmax·log-prob·entropy와 `(dx,dy)` 변환 검증 |
+    | BASE-R02 | ☑ vector/entity encoder 구현 | [`blackout_rl/ippo_model.py`](blackout_rl/ippo_model.py): 10개 unit block과 score·time·class context 분리 인코딩 검증 |
+    | BASE-R03 | ☑ semantic CNN encoder 구현 | `11×96×96` 입력의 고정 길이 latent 변환 검증 |
+    | BASE-R04 | ☑ slot embedding 또는 specialized head 구현 | 동일 observation에서 5개 slot의 출력 분화와 embedding gradient 검증 |
+    | BASE-R05 | ☑ shared actor와 local critic 구현 | 단일 actor parameter 공유, logits `(B,9)`와 local value `(B,)` 검증 |
     | BASE-R06 | ☐ PettingZoo parallel rollout collector 구현 | agent별 obs/action/logprob/value/reward/mask 수집 |
     | BASE-R07 | ☐ GAE와 episodic buffer 구현 | 긴 에피소드와 truncation/termination을 구분 |
     | BASE-R08 | ☐ PPO update 구현 | clipped loss, value loss, entropy, gradient clipping |
@@ -104,7 +104,7 @@ win / draw / loss, 평균 최종 점수 차
     | BASE-R11 | ☐ 고정 scripted opponent 연결 | 학습 대상 팀만 update하고 상대는 완전히 freeze |
     | BASE-R12 | ☐ scripted trajectory 기반 BC pretraining 실험 | scratch 학습과 동일 환경 step 기준 비교 |
     | BASE-R13 | ☐ checkpoint와 experiment registry 구현 | config, seed, git SHA, 상대 ID를 checkpoint와 함께 저장 |
-    | BASE-R14 | ☐ 제출용 deterministic policy wrapper 구현 | `forward(vector, graphic) → (B,2)`와 `[-1,1]` 계약 준수 |
+    | BASE-R14 | ☑ 제출용 deterministic policy wrapper 구현 | [`blackout_rl/model_contract.py`](blackout_rl/model_contract.py), [`tests/test_ippo_model.py`](tests/test_ippo_model.py): `forward(vector, graphic) → (B,2)`, argmax와 `[-1,1]` 계약 검증 |
     | BASE-R15 | ☐ random/scripted/IPPO 평가 matrix 작성 | 같은 seed와 side swap으로 성능 비교 |
     
     #### IPPO actor 권장 구조
