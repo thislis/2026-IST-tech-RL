@@ -138,7 +138,9 @@ def greedy_path_assignment(
                 continue
             candidates.append(
                 (
-                    path_cost(path),
+                    planner.path_cost(path)
+                    if hasattr(planner, "path_cost")
+                    else path_cost(path),
                     unit.slot_id,
                     target.x,
                     target.y,
