@@ -3,6 +3,13 @@
 from .batching import ObservationBatch, canonical_agents, stack_observations, team_agents
 from .env import ContractBlackOutEnv
 from .reward import ScoreDeltaEvent, ScoreDeltaRewardTracker
+from .coordination import (
+    StuckDetector,
+    StuckEvent,
+    TaskAssignment,
+    assignment_targets,
+    greedy_path_assignment,
+)
 from .navigation import AStarPlanner, PathNotFound, WaypointFollower, grid_line, path_cost
 from .policy import ActionPolicy, FixedDirectionPolicy, NoOpPolicy, RandomPolicy
 from .semantic_map import (
@@ -15,6 +22,21 @@ from .semantic_map import (
     normalized_to_cell,
     normalized_to_pixel,
     pixel_to_normalized,
+)
+from .team_state import (
+    DEFAULT_ROLES,
+    Role,
+    TeamSnapshot,
+    TeamStateTracker,
+    UnitState,
+    default_roles,
+)
+from .trajectory import (
+    GRAPHIC_ENCODING,
+    TRAJECTORY_SCHEMA_VERSION,
+    ScriptedTrajectoryRecorder,
+    decode_graphic,
+    encode_graphic,
 )
 from .model_contract import (
     ACTION_DIRECTIONS,
@@ -45,6 +67,7 @@ from .observation import (
 __all__ = [
     "GRAPHIC_CHANNEL_NAMES",
     "DEFAULT_RESOLUTION_SCALE",
+    "DEFAULT_ROLES",
     "ACTION_DIRECTIONS",
     "CHECKPOINT_SCHEMA_VERSION",
     "ActorCriticOutput",
@@ -54,12 +77,14 @@ __all__ = [
     "DecodedSemanticMap",
     "FixedDirectionPolicy",
     "GridCell",
+    "GRAPHIC_ENCODING",
     "VECTOR_SIZE",
     "GraphicObservation",
     "ObservationBatch",
     "NoOpPolicy",
     "PathNotFound",
     "RandomPolicy",
+    "Role",
     "ContractBlackOutEnv",
     "ScoreDeltaEvent",
     "ScoreDeltaRewardTracker",
@@ -68,14 +93,27 @@ __all__ = [
     "TeamModelInput",
     "SemanticMapDecoder",
     "SemanticPoint",
+    "ScriptedTrajectoryRecorder",
+    "StuckDetector",
+    "StuckEvent",
+    "TRAJECTORY_SCHEMA_VERSION",
+    "TaskAssignment",
+    "TeamSnapshot",
+    "TeamStateTracker",
+    "UnitState",
     "VectorObservation",
     "canonical_agents",
+    "assignment_targets",
     "cell_center_normalized",
     "categorical_action",
     "checkpoint_payload",
     "deterministic_action",
+    "decode_graphic",
+    "default_roles",
+    "encode_graphic",
     "hwc_to_chw",
     "grid_line",
+    "greedy_path_assignment",
     "normalized_to_cell",
     "normalized_to_pixel",
     "parse_graphic",
