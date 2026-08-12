@@ -96,10 +96,10 @@ win / draw / loss, 평균 최종 점수 차
     | BASE-R03 | ☑ semantic CNN encoder 구현 | `11×96×96` 입력의 고정 길이 latent 변환 검증 |
     | BASE-R04 | ☑ slot embedding 또는 specialized head 구현 | 동일 observation에서 5개 slot의 출력 분화와 embedding gradient 검증 |
     | BASE-R05 | ☑ shared actor와 local critic 구현 | 단일 actor parameter 공유, logits `(B,9)`와 local value `(B,)` 검증 |
-    | BASE-R06 | ☐ PettingZoo parallel rollout collector 구현 | agent별 obs/action/logprob/value/reward/mask 수집 |
-    | BASE-R07 | ☐ GAE와 episodic buffer 구현 | 긴 에피소드와 truncation/termination을 구분 |
-    | BASE-R08 | ☐ PPO update 구현 | clipped loss, value loss, entropy, gradient clipping |
-    | BASE-R09 | ☐ PPO 진단 logging | KL, clip fraction, entropy, explained variance, gradient norm |
+    | BASE-R06 | ☑ PettingZoo parallel rollout collector 구현 | [`blackout_rl/rollout.py`](blackout_rl/rollout.py), [`reports/base_r06_r09_ppo_engine.md`](reports/base_r06_r09_ppo_engine.md): agent별 obs/action/logprob/value/reward/mask와 10-agent parallel step 검증 |
+    | BASE-R07 | ☑ GAE와 episodic buffer 구현 | 여러 episode를 가로지르는 rollout, truncation bootstrap과 termination 차단 검증 |
+    | BASE-R08 | ☑ PPO update 구현 | [`blackout_rl/ppo.py`](blackout_rl/ppo.py): clipped policy/value loss, entropy, minibatch epoch, gradient clipping과 parameter update 검증 |
+    | BASE-R09 | ☑ PPO 진단 logging | [`tests/test_ppo_training.py`](tests/test_ppo_training.py): KL, clip fraction, entropy, explained variance, gradient norm의 strict JSONL round-trip 검증 |
     | BASE-R10 | ☐ score-delta team reward와 terminal reward 연결 | Unity shaping reward on/off 비교 가능 |
     | BASE-R11 | ☐ 고정 scripted opponent 연결 | 학습 대상 팀만 update하고 상대는 완전히 freeze |
     | BASE-R12 | ☐ scripted trajectory 기반 BC pretraining 실험 | scratch 학습과 동일 환경 step 기준 비교 |
