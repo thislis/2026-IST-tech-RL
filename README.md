@@ -66,16 +66,16 @@ win / draw / loss, 평균 최종 점수 차
     | BASE-S01 | ☑ `Random`, `NoOp`, `FixedDirection` policy 구현 | [`blackout_rl/policy.py`](blackout_rl/policy.py), [`reports/base_s01_policy_primitives.md`](reports/base_s01_policy_primitives.md): 공통 evaluator protocol, deterministic/범위/누락-agent 회귀 테스트 통과 |
     | BASE-S02 | ☑ semantic map decoder 구현 | [`blackout_rl/semantic_map.py`](blackout_rl/semantic_map.py), [`reports/base_s02_semantic_decoder.md`](reports/base_s02_semantic_decoder.md): 좌표 반전 계약과 벽·창고·유닛·Battery·특수 아이템 위치 추출 검증 |
     | BASE-S03 | ☑ 이동 가능 영역과 path planner 구현 | [`blackout_rl/navigation.py`](blackout_rl/navigation.py), [`scripts/verify_base_s01_s03.py`](scripts/verify_base_s01_s03.py), [`logs/base_s01_s03_live_navigation.json`](logs/base_s01_s03_live_navigation.json), [`reports/base_s03_single_unit_navigation.md`](reports/base_s03_single_unit_navigation.md): A*·waypoint·replan 신호 및 실제 단일 유닛 wall 우회 Battery pickup 통과 |
-    | BASE-S04 | ☐ stuck detector 구현 | 일정 시간 위치 변화가 없으면 경로 또는 목표 재선정 |
-    | BASE-S05 | ☐ team-local slot과 unit state 추적 | 각 유닛의 위치·보유 아이템·클래스·현재 역할 관리 |
-    | BASE-S06 | ☐ task assignment 구현 | 배터리와 유닛 간 path distance 기반 greedy 또는 Hungarian 할당 |
-    | BASE-S07 | ☐ 기본 역할 구성 | 노동자 3명 수집, 경비원 1명, 전달자 1명을 초기 정책으로 사용 |
-    | BASE-S08 | ☐ 노동자 FSM 구현 | `SEEK_BATTERY → PICKUP → DELIVER → RETARGET` |
-    | BASE-S09 | ☐ 경비원 FSM 구현 | 중앙 성소 이동, 변신, 주요 창고·운반 경로 순찰, 적 추격 |
-    | BASE-S10 | ☐ 전달자 FSM 구현 | 본진 성소 변신, 먼 배터리 운반, 적 접근 시 회피 |
+    | BASE-S04 | ☑ stuck detector 구현 | [`blackout_rl/coordination.py`](blackout_rl/coordination.py), [`reports/base_s04_stuck_detector.md`](reports/base_s04_stuck_detector.md): 위치 window 판정, 임시 장애물 우회 및 목표 재선정 연결 검증 |
+    | BASE-S05 | ☑ team-local slot과 unit state 추적 | [`blackout_rl/team_state.py`](blackout_rl/team_state.py), [`reports/base_s05_team_state.md`](reports/base_s05_team_state.md): 위치·보유 item·class·역할·목표를 canonical team slot으로 추적 |
+    | BASE-S06 | ☑ task assignment 구현 | [`blackout_rl/coordination.py`](blackout_rl/coordination.py), [`reports/base_s06_s07_assignment_roles.md`](reports/base_s06_s07_assignment_roles.md): A* path distance 기반 deterministic greedy 고유 할당 및 도달 불가/예약 목표 테스트 |
+    | BASE-S07 | ☑ 기본 역할 구성 | [`blackout_rl/team_state.py`](blackout_rl/team_state.py), [`logs/base_s04_s07_s13_coordination.json`](logs/base_s04_s07_s13_coordination.json): worker 3·guard 1·carrier 1 역할과 실제 5유닛 동시 Battery 회수 검증 |
+    | BASE-S08 | ☑ 노동자 FSM 구현 | [`blackout_rl/scripted_fsm.py`](blackout_rl/scripted_fsm.py), [`reports/base_s08_worker_fsm.md`](reports/base_s08_worker_fsm.md): 노동자 3명의 고유 Battery 회수→창고 적재→재탐색 및 포화 창고 재배정 검증 |
+    | BASE-S09 | ☑ 경비원 FSM 구현 | [`reports/base_s09_guard_fsm.md`](reports/base_s09_guard_fsm.md), [`logs/base_s08_s10_role_fsm.json`](logs/base_s08_s10_role_fsm.json): 중앙 성소 Hunter 변신→창고 순찰과 적 추격 전환 검증 |
+    | BASE-S10 | ☑ 전달자 FSM 구현 | [`reports/base_s10_carrier_fsm.md`](reports/base_s10_carrier_fsm.md), [`logs/base_s08_s10_role_fsm_trajectory.jsonl`](logs/base_s08_s10_role_fsm_trajectory.jsonl): 본진 Carrier 변신→원거리 Battery 회수·적재 및 적 접근 회피 검증 |
     | BASE-S11 | ☐ 20초 흡수 주기 전략 구현 | 흡수 직전 안전한 적재, 직후 새 수집, 상황별 약탈 시도 |
     | BASE-S12 | ☐ 위험 지도 구현 | 적 위치 주변 회피 비용과 경비 경로 비용 반영 |
-    | BASE-S13 | ☐ scripted trajectory recorder 구현 | obs, action, role, target, reward, score, seed를 저장 |
+    | BASE-S13 | ☑ scripted trajectory recorder 구현 | [`blackout_rl/trajectory.py`](blackout_rl/trajectory.py), [`logs/base_s13_coordination_trajectory.jsonl`](logs/base_s13_coordination_trajectory.jsonl), [`reports/base_s13_trajectory_recorder.md`](reports/base_s13_trajectory_recorder.md): obs/action/role/target/reward/score/seed JSONL 기록과 hash·round-trip 검증 |
     | BASE-S14 | ☐ scripted-vs-random 평가 | paired held-out seeds에서 일관된 우세 및 side 편향 없음 |
     | BASE-S15 | ☐ 특수 아이템 정책을 선택적으로 추가 | 배터리-only agent보다 실제 성능이 좋아질 때만 유지 |
     

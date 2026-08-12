@@ -1,0 +1,147 @@
+{
+  "schema_version": "blackout.base_s08_s10_role_fsm.v1",
+  "created_at_utc": "2026-08-12T01:10:53.303074+00:00",
+  "environment": {
+    "seed": 240810,
+    "build_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app",
+    "executable_path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/builds/BlackOut.app/Contents/MacOS/RLGame2026",
+    "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+    "game_commit": "d2220a7d01be88d413f551efd529f4758833be8b",
+    "python_api_commit": "6ba7d9993cf1bdefe1ed480c8efbcabcb923f539",
+    "time_scale": 50.0,
+    "map_ready_after_steps": 0,
+    "initial_battery_cells": 46
+  },
+  "execution": {
+    "started_at_utc": "2026-08-12T01:10:46.782720+00:00",
+    "wall_seconds": 6.52,
+    "completed_step": 332,
+    "worker_pickup_step": {
+      "unit_0": 66,
+      "unit_1": 110,
+      "unit_2": 95
+    },
+    "worker_deposit_step": {
+      "unit_0": 114,
+      "unit_1": 178,
+      "unit_2": 182
+    },
+    "worker_retarget_step": {
+      "unit_0": 115,
+      "unit_1": 179,
+      "unit_2": 183
+    },
+    "initial_worker_assignments": {
+      "unit_0": {
+        "kind": "battery_assigned",
+        "step": 0,
+        "agent": "unit_0",
+        "role": "worker",
+        "target": [
+          1,
+          17
+        ],
+        "path_cost": 5.82842712474619,
+        "selection": "nearest_greedy"
+      },
+      "unit_1": {
+        "kind": "battery_assigned",
+        "step": 0,
+        "agent": "unit_1",
+        "role": "worker",
+        "target": [
+          4,
+          17
+        ],
+        "path_cost": 6.242640687119285,
+        "selection": "nearest_greedy"
+      },
+      "unit_2": {
+        "kind": "battery_assigned",
+        "step": 0,
+        "agent": "unit_2",
+        "role": "worker",
+        "target": [
+          8,
+          19
+        ],
+        "path_cost": 8.242640687119284,
+        "selection": "nearest_greedy"
+      }
+    },
+    "guard_transform_step": 211,
+    "guard_patrol_step": 331,
+    "carrier_transform_step": 19,
+    "carrier_pickup_step": 54,
+    "carrier_deposit_step": 83,
+    "carrier_far_assignment": {
+      "kind": "battery_assigned",
+      "step": 19,
+      "agent": "unit_4",
+      "role": "carrier",
+      "target": [
+        18,
+        4
+      ],
+      "path_cost": 25.970562748477146,
+      "selection": "farthest_reachable"
+    },
+    "final_classes": {
+      "unit_0": 0,
+      "unit_1": 0,
+      "unit_2": 0,
+      "unit_3": 1,
+      "unit_4": 2
+    },
+    "final_phases": {
+      "unit_0": "pickup",
+      "unit_1": "deliver",
+      "unit_2": "pickup",
+      "unit_3": "patrol",
+      "unit_4": "pickup"
+    },
+    "event_counts": {
+      "battery_assigned": 15,
+      "fsm_transition": 51,
+      "shrine_assigned": 2,
+      "class_transform": 2,
+      "battery_pickup": 10,
+      "storage_assigned": 11,
+      "battery_deposit": 9,
+      "storage_retarget": 1,
+      "patrol_assigned": 2,
+      "patrol_waypoint_reached": 1
+    },
+    "stuck_replan_events": [],
+    "visited_wall_cells": [],
+    "last_rewards": {
+      "unit_0": 0.0,
+      "unit_1": 0.0,
+      "unit_2": 0.0,
+      "unit_3": 0.0,
+      "unit_4": 0.0
+    },
+    "last_score": {
+      "score_0": 0.5099999904632568,
+      "score_1": 0.0,
+      "time_left": 0.9841428995132446
+    }
+  },
+  "trajectory": {
+    "path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/logs/base_s08_s10_role_fsm_trajectory.jsonl",
+    "sha256": "b46203ae13d990d018b1a260cff3429c65584ecd2263b6580ff523f75be79155",
+    "schema_version": "blackout.scripted_trajectory.v1",
+    "record_every": 10,
+    "step_records": 65
+  },
+  "verification": {
+    "three_workers_completed_pickup_deposit_retarget": true,
+    "workers_started_with_unique_battery_targets": true,
+    "guard_transformed_and_patrolled": true,
+    "carrier_transformed_and_delivered_far_battery": true,
+    "role_classes_remain_worker_worker_worker_guard_carrier": true,
+    "team_score_increased": true,
+    "no_decoded_wall_cell_entered": true,
+    "trajectory_records_written": true
+  }
+}
