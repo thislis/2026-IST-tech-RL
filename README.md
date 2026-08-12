@@ -73,8 +73,8 @@ win / draw / loss, 평균 최종 점수 차
     | BASE-S08 | ☑ 노동자 FSM 구현 | [`blackout_rl/scripted_fsm.py`](blackout_rl/scripted_fsm.py), [`reports/base_s08_worker_fsm.md`](reports/base_s08_worker_fsm.md): 노동자 3명의 고유 Battery 회수→창고 적재→재탐색 및 포화 창고 재배정 검증 |
     | BASE-S09 | ☑ 경비원 FSM 구현 | [`reports/base_s09_guard_fsm.md`](reports/base_s09_guard_fsm.md), [`logs/base_s08_s10_role_fsm.json`](logs/base_s08_s10_role_fsm.json): 중앙 성소 Hunter 변신→창고 순찰과 적 추격 전환 검증 |
     | BASE-S10 | ☑ 전달자 FSM 구현 | [`reports/base_s10_carrier_fsm.md`](reports/base_s10_carrier_fsm.md), [`logs/base_s08_s10_role_fsm_trajectory.jsonl`](logs/base_s08_s10_role_fsm_trajectory.jsonl): 본진 Carrier 변신→원거리 Battery 회수·적재 및 적 접근 회피 검증 |
-    | BASE-S11 | ☐ 20초 흡수 주기 전략 구현 | 흡수 직전 안전한 적재, 직후 새 수집, 상황별 약탈 시도 |
-    | BASE-S12 | ☐ 위험 지도 구현 | 적 위치 주변 회피 비용과 경비 경로 비용 반영 |
+    | BASE-S11 | ☑ 20초 흡수 주기 전략 구현 | [`blackout_rl/strategy.py`](blackout_rl/strategy.py), [`reports/base_s11_absorption_strategy.md`](reports/base_s11_absorption_strategy.md): `time_left` 기반 20초 phase 복원, 직전 적재·직후 수집·조건부 약탈과 실제 첫 흡수 통과 검증 |
+    | BASE-S12 | ☑ 위험 지도 구현 | [`reports/base_s12_danger_map.md`](reports/base_s12_danger_map.md), [`logs/base_s11_s12_strategy.json`](logs/base_s11_s12_strategy.json): 적 위치 거리 비용과 역할별 weighted A*를 실제 중앙 적 위치에서 경로 비교 검증 |
     | BASE-S13 | ☑ scripted trajectory recorder 구현 | [`blackout_rl/trajectory.py`](blackout_rl/trajectory.py), [`logs/base_s13_coordination_trajectory.jsonl`](logs/base_s13_coordination_trajectory.jsonl), [`reports/base_s13_trajectory_recorder.md`](reports/base_s13_trajectory_recorder.md): obs/action/role/target/reward/score/seed JSONL 기록과 hash·round-trip 검증 |
     | BASE-S14 | ☐ scripted-vs-random 평가 | paired held-out seeds에서 일관된 우세 및 side 편향 없음 |
     | BASE-S15 | ☐ 특수 아이템 정책을 선택적으로 추가 | 배터리-only agent보다 실제 성능이 좋아질 때만 유지 |

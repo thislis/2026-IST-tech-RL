@@ -19,6 +19,15 @@ from .semantic_map import (
     normalized_to_cell,
 )
 from .team_state import Role, TeamSnapshot, TeamStateTracker, UnitState
+from .strategy import (
+    AbsorptionState,
+    DangerMap,
+    StrategyMode,
+    WeightedAStarPlanner,
+    absorption_state,
+    build_danger_map,
+    choose_strategy_mode,
+)
 
 
 COLLECTOR_CLASS_ID = 0
@@ -145,7 +154,8 @@ def nearest_reachable_cell(
             path = planner.plan(start, target)
         except PathNotFound:
             continue
-        candidates.append((path_cost(path), target.x, target.y, target, path))
+        cost = planner.path_cost(path) if hasattr(planner, "path_cost") else path_cost(path)
+        candidates.append((cost, target.x, target.y, target, path))
     if not candidates:
         raise PathNotFound(f"no reachable target from {start}")
     cost, _, _, target, path = min(candidates)
@@ -163,7 +173,8 @@ def farthest_reachable_cell(
             path = planner.plan(start, target)
         except PathNotFound:
             continue
-        candidates.append((path_cost(path), -target.x, -target.y, target, path))
+        cost = planner.path_cost(path) if hasattr(planner, "path_cost") else path_cost(path)
+        candidates.append((cost, -target.x, -target.y, target, path))
     if not candidates:
         raise PathNotFound(f"no reachable target from {start}")
     cost, _, _, target, path = max(candidates)
@@ -218,6 +229,8 @@ class ScriptedTeamController:
         chase_radius_cells: int = 5,
         evade_radius_cells: int = 3,
         evade_release_radius_cells: int = 5,
+        enable_absorption_strategy: bool = True,
+        enable_danger_map: bool = True,
     ) -> None:
         self.team = team
         self.agents = team_agents(team)
@@ -225,6 +238,8 @@ class ScriptedTeamController:
         self.chase_radius_cells = chase_radius_cells
         self.evade_radius_cells = evade_radius_cells
         self.evade_release_radius_cells = evade_release_radius_cells
+        self.enable_absorption_strategy = enable_absorption_strategy
+        self.enable_danger_map = enable_danger_map
         self._decoder = SemanticMapDecoder()
         self.reset()
 
@@ -237,6 +252,10 @@ class ScriptedTeamController:
         self._runtimes: dict[str, _Runtime] = {}
         self._patrol_cells: tuple[GridCell, ...] = ()
         self._last_time_left: float | None = None
+        self._last_strategy_mode: StrategyMode | None = None
+        self.last_absorption_state: AbsorptionState | None = None
+        self.last_strategy_mode: StrategyMode | None = None
+        self.last_danger_maps: dict[Role, DangerMap] = {}
         self.last_events: list[dict] = []
         self.last_decisions: dict[str, FSMDecision] = {}
         self.last_snapshot: TeamSnapshot | None = None
@@ -308,12 +327,23 @@ class ScriptedTeamController:
         if not self._patrol_cells:
             raise RuntimeError("could not derive guard patrol cells")
 
-    def _planner_avoiding(self, forbidden: Iterable[GridCell]) -> AStarPlanner:
+    def _planner_avoiding(
+        self,
+        forbidden: Iterable[GridCell],
+        *,
+        role: Role | None = None,
+    ) -> AStarPlanner | WeightedAStarPlanner:
         assert self._planner is not None
         grid = self._planner.walkable_grid.copy()
         for cell in forbidden:
             if 0 <= cell.x < grid.shape[1] and 0 <= cell.y < grid.shape[0]:
                 grid[cell.y, cell.x] = False
+        if self.enable_danger_map and role is not None and role in self.last_danger_maps:
+            return WeightedAStarPlanner(
+                grid,
+                self.last_danger_maps[role].traversal_multiplier,
+                allow_diagonal=self._planner.allow_diagonal,
+            )
         return AStarPlanner(grid, allow_diagonal=self._planner.allow_diagonal)
 
     def _forbidden_cells(self, runtime: _Runtime, state: UnitState) -> set[GridCell]:
@@ -370,7 +400,8 @@ class ScriptedTeamController:
             return
         if route is None:
             planner = self._planner_avoiding(
-                self._forbidden_cells(runtime, state) | runtime.temporarily_blocked
+                self._forbidden_cells(runtime, state) | runtime.temporarily_blocked,
+                role=runtime.role,
             )
             route = planner.plan(state.cell, target)
         runtime.target = target
@@ -537,6 +568,8 @@ class ScriptedTeamController:
         self,
         snapshot: TeamSnapshot,
         battery_cells: tuple[GridCell, ...],
+        *,
+        selection: str = "nearest_greedy",
     ) -> None:
         seeking = tuple(
             state
@@ -552,7 +585,7 @@ class ScriptedTeamController:
             if runtime.target is not None
         }
         worker_forbidden = set(HUNTER_SHRINE_CELLS) | {carrier_shrine_cell(self.team)}
-        planner = self._planner_avoiding(worker_forbidden)
+        planner = self._planner_avoiding(worker_forbidden, role=Role.WORKER)
         assignments = greedy_path_assignment(
             seeking,
             battery_cells,
@@ -568,7 +601,7 @@ class ScriptedTeamController:
                 "battery_assigned",
                 target=[assignment.target.x, assignment.target.y],
                 path_cost=assignment.path_cost,
-                selection="nearest_greedy",
+                selection=selection,
             )
             self._transition(state.agent, WorkerPhase.PICKUP, "battery_assigned")
 
@@ -577,7 +610,10 @@ class ScriptedTeamController:
         if runtime.target is not None:
             return
         assert self._static_map is not None
-        planner = self._planner_avoiding(self._forbidden_cells(runtime, state))
+        planner = self._planner_avoiding(
+            self._forbidden_cells(runtime, state),
+            role=runtime.role,
+        )
         candidates = set(self._static_map.cells("ally_storage")) - runtime.failed_storage_cells
         if not candidates:
             runtime.failed_storage_cells.clear()
@@ -608,6 +644,68 @@ class ScriptedTeamController:
             for index in range(start, start + N_TEAM_AGENTS)
         )
 
+    def _update_strategy(
+        self,
+        snapshot: TeamSnapshot,
+        enemies: tuple[GridCell, ...],
+        enemy_storage_batteries: int,
+    ) -> None:
+        assert self._planner is not None
+        if self.enable_absorption_strategy:
+            clock = absorption_state(snapshot.time_left)
+            mode = choose_strategy_mode(
+                clock,
+                own_score=snapshot.own_score,
+                opponent_score=snapshot.opponent_score,
+                enemy_storage_batteries=enemy_storage_batteries,
+            )
+        else:
+            clock = absorption_state(snapshot.time_left)
+            mode = StrategyMode.COLLECTION
+        self.last_absorption_state = clock
+        self.last_strategy_mode = mode
+        self.last_danger_maps = {
+            role: build_danger_map(self._planner.walkable_grid, enemies, role)
+            for role in Role
+        } if self.enable_danger_map else {}
+        if mode != self._last_strategy_mode:
+            for agent in self.agents:
+                self._emit(
+                    agent,
+                    "strategy_mode",
+                    mode=mode.value,
+                    absorption_phase=clock.phase.value,
+                    seconds_until_absorption=clock.seconds_until_absorption,
+                    cycle_index=clock.cycle_index,
+                )
+            self._last_strategy_mode = mode
+
+    def _apply_secure_mode(self, snapshot: TeamSnapshot) -> None:
+        """Late-cycle safety: carrying collectors immediately target allied storage."""
+        if self.last_strategy_mode != StrategyMode.SECURE:
+            return
+        for state in snapshot.units:
+            runtime = self._runtimes[state.agent]
+            if runtime.role == Role.GUARD or not state.is_carrying:
+                continue
+            delivery_phase: FSMPhase = (
+                WorkerPhase.DELIVER
+                if runtime.role == Role.WORKER
+                else CarrierPhase.DELIVER
+            )
+            if runtime.phase != delivery_phase:
+                self._transition(state.agent, delivery_phase, "secure_before_absorption")
+                self._clear_target(state.agent)
+                self._emit(
+                    state.agent,
+                    "secure_delivery",
+                    seconds_until_absorption=(
+                        self.last_absorption_state.seconds_until_absorption
+                        if self.last_absorption_state is not None
+                        else None
+                    ),
+                )
+
     @staticmethod
     def _chebyshev(first: GridCell, second: GridCell) -> int:
         return max(abs(first.x - second.x), abs(first.y - second.y))
@@ -615,7 +713,10 @@ class ScriptedTeamController:
     def _update_guard(self, state: UnitState, enemies: tuple[GridCell, ...]) -> None:
         runtime = self._runtimes[state.agent]
         if runtime.phase == GuardPhase.SEEK_SHRINE:
-            planner = self._planner_avoiding({carrier_shrine_cell(self.team)})
+            planner = self._planner_avoiding(
+                {carrier_shrine_cell(self.team)},
+                role=Role.GUARD,
+            )
             target, route, cost = nearest_reachable_cell(
                 state.cell,
                 HUNTER_SHRINE_CELLS,
@@ -689,7 +790,10 @@ class ScriptedTeamController:
         runtime = self._runtimes[state.agent]
         if runtime.phase == CarrierPhase.SEEK_SHRINE:
             target = carrier_shrine_cell(self.team)
-            planner = self._planner_avoiding(HUNTER_SHRINE_CELLS)
+            planner = self._planner_avoiding(
+                HUNTER_SHRINE_CELLS,
+                role=Role.CARRIER,
+            )
             route = planner.plan(state.cell, target)
             self._set_target(state, target, route=route)
             self._emit(
@@ -740,10 +844,11 @@ class ScriptedTeamController:
             if not available:
                 return
             assert self._planner is not None
+            planner = self._planner_avoiding((), role=Role.CARRIER)
             target, route, cost = farthest_reachable_cell(
                 state.cell,
                 available,
-                self._planner,
+                planner,
             )
             self._set_target(state, target, route=route)
             self._emit(
@@ -768,7 +873,8 @@ class ScriptedTeamController:
         if waypoint is not None and waypoint not in (state.cell, runtime.target):
             runtime.temporarily_blocked.add(waypoint)
         planner = self._planner_avoiding(
-            self._forbidden_cells(runtime, state) | runtime.temporarily_blocked
+            self._forbidden_cells(runtime, state) | runtime.temporarily_blocked,
+            role=runtime.role,
         )
         try:
             route = planner.plan(state.cell, runtime.target)
@@ -826,6 +932,9 @@ class ScriptedTeamController:
             observations[self.agents[0]]["graphic"],
             resolution_scale=self._static_map.resolution_scale,
         )
+        enemy_storage_battery_cells = tuple(
+            sorted(set(dynamic_batteries) & set(self._static_map.cells("enemy_storage")))
+        )
         excluded = (
             set(self._static_map.cells("ally_storage"))
             | set(self._static_map.cells("enemy_storage"))
@@ -833,17 +942,36 @@ class ScriptedTeamController:
             | set(CARRIER_SHRINE_BY_TEAM.values())
         )
         batteries = tuple(sorted(set(dynamic_batteries) - excluded))
-        battery_set = set(batteries)
+        # A target in enemy storage remains a valid Battery target while RAID is
+        # active; only assignment eligibility is strategy-gated below.
+        battery_set = set(batteries) | set(enemy_storage_battery_cells)
         self.last_events = []
 
         self._observed_transitions(snapshot, battery_set)
-        self._assign_workers(snapshot, batteries)
-
         enemies = self._enemy_cells(
             observations,
             self._static_map.width_cells,
             self._static_map.height_cells,
         )
+        self._update_strategy(snapshot, enemies, len(enemy_storage_battery_cells))
+        self._apply_secure_mode(snapshot)
+        assignment_batteries = batteries
+        assignment_selection = "nearest_greedy"
+        if self.last_strategy_mode == StrategyMode.RAID:
+            assignment_batteries = tuple(
+                sorted(set(batteries) | set(enemy_storage_battery_cells))
+            )
+            battery_set.update(enemy_storage_battery_cells)
+            assignment_selection = "raid_or_neutral_greedy"
+        # During the final four seconds, do not start another collection trip;
+        # carriers already holding an item still follow their delivery route.
+        if self.last_strategy_mode != StrategyMode.SECURE:
+            self._assign_workers(
+                snapshot,
+                assignment_batteries,
+                selection=assignment_selection,
+            )
+
         state_by_agent = snapshot.by_agent()
         for agent in self.agents:
             state = state_by_agent[agent]
