@@ -68,6 +68,7 @@ PyTorch payload의 필수 key는 다음과 같다.
 - `training`: `global_step`, training seed
 - `observation_contract`, `action_contract`
 - `source`: game/API commit 등 provenance
+- 선택 `experiment`: run ID, 전체 config, seed, git SHA, 상대 ID; registry 등록 시 필수
 - 선택 `optimizer_state`: 학습 재개용이며 제출 시 제거 가능
 
 `save_checkpoint()`는 저장 전에 schema를 검증하고, `load_checkpoint()`는 `weights_only=True`,

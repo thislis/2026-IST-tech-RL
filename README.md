@@ -58,7 +58,7 @@ win / draw / loss, 평균 최종 점수 차
 상대 checkpoint별 성능
 ```
 
-- [ ]  Phase 2
+- [x]  Phase 2
     - [x]  2-1
     
     | ID | Todo | 산출물 및 완료 조건 |
@@ -87,7 +87,7 @@ win / draw / loss, 평균 최종 점수 차
     1명: 본진 성소 → 전달자 변신 → 먼 배터리 운반
     ```
     
-    - [ ]  2-2
+    - [x]  2-2
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
@@ -103,9 +103,9 @@ win / draw / loss, 평균 최종 점수 차
     | BASE-R10 | ☑ score-delta team reward와 terminal reward 연결 | [`blackout_rl/training_reward.py`](blackout_rl/training_reward.py), [`reports/base_r10_r12_fixed_opponent_bc.md`](reports/base_r10_r12_fixed_opponent_bc.md): 팀 공유 score-delta·winner bonus와 Unity shaping off/on/combined 검증 |
     | BASE-R11 | ☑ 고정 scripted opponent 연결 | [`blackout_rl/frozen_opponent.py`](blackout_rl/frozen_opponent.py): trainable state 없는 battery-only scripted opponent와 episode reset·fingerprint 불변 검증 |
     | BASE-R12 | ☑ scripted trajectory 기반 BC pretraining 실험 | [`blackout_rl/behavior_cloning.py`](blackout_rl/behavior_cloning.py), [`logs/base_r12_bc_warm_start.json`](logs/base_r12_bc_warm_start.json): 별도 held-out trajectory에서 scratch 대비 NLL `2.1738→2.1145`, 동일 environment-step budget 기록 |
-    | BASE-R13 | ☐ checkpoint와 experiment registry 구현 | config, seed, git SHA, 상대 ID를 checkpoint와 함께 저장 |
+    | BASE-R13 | ☑ checkpoint와 experiment registry 구현 | [`blackout_rl/experiment_registry.py`](blackout_rl/experiment_registry.py), [`experiments/registry.jsonl`](experiments/registry.jsonl), [`reports/base_r13_r15_registry_evaluation.md`](reports/base_r13_r15_registry_evaluation.md): config·seed·git SHA·opponent ID와 artifact/config SHA를 checkpoint/registry에 저장·검증 |
     | BASE-R14 | ☑ 제출용 deterministic policy wrapper 구현 | [`blackout_rl/model_contract.py`](blackout_rl/model_contract.py), [`tests/test_ippo_model.py`](tests/test_ippo_model.py): `forward(vector, graphic) → (B,2)`, argmax와 `[-1,1]` 계약 검증 |
-    | BASE-R15 | ☐ random/scripted/IPPO 평가 matrix 작성 | 같은 seed와 side swap으로 성능 비교 |
+    | BASE-R15 | ☑ random/scripted/IPPO 평가 matrix 작성 | [`eval/policy_matrix.py`](eval/policy_matrix.py), [`logs/base_r15_policy_matrix_seed1401.json`](logs/base_r15_policy_matrix_seed1401.json): 공통 environment seed·opponent artifact/RNG seed·side swap으로 3개 policy 비교, scripted > random > PPO-step-0 IPPO baseline |
     
     #### IPPO actor 권장 구조
     

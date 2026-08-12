@@ -52,7 +52,19 @@
       "type": "object",
       "required": ["distribution", "output_shape", "range", "inference"]
     },
-    "source": {"type": "object", "additionalProperties": {"type": "string"}}
+    "source": {"type": "object", "additionalProperties": {"type": "string"}},
+    "experiment": {
+      "type": "object",
+      "required": ["run_id", "config", "seed", "git_sha", "opponent_id"],
+      "properties": {
+        "run_id": {"type": "string", "minLength": 1},
+        "config": {"type": "object"},
+        "seed": {"type": "integer"},
+        "git_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "opponent_id": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    }
   },
   "additionalProperties": false
 }
