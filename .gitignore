@@ -20,3 +20,8 @@ dist/
 .env
 .DS_Store
 files_directory.md
+
+# checkpoint and logs files for tests
+checkpoints/*.pt
+checkpoints
+logs/

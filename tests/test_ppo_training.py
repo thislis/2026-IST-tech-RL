@@ -190,7 +190,8 @@ class ParallelCollectorTests(unittest.TestCase):
         self.assertEqual(len(buffer), 5)
         self.assertEqual(len(batch), 25)
         self.assertEqual(tuple(batch.vector.shape), (25, 96))
-        self.assertEqual(tuple(batch.graphic.shape), (25, 11, 16, 16))
+        self.assertEqual(tuple(batch.graphic.shape), (25, 16, 16))
+        self.assertEqual(batch.graphic.dtype, torch.uint8)
         self.assertEqual(tuple(batch.action_index.shape), (25,))
         self.assertEqual(tuple(batch.old_log_prob.shape), (25,))
         self.assertEqual(tuple(batch.old_value.shape), (25,))
@@ -250,6 +251,22 @@ class ParallelCollectorTests(unittest.TestCase):
         batch = collector.collect(2, seed=11).as_batch(gamma=0.99, gae_lambda=0.95)
         self.assertIsNotNone(batch.teacher_action_index)
         self.assertTrue(torch.equal(batch.teacher_action_index, torch.zeros(10, dtype=torch.int64)))
+
+    def test_teacher_forcing_executes_teacher_actions(self) -> None:
+        env = MockParallelEnv()
+        collector = ParallelRolloutCollector(
+            env,
+            small_model(),
+            NoOpPolicy(),
+            learning_team=0,
+            teacher=NoOpPolicy(),
+            teacher_forcing=True,
+        )
+        collector.collect(1, seed=14)
+        for agent in team_agents(0):
+            self.assertTrue(
+                np.array_equal(env.actions_seen[0][agent], np.zeros(2, dtype=np.float32))
+            )
 
 
 class PPOUpdateTests(unittest.TestCase):

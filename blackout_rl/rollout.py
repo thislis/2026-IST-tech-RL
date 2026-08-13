@@ -7,11 +7,13 @@ from typing import Any, Callable, Mapping, Protocol, Sequence
 
 import numpy as np
 import torch
+from torch.nn import functional as F
 
 from .action_distribution import select_categorical_action
 from .batching import N_TEAM_AGENTS, team_agents
 from .ippo_model import IPPOActorCritic
 from .model_contract import team_model_input
+from .navigation import PathNotFound
 
 
 class ParallelEnv(Protocol):
@@ -84,6 +86,18 @@ class RolloutBatch:
             value = getattr(self, name)
             values[name] = value.to(device) if isinstance(value, torch.Tensor) else value
         return RolloutBatch(**values)
+
+
+def decode_rollout_graphic(graphic: torch.Tensor) -> torch.Tensor:
+    """Expand compact semantic IDs, while accepting legacy one-hot batches."""
+
+    if graphic.ndim == 4:
+        return graphic.to(torch.float32)
+    if graphic.ndim != 3 or graphic.dtype != torch.uint8:
+        raise ValueError("rollout graphic must be uint8 (B,H,W) IDs or (B,C,H,W)")
+    return F.one_hot(graphic.to(torch.int64), num_classes=11).permute(0, 3, 1, 2).to(
+        torch.float32
+    )
 
 
 def concatenate_rollout_batches(batches: Sequence[RolloutBatch]) -> RolloutBatch:
@@ -300,6 +314,8 @@ class ParallelRolloutCollector:
         device: str | torch.device = "cpu",
         reward_transform: RewardTransform | None = None,
         teacher: OpponentPolicy | None = None,
+        teacher_forcing: bool = False,
+        teacher_only_collection: bool = False,
     ) -> None:
         self.env = env
         self.model = model.to(device)
@@ -310,9 +326,16 @@ class ParallelRolloutCollector:
         self.opponent_agents = team_agents(1 - learning_team)
         self.reward_transform = reward_transform or _unity_reward_transform
         self.teacher = teacher
+        if teacher_forcing and teacher is None:
+            raise ValueError("teacher forcing requires a teacher policy")
+        if teacher_only_collection and not teacher_forcing:
+            raise ValueError("teacher-only collection requires teacher forcing")
+        self.teacher_forcing = teacher_forcing
+        self.teacher_only_collection = teacher_only_collection
         self._observations: dict[str, dict[str, np.ndarray]] | None = None
         self._episode_start = True
         self.episodes_completed = 0
+        self.teacher_failures = 0
 
     def reset(self, *, seed: int | None = None) -> None:
         observations, _ = self.env.reset(seed=seed)
@@ -337,34 +360,73 @@ class ParallelRolloutCollector:
         for _ in range(time_steps):
             assert self._observations is not None
             observations = self._observations
+            input_device = "cpu" if self.teacher_only_collection else self.device
             model_input = team_model_input(
-                observations, self.learning_team, device=self.device
+                observations, self.learning_team, device=input_device
             )
-            with torch.inference_mode():
-                output = self.model(
-                    model_input.vector, model_input.graphic, model_input.slot_id
+            step_device = model_input.vector.device
+            if self.teacher_only_collection:
+                # During pure teacher-forced replay collection, PPO statistics and
+                # current-policy actions are discarded. Avoid two neural-network
+                # inferences per Unity step and populate the unused fields with
+                # neutral values instead.
+                action_index = torch.zeros(
+                    len(self.controlled_agents), dtype=torch.int64, device=step_device
                 )
-                selection = select_categorical_action(output.action_logits)
-
-            learning_actions = {
-                agent: selection.action[row].cpu().numpy().astype(np.float32, copy=False)
-                for row, agent in enumerate(model_input.agent_names)
-            }
+                log_prob = torch.zeros(
+                    len(self.controlled_agents), dtype=torch.float32, device=step_device
+                )
+                value = torch.zeros_like(log_prob)
+                learning_actions = {
+                    agent: np.zeros(2, dtype=np.float32)
+                    for agent in model_input.agent_names
+                }
+            else:
+                with torch.inference_mode():
+                    output = self.model(
+                        model_input.vector, model_input.graphic, model_input.slot_id
+                    )
+                    selection = select_categorical_action(output.action_logits)
+                action_index = selection.index
+                log_prob = selection.log_prob
+                value = output.value
+                learning_actions = {
+                    agent: selection.action[row].cpu().numpy().astype(
+                        np.float32, copy=False
+                    )
+                    for row, agent in enumerate(model_input.agent_names)
+                }
             teacher_action_index = None
             if self.teacher is not None:
                 from .behavior_cloning import action_vector_to_index
 
-                teacher_actions = self.teacher.act(observations, self.controlled_agents)
-                if set(teacher_actions) != set(self.controlled_agents):
-                    raise ValueError("teacher policy must return exactly its five agent actions")
-                teacher_action_index = torch.tensor(
-                    [
-                        action_vector_to_index(teacher_actions[agent])
-                        for agent in self.controlled_agents
-                    ],
-                    dtype=torch.int64,
-                    device=self.device,
-                )
+                try:
+                    teacher_actions = self.teacher.act(observations, self.controlled_agents)
+                except PathNotFound:
+                    # A current-policy learner can visit cells outside the scripted
+                    # controller's reachable-state assumptions. Such rows are not
+                    # valid demonstrations and use the standard ignore label.
+                    self.teacher_failures += 1
+                    _reset_if_supported(self.teacher)
+                    teacher_action_index = torch.full(
+                        (len(self.controlled_agents),),
+                        -100,
+                        dtype=torch.int64,
+                        device=step_device,
+                    )
+                else:
+                    if set(teacher_actions) != set(self.controlled_agents):
+                        raise ValueError("teacher policy must return exactly its five agent actions")
+                    teacher_action_index = torch.tensor(
+                        [
+                            action_vector_to_index(teacher_actions[agent])
+                            for agent in self.controlled_agents
+                        ],
+                        dtype=torch.int64,
+                        device=step_device,
+                    )
+                    if self.teacher_forcing:
+                        learning_actions = teacher_actions
             opponent_actions = self.opponent.act(observations, self.opponent_agents)
             if set(opponent_actions) != set(self.opponent_agents):
                 raise ValueError("opponent policy must return exactly its five agent actions")
@@ -374,12 +436,12 @@ class ParallelRolloutCollector:
             terminated = torch.tensor(
                 [bool(terminations[agent]) for agent in self.controlled_agents],
                 dtype=torch.bool,
-                device=self.device,
+                device=step_device,
             )
             truncated = torch.tensor(
                 [bool(truncations[agent]) for agent in self.controlled_agents],
                 dtype=torch.bool,
-                device=self.device,
+                device=step_device,
             )
             boundary = terminated | truncated
             if bool(torch.any(boundary)) != bool(torch.all(boundary)):
@@ -387,8 +449,8 @@ class ParallelRolloutCollector:
             if bool(torch.any(terminated & truncated)):
                 raise RuntimeError("environment marked a transition terminated and truncated")
 
-            next_value = torch.zeros_like(output.value)
-            if not bool(torch.all(terminated)):
+            next_value = torch.zeros_like(value)
+            if not self.teacher_only_collection and not bool(torch.all(terminated)):
                 # Both ordinary transitions and time-limit truncations bootstrap
                 # from the observation returned by the step.
                 next_input = team_model_input(
@@ -407,15 +469,15 @@ class ParallelRolloutCollector:
             reward = torch.tensor(
                 [float(transformed_rewards[agent]) for agent in self.controlled_agents],
                 dtype=torch.float32,
-                device=self.device,
+                device=step_device,
             )
             buffer.add(
                 vector=model_input.vector,
-                graphic=model_input.graphic,
+                graphic=torch.argmax(model_input.graphic, dim=1).to(torch.uint8),
                 slot_id=model_input.slot_id,
-                action_index=selection.index,
-                log_prob=selection.log_prob,
-                value=output.value,
+                action_index=action_index,
+                log_prob=log_prob,
+                value=value,
                 reward=reward,
                 next_value=next_value,
                 terminated=terminated,
