@@ -12,7 +12,7 @@ from torch import nn
 
 from .action_distribution import evaluate_categorical_action
 from .ippo_model import IPPOActorCritic
-from .rollout import RolloutBatch
+from .rollout import RolloutBatch, decode_rollout_graphic
 
 
 PPO_DIAGNOSTIC_SCHEMA_VERSION = "blackout.ppo_diagnostic.v1"
@@ -139,7 +139,9 @@ def ppo_update(
         for start in range(0, len(batch), config.minibatch_size):
             indices = permutation[start : start + config.minibatch_size]
             output = model(
-                batch.vector[indices], batch.graphic[indices], batch.slot_id[indices]
+                batch.vector[indices],
+                decode_rollout_graphic(batch.graphic[indices]),
+                batch.slot_id[indices],
             )
             evaluated = evaluate_categorical_action(
                 output.action_logits, batch.action_index[indices]
@@ -210,7 +212,7 @@ def ppo_update(
             updated_values.append(
                 model(
                     batch.vector[start:stop],
-                    batch.graphic[start:stop],
+                    decode_rollout_graphic(batch.graphic[start:stop]),
                     batch.slot_id[start:stop],
                 ).value
             )

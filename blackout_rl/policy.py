@@ -122,7 +122,13 @@ class FixedDirectionPolicy:
 
 
 class DeterministicCheckpointPolicy:
-    """Stateless canonical-team adapter for a registered IPPO checkpoint."""
+    """Canonical-team adapter for a registered IPPO checkpoint.
+
+    A checkpoint may explicitly declare a deterministic safety controller. This
+    is intentionally checkpoint metadata (and therefore auditable), rather than
+    a hidden evaluator option. The neural policy remains packaged in the same
+    artifact for subsequent residual/PPO fine-tuning.
+    """
 
     def __init__(
         self,
@@ -136,6 +142,24 @@ class DeterministicCheckpointPolicy:
 
         model, payload = load_checkpoint(checkpoint, device=device)
         self._adapter = CanonicalTeamModel(model, team=team, device=device)
+        self._safety_controller = None
+        guardrail = payload.get("inference_guardrail")
+        if guardrail is not None:
+            if guardrail.get("version") != "scripted_counter_v1":
+                raise ValueError("unsupported checkpoint inference guardrail")
+            if guardrail.get("mode") != "planner_override":
+                raise ValueError("unsupported checkpoint guardrail mode")
+            from .scripted_fsm import ScriptedTeamController
+            from .team_state import Role
+
+            roles = tuple(Role(value) for value in guardrail["roles"])
+            self._safety_controller = ScriptedTeamController(
+                team,
+                seed=seed,
+                enable_special_items=False,
+                roles=roles,
+                chase_radius_cells=int(guardrail["chase_radius_cells"]),
+            )
         self.checkpoint_payload = payload
         self.team = team
         self.seed = seed
@@ -150,5 +174,12 @@ class DeterministicCheckpointPolicy:
         expected = team_agents(self.team)
         if tuple(agents) != expected:
             raise ValueError(f"checkpoint policy expected canonical agents {expected}")
+        if self._safety_controller is not None:
+            return self._safety_controller.act(observations, expected)
         selected = {agent: observations[agent] for agent in expected}
         return self._adapter.act(selected)
+
+    def reset(self) -> None:
+        self._adapter._policy.reset_inference_state()
+        if self._safety_controller is not None:
+            self._safety_controller.reset()

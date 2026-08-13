@@ -8,10 +8,12 @@ import torch
 
 from blackout_rl import NoOpPolicy, ParallelRolloutCollector
 from blackout_rl.ippo_training import (
+    TeacherReplayBuffer,
     online_imitation_update,
     passed_win_rate,
     required_wins,
     select_training_device,
+    teacher_replay_update,
 )
 from tests.test_ppo_training import MockParallelEnv, small_model
 
@@ -53,6 +55,85 @@ class OnlineImitationTests(unittest.TestCase):
         self.assertGreaterEqual(metrics.accuracy, 0.0)
         self.assertLessEqual(metrics.accuracy, 1.0)
         self.assertEqual(metrics.samples, len(batch))
+
+    def test_compressed_teacher_replay_wraps_and_updates(self) -> None:
+        model = small_model()
+        collector = ParallelRolloutCollector(
+            MockParallelEnv(), model, NoOpPolicy(), learning_team=0, teacher=NoOpPolicy()
+        )
+        batch = collector.collect(4, seed=10).as_batch(gamma=0.99, gae_lambda=0.95)
+        replay = TeacherReplayBuffer(capacity=15, seed=3)
+        replay.add(batch)
+        self.assertEqual(len(replay), 15)
+        self.assertEqual(replay.graphic_ids.dtype, torch.uint8)
+        metrics = teacher_replay_update(
+            model,
+            torch.optim.Adam(model.parameters(), lr=1e-3),
+            replay,
+            minibatches=2,
+            minibatch_size=7,
+        )
+        self.assertEqual(metrics.samples, 14)
+        self.assertGreaterEqual(metrics.accuracy, 0.0)
+
+    def test_teacher_replay_ignores_unavailable_labels(self) -> None:
+        model = small_model()
+        collector = ParallelRolloutCollector(
+            MockParallelEnv(), model, NoOpPolicy(), learning_team=0, teacher=NoOpPolicy()
+        )
+        batch = collector.collect(2, seed=12).as_batch(gamma=0.99, gae_lambda=0.95)
+        batch.teacher_action_index.fill_(-100)
+        replay = TeacherReplayBuffer(capacity=20)
+        replay.add(batch)
+        self.assertEqual(len(replay), 0)
+
+    def test_teacher_replay_checkpoint_round_trip_preserves_sampling(self) -> None:
+        model = small_model()
+        collector = ParallelRolloutCollector(
+            MockParallelEnv(), model, NoOpPolicy(), learning_team=0, teacher=NoOpPolicy()
+        )
+        batch = collector.collect(3, seed=13).as_batch(gamma=0.99, gae_lambda=0.95)
+        replay = TeacherReplayBuffer(capacity=20, seed=4)
+        replay.add(batch)
+        restored = TeacherReplayBuffer(capacity=20, seed=999)
+        restored.load_state_dict(replay.state_dict())
+        self.assertEqual(len(restored), len(replay))
+        expected = replay.sample(7, device="cpu")
+        actual = restored.sample(7, device="cpu")
+        for expected_tensor, actual_tensor in zip(expected, actual):
+            self.assertTrue(torch.equal(expected_tensor, actual_tensor))
+
+    def test_teacher_replay_can_restore_into_larger_capacity(self) -> None:
+        model = small_model()
+        collector = ParallelRolloutCollector(
+            MockParallelEnv(), model, NoOpPolicy(), learning_team=0, teacher=NoOpPolicy()
+        )
+        batch = collector.collect(3, seed=15).as_batch(gamma=0.99, gae_lambda=0.95)
+        replay = TeacherReplayBuffer(capacity=10, seed=5)
+        replay.add(batch)
+        restored = TeacherReplayBuffer(capacity=20, seed=999)
+        restored.load_state_dict(replay.state_dict())
+        self.assertEqual(len(restored), 10)
+        self.assertEqual(restored.position, 10)
+        restored.add(batch)
+        self.assertEqual(len(restored), 20)
+
+    def test_teacher_replay_class_balancing_rejects_missing_classes(self) -> None:
+        model = small_model()
+        collector = ParallelRolloutCollector(
+            MockParallelEnv(), model, NoOpPolicy(), learning_team=0, teacher=NoOpPolicy()
+        )
+        batch = collector.collect(3, seed=18).as_batch(gamma=0.99, gae_lambda=0.95)
+        replay = TeacherReplayBuffer(32, seed=18)
+        replay.add(batch)
+        with self.assertRaisesRegex(ValueError, "missing an action class"):
+            teacher_replay_update(
+                model,
+                torch.optim.Adam(model.parameters()),
+                replay,
+                minibatches=1,
+                class_balance_power=0.5,
+            )
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ from .semantic_map import (
     normalized_to_cell,
 )
 from .team_state import Role, TeamSnapshot, TeamStateTracker, UnitState
+from .team_state import DEFAULT_ROLES
 from .strategy import (
     AbsorptionState,
     DangerMap,
@@ -252,6 +253,7 @@ class ScriptedTeamController:
         enable_absorption_strategy: bool = True,
         enable_danger_map: bool = True,
         enable_special_items: bool = False,
+        roles: tuple[Role, ...] = DEFAULT_ROLES,
     ) -> None:
         self.team = team
         self.agents = team_agents(team)
@@ -262,6 +264,9 @@ class ScriptedTeamController:
         self.enable_absorption_strategy = enable_absorption_strategy
         self.enable_danger_map = enable_danger_map
         self.enable_special_items = enable_special_items
+        if len(roles) != N_TEAM_AGENTS or any(not isinstance(role, Role) for role in roles):
+            raise ValueError("roles must contain five Role values")
+        self.roles = tuple(roles)
         self._decoder = SemanticMapDecoder()
         self.reset()
 
@@ -313,6 +318,7 @@ class ScriptedTeamController:
             self.team,
             width_cells=decoded.width_cells,
             height_cells=decoded.height_cells,
+            roles=dict(zip(self.agents, self.roles)),
         )
         roles = self._tracker.roles
         for agent in self.agents:

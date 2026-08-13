@@ -63,6 +63,12 @@ class SubmissionPolicy(nn.Module):
     def __init__(self, **model_kwargs: Any) -> None:
         super().__init__()
         self.actor_critic = IPPOActorCritic(**model_kwargs)
+        self._inference_hidden: torch.Tensor | None = None
+        self._last_time_left: float | None = None
+
+    def reset_inference_state(self) -> None:
+        self._inference_hidden = None
+        self._last_time_left = None
 
     def forward_with_slots(
         self,
@@ -70,7 +76,23 @@ class SubmissionPolicy(nn.Module):
         graphic: torch.Tensor,
         slot_id: torch.Tensor,
     ) -> torch.Tensor:
-        return deterministic_action(self.actor_critic(vector, graphic, slot_id).action_logits)
+        recurrent = self.actor_critic.model_config["recurrent_version"] == "gru_v1"
+        if recurrent:
+            time_left = float(vector[0, -1])
+            if self._last_time_left is not None and time_left > self._last_time_left + 1e-5:
+                self._inference_hidden = None
+            output, self._inference_hidden = self.actor_critic.forward_recurrent(
+                vector, graphic, slot_id, self._inference_hidden
+            )
+            if self._inference_hidden is not None:
+                self._inference_hidden = self._inference_hidden.detach()
+            self._last_time_left = time_left
+            actor_output = output.action_logits
+        else:
+            actor_output = self.actor_critic(vector, graphic, slot_id).action_logits
+        if self.actor_critic.model_config["action_head_version"] == "continuous_tanh_v1":
+            return torch.tanh(actor_output)
+        return deterministic_action(actor_output)
 
     def forward(self, vector: torch.Tensor, graphic: torch.Tensor) -> torch.Tensor:
         if vector.shape[0] != N_TEAM_AGENTS:
@@ -130,10 +152,20 @@ def checkpoint_payload(
             "slot_ids": list(range(N_TEAM_AGENTS)),
         },
         "action_contract": {
-            "distribution": "categorical_9",
+            "distribution": (
+                "continuous_tanh_v1"
+                if model.actor_critic.model_config["action_head_version"]
+                == "continuous_tanh_v1"
+                else "categorical_9"
+            ),
             "output_shape": [2],
             "range": [-1.0, 1.0],
-            "inference": "deterministic_argmax",
+            "inference": (
+                "deterministic_tanh_mean"
+                if model.actor_critic.model_config["action_head_version"]
+                == "continuous_tanh_v1"
+                else "deterministic_argmax"
+            ),
         },
         "source": dict(source or {}),
     }
@@ -164,7 +196,10 @@ def validate_checkpoint(payload: Mapping[str, Any]) -> None:
         raise TypeError("policy_state must be a state-dict mapping")
     if payload["observation_contract"].get("team_batch_size") != N_TEAM_AGENTS:
         raise ValueError("checkpoint team batch size does not match runtime contract")
-    if payload["action_contract"].get("distribution") != "categorical_9":
+    if payload["action_contract"].get("distribution") not in {
+        "categorical_9",
+        "continuous_tanh_v1",
+    }:
         raise ValueError("checkpoint action distribution does not match runtime contract")
     if "experiment" in payload:
         experiment = payload["experiment"]

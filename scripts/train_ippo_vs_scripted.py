@@ -4,7 +4,7 @@
 from __future__ import annotations
 
 import argparse
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import asdict
 from datetime import datetime, timezone
 import json
@@ -30,22 +30,26 @@ from blackout_rl import (  # noqa: E402
     FrozenScriptedOpponent,
     PPODiagnosticLogger,
     PPOConfig,
+    PPODiagnostics,
     ParallelRolloutCollector,
+    RandomPolicy,
     RewardMode,
     ScriptedTeamController,
     SubmissionPolicy,
     TeamTrainingReward,
+    TeacherReplayBuffer,
     TrainingRewardConfig,
     checkpoint_payload,
     concatenate_rollout_batches,
     load_checkpoint,
-    online_imitation_update,
     ppo_update,
     save_checkpoint,
+    teacher_replay_update,
 )
 from blackout_rl.ippo_training import passed_win_rate, required_wins, select_training_device  # noqa: E402
 from blackout_rl.logging_schema import SERIES_SCHEMA_VERSION, validate_series_log, write_json  # noqa: E402
 from blackout_rl.policy import PolicyArtifact  # noqa: E402
+from blackout_rl.team_state import Role  # noqa: E402
 from eval.evaluator import evaluate_episode, summarize_episodes  # noqa: E402
 from eval.paired_series import parse_seeds  # noqa: E402
 
@@ -192,6 +196,7 @@ def _save_training_state(
     seed: int,
     run_id: str,
     config: dict,
+    teacher_replay: TeacherReplayBuffer | None = None,
 ) -> None:
     policy = _policy_from_actor_critic(model)
     identity = ExperimentIdentity(
@@ -199,7 +204,7 @@ def _save_training_state(
         config=config,
         seed=seed,
         git_sha=_git_sha(),
-        opponent_id="scripted-battery-v1",
+        opponent_id=str(config["opponent"]["policy_id"]),
     )
     payload = checkpoint_payload(
         policy,
@@ -212,6 +217,8 @@ def _save_training_state(
         },
         experiment=identity.checkpoint_metadata(),
     )
+    if teacher_replay is not None:
+        payload["teacher_replay_state"] = teacher_replay.state_dict()
     path.parent.mkdir(parents=True, exist_ok=True)
     save_checkpoint(path, payload)
 
@@ -248,6 +255,7 @@ def main() -> int:
     parser.add_argument("--device", choices=("auto", "cpu", "mps"), default="auto")
     parser.add_argument("--seed", type=int, default=7070)
     parser.add_argument("--train-seeds", type=parse_seeds, default=[7071, 7072])
+    parser.add_argument("--train-seed-pool", type=parse_seeds)
     parser.add_argument(
         "--eval-seeds", type=parse_seeds, default=[7171, 7172, 7173, 7174, 7175]
     )
@@ -255,15 +263,37 @@ def main() -> int:
     parser.add_argument("--max-env-steps", type=int, default=500_000)
     parser.add_argument("--rollout-steps", type=int, default=128)
     parser.add_argument("--eval-every", type=int, default=25_000)
+    parser.add_argument("--save-every", type=int, default=5_000)
     parser.add_argument("--learning-rate", type=float, default=3e-4)
     parser.add_argument("--gamma", type=float, default=0.999)
     parser.add_argument("--gae-lambda", type=float, default=0.95)
     parser.add_argument("--update-epochs", type=int, default=4)
     parser.add_argument("--minibatch-size", type=int, default=128)
+    parser.add_argument("--entropy-coef", type=float, default=0.001)
     parser.add_argument("--score-delta-weight", type=float, default=1.0)
     parser.add_argument("--unity-shaping-weight", type=float, default=0.25)
     parser.add_argument("--teacher-epochs", type=int, default=1)
     parser.add_argument("--teacher-loss-coef", type=float, default=1.0)
+    parser.add_argument("--teacher-replay-capacity", type=int, default=30_000)
+    parser.add_argument("--teacher-minibatches", type=int, default=8)
+    parser.add_argument("--teacher-class-balance-power", type=float, default=0.0)
+    parser.add_argument(
+        "--training-opponent", choices=("scripted", "random"), default="scripted"
+    )
+    parser.add_argument("--teacher-forcing", action="store_true")
+    parser.add_argument(
+        "--teacher-role-layout",
+        choices=(
+            "default",
+            "four-worker-carrier",
+            "five-worker",
+            "three-worker-two-guard",
+        ),
+        default="default",
+    )
+    parser.add_argument("--fresh-teacher-replay", action="store_true")
+    parser.add_argument("--teacher-chase-radius", type=int, default=5)
+    parser.add_argument("--skip-ppo", action="store_true")
     parser.add_argument("--time-scale", type=float, default=50.0)
     parser.add_argument("--max-episode-steps", type=int, default=22_000)
     parser.add_argument("--eval-workers", type=int, default=5)
@@ -281,9 +311,18 @@ def main() -> int:
 
     if len(args.train_seeds) != 2:
         parser.error("--train-seeds must contain exactly two seeds, one per physical side")
+    if args.train_seed_pool is not None and (
+        len(args.train_seed_pool) < 2 or len(args.train_seed_pool) % 2
+    ):
+        parser.error("--train-seed-pool must contain an even number of seeds")
     if not args.eval_seeds:
         parser.error("--eval-seeds must not be empty")
-    if args.eval_workers <= 0 or args.rollout_steps <= 0 or args.eval_every <= 0:
+    if (
+        args.eval_workers <= 0
+        or args.rollout_steps <= 0
+        or args.eval_every <= 0
+        or args.save_every <= 0
+    ):
         parser.error("worker, rollout, and evaluation intervals must be positive")
     if args.rollout_steps % 2:
         parser.error("--rollout-steps must be even so both physical sides contribute equally")
@@ -291,6 +330,12 @@ def main() -> int:
         parser.error("--max-env-steps must be positive")
     if args.teacher_epochs <= 0 or args.teacher_loss_coef <= 0.0:
         parser.error("teacher epochs and loss coefficient must be positive")
+    if args.teacher_replay_capacity <= 0 or args.teacher_minibatches <= 0:
+        parser.error("teacher replay capacity and minibatches must be positive")
+    if not 0.0 <= args.teacher_class_balance_power <= 1.0:
+        parser.error("--teacher-class-balance-power must be in [0,1]")
+    if args.teacher_chase_radius <= 0:
+        parser.error("--teacher-chase-radius must be positive")
 
     device = select_training_device(args.device)
     print(f"training_device={device.resolved} reason={device.reason}", flush=True)
@@ -307,15 +352,15 @@ def main() -> int:
     if "optimizer_state" in initial_payload:
         optimizer.load_state_dict(initial_payload["optimizer_state"])
     global_step = int(initial_payload["training"]["global_step"])
-    update = 0
+    update = global_step // args.rollout_steps
     ppo_config = PPOConfig(
         update_epochs=args.update_epochs,
         minibatch_size=args.minibatch_size,
         clip_coef=0.2,
         value_clip_coef=0.2,
         value_loss_coef=0.5,
-        entropy_coef=0.01,
         max_grad_norm=0.5,
+        entropy_coef=args.entropy_coef,
         target_kl=0.03,
     )
     run_config = {
@@ -331,9 +376,19 @@ def main() -> int:
             "ppo": asdict(ppo_config),
             "learning_teams": [0, 1],
             "train_seeds": args.train_seeds,
+            "train_seed_pool": args.train_seed_pool,
             "max_environment_steps": args.max_env_steps,
+            "recovery_save_interval": args.save_every,
             "teacher_epochs": args.teacher_epochs,
             "teacher_loss_coef": args.teacher_loss_coef,
+            "teacher_replay_capacity": args.teacher_replay_capacity,
+            "teacher_minibatches": args.teacher_minibatches,
+            "teacher_class_balance_power": args.teacher_class_balance_power,
+            "teacher_forcing": args.teacher_forcing,
+            "teacher_role_layout": args.teacher_role_layout,
+            "fresh_teacher_replay": args.fresh_teacher_replay,
+            "teacher_chase_radius": args.teacher_chase_radius,
+            "skip_ppo": args.skip_ppo,
         },
         "reward": {
             "mode": RewardMode.COMBINED.value,
@@ -342,7 +397,12 @@ def main() -> int:
             "terminal_win_reward": 1.0,
         },
         "opponent": {
-            "policy_id": "scripted-battery-v1",
+            "policy_id": (
+                "scripted-battery-v1"
+                if args.training_opponent == "scripted"
+                else "random-v1"
+            ),
+            "evaluation_policy_id": "scripted-battery-v1",
             "special_items": False,
             "frozen": True,
         },
@@ -354,13 +414,21 @@ def main() -> int:
         },
     }
     run_id = f"ippo-win70-vs-scripted-seed-{args.seed}"
+    teacher_replay = TeacherReplayBuffer(
+        args.teacher_replay_capacity, seed=args.seed + 300
+    )
+    if "teacher_replay_state" in initial_payload and not args.fresh_teacher_replay:
+        teacher_replay.load_state_dict(initial_payload["teacher_replay_state"])
+        print(f"restored_teacher_replay={len(teacher_replay)}", flush=True)
 
     build = args.build.expanduser().resolve()
     args.latest_checkpoint = args.latest_checkpoint.expanduser().resolve()
     args.checkpoint = args.checkpoint.expanduser().resolve()
     evaluation_index = 0
 
-    def save_and_evaluate() -> dict:
+    def save_and_evaluate(
+        teacher_replay: TeacherReplayBuffer | None = None,
+    ) -> dict:
         nonlocal evaluation_index
         _save_training_state(
             args.latest_checkpoint,
@@ -370,6 +438,7 @@ def main() -> int:
             seed=args.seed,
             run_id=run_id,
             config=run_config,
+            teacher_replay=teacher_replay,
         )
         evaluation_index += 1
         output = args.evaluation_log.with_name(
@@ -417,7 +486,7 @@ def main() -> int:
         return result
 
     if not args.skip_initial_eval:
-        initial_eval = save_and_evaluate()
+        initial_eval = save_and_evaluate(teacher_replay)
         summary = initial_eval["summary"]
         if passed_win_rate(
             wins=summary["wins"], episodes=summary["episodes"], threshold=args.win_rate
@@ -435,6 +504,24 @@ def main() -> int:
     envs: list[ContractBlackOutEnv] = []
     collectors: list[ParallelRolloutCollector] = []
     try:
+        teacher_roles = {
+            "default": (Role.WORKER, Role.WORKER, Role.WORKER, Role.GUARD, Role.CARRIER),
+            "four-worker-carrier": (
+                Role.WORKER,
+                Role.WORKER,
+                Role.WORKER,
+                Role.WORKER,
+                Role.CARRIER,
+            ),
+            "five-worker": (Role.WORKER,) * 5,
+            "three-worker-two-guard": (
+                Role.WORKER,
+                Role.WORKER,
+                Role.WORKER,
+                Role.GUARD,
+                Role.GUARD,
+            ),
+        }[args.teacher_role_layout]
         for learning_team in (0, 1):
             env = ContractBlackOutEnv(
                 env_path=str(build),
@@ -443,15 +530,20 @@ def main() -> int:
                 time_scale=args.time_scale,
             )
             envs.append(env)
+            opponent = (
+                FrozenScriptedOpponent(
+                    1 - learning_team,
+                    seed=args.seed + 100 + learning_team,
+                    enable_special_items=False,
+                )
+                if args.training_opponent == "scripted"
+                else RandomPolicy(seed=args.seed + 100 + learning_team)
+            )
             collectors.append(
                 ParallelRolloutCollector(
                     env,
                     model,
-                    FrozenScriptedOpponent(
-                        1 - learning_team,
-                        seed=args.seed + 100 + learning_team,
-                        enable_special_items=False,
-                    ),
+                    opponent,
                     learning_team=learning_team,
                     device=device.resolved,
                     reward_transform=TeamTrainingReward(learning_team, reward_config),
@@ -459,14 +551,20 @@ def main() -> int:
                         learning_team,
                         seed=args.seed + 200 + learning_team,
                         enable_special_items=False,
+                        roles=teacher_roles,
+                        chase_radius_cells=args.teacher_chase_radius,
                     ),
+                    teacher_forcing=args.teacher_forcing,
+                    teacher_only_collection=args.teacher_forcing and args.skip_ppo,
                 )
             )
 
         diagnostic_logger = PPODiagnosticLogger(args.diagnostics)
         next_eval = ((global_step // args.eval_every) + 1) * args.eval_every
+        next_save = ((global_step // args.save_every) + 1) * args.save_every
         started = time.perf_counter()
         initialized_collectors: set[int] = set()
+        seed_pair_cursor = 0
         while global_step < args.max_env_steps:
             remaining = args.max_env_steps - global_step
             steps = min(args.rollout_steps, remaining)
@@ -476,27 +574,74 @@ def main() -> int:
                 break
             per_side_steps = steps // 2
             side_batches = []
+            seed_pair = (
+                args.train_seed_pool[
+                    2 * seed_pair_cursor : 2 * seed_pair_cursor + 2
+                ]
+                if args.train_seed_pool is not None
+                else None
+            )
+            collection_requests = []
             for collector_index, collector in enumerate(collectors):
-                seed = (
-                    args.train_seeds[collector_index]
-                    if collector_index not in initialized_collectors
-                    else None
-                )
-                buffer = collector.collect(per_side_steps, seed=seed)
+                if seed_pair is not None:
+                    collector.reset(seed=seed_pair[collector_index])
+                    seed = None
+                else:
+                    seed = (
+                        args.train_seeds[collector_index]
+                        if collector_index not in initialized_collectors
+                        else None
+                    )
                 initialized_collectors.add(collector_index)
+                collection_requests.append((collector, seed))
+            if args.teacher_forcing and args.skip_ppo:
+                with ThreadPoolExecutor(max_workers=len(collection_requests)) as executor:
+                    futures = [
+                        executor.submit(collector.collect, per_side_steps, seed=seed)
+                        for collector, seed in collection_requests
+                    ]
+                    buffers = [future.result() for future in futures]
+            else:
+                buffers = [
+                    collector.collect(per_side_steps, seed=seed)
+                    for collector, seed in collection_requests
+                ]
+            for buffer in buffers:
                 side_batches.append(
                     buffer.as_batch(gamma=args.gamma, gae_lambda=args.gae_lambda)
                 )
+            if seed_pair is not None:
+                seed_pair_cursor = (seed_pair_cursor + 1) % (
+                    len(args.train_seed_pool) // 2
+                )
             batch = concatenate_rollout_batches(side_batches)
-            diagnostics = ppo_update(model, optimizer, batch, config=ppo_config)
-            imitation = online_imitation_update(
+            diagnostics = (
+                PPODiagnostics(
+                    policy_loss=0.0,
+                    value_loss=0.0,
+                    entropy=0.0,
+                    approximate_kl=0.0,
+                    clip_fraction=0.0,
+                    explained_variance=None,
+                    gradient_norm=0.0,
+                    epochs_completed=0,
+                    minibatches=0,
+                    samples=len(batch),
+                    early_stopped=False,
+                )
+                if args.skip_ppo
+                else ppo_update(model, optimizer, batch, config=ppo_config)
+            )
+            teacher_replay.add(batch)
+            imitation = teacher_replay_update(
                 model,
                 optimizer,
-                batch,
-                epochs=args.teacher_epochs,
+                teacher_replay,
+                minibatches=args.teacher_minibatches * args.teacher_epochs,
                 minibatch_size=args.minibatch_size,
                 loss_coef=args.teacher_loss_coef,
                 max_grad_norm=ppo_config.max_grad_norm,
+                class_balance_power=args.teacher_class_balance_power,
             )
             global_step += steps
             update += 1
@@ -520,6 +665,8 @@ def main() -> int:
                     "wall_seconds": round(time.perf_counter() - started, 3),
                     "metrics": diagnostics.to_dict(),
                     "online_imitation": asdict(imitation),
+                    "teacher_replay_size": len(teacher_replay),
+                    "teacher_failures": [collector.teacher_failures for collector in collectors],
                 },
             )
             print(
@@ -533,8 +680,21 @@ def main() -> int:
                 flush=True,
             )
 
+            if global_step >= next_save:
+                _save_training_state(
+                    args.latest_checkpoint,
+                    model=model,
+                    optimizer=optimizer,
+                    global_step=global_step,
+                    seed=args.seed,
+                    run_id=run_id,
+                    config=run_config,
+                    teacher_replay=teacher_replay,
+                )
+                next_save += args.save_every
+
             if global_step >= next_eval or global_step >= args.max_env_steps:
-                result = save_and_evaluate()
+                result = save_and_evaluate(teacher_replay)
                 summary = result["summary"]
                 if passed_win_rate(
                     wins=summary["wins"],

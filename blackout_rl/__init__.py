@@ -126,10 +126,12 @@ from .training_reward import RewardMode, TeamTrainingReward, TrainingRewardConfi
 from .ippo_training import (
     DeviceSelection,
     OnlineImitationMetrics,
+    TeacherReplayBuffer,
     online_imitation_update,
     passed_win_rate,
     required_wins,
     select_training_device,
+    teacher_replay_update,
 )
 from .frozen_opponent import FrozenScriptedOpponent
 from .behavior_cloning import (
@@ -284,10 +286,12 @@ __all__ = [
     "TrainingRewardConfig",
     "DeviceSelection",
     "OnlineImitationMetrics",
+    "TeacherReplayBuffer",
     "online_imitation_update",
     "passed_win_rate",
     "required_wins",
     "select_training_device",
+    "teacher_replay_update",
     "action_vector_to_index",
     "behavior_clone",
     "evaluate_behavior_cloning",

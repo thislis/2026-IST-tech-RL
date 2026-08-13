@@ -101,6 +101,122 @@ class SharedActorCriticTests(unittest.TestCase):
         self.assertIsNotNone(slot_gradient)
         self.assertTrue(torch.all(torch.linalg.vector_norm(slot_gradient, dim=-1) > 0.0))
 
+    def test_global_local_map_encoder_runs_for_all_slots(self) -> None:
+        model = IPPOActorCritic(
+            hidden_dim=32,
+            entity_dim=8,
+            context_dim=8,
+            graphic_dim=16,
+            slot_embedding_dim=6,
+            map_encoder_version="global_local_v1",
+        )
+        vector = torch.zeros(5, 96)
+        vector[:, 2:45:9] = 1.0
+        vector[:, 0:45:9] = torch.linspace(0.1, 0.9, 5)
+        vector[:, 1:45:9] = torch.linspace(0.9, 0.1, 5)
+        graphic = torch.zeros(5, 11, 96, 96)
+        graphic[:, 6, 45:51, 45:51] = 1.0
+        output = model(vector, graphic, torch.arange(5, dtype=torch.int64))
+        self.assertEqual(tuple(output.action_logits.shape), (5, 9))
+        self.assertEqual(model.model_config["map_encoder_version"], "global_local_v1")
+
+    def test_spatial_target_residual_runs_for_all_slots(self) -> None:
+        model = IPPOActorCritic(
+            hidden_dim=32,
+            entity_dim=8,
+            context_dim=8,
+            graphic_dim=16,
+            slot_embedding_dim=6,
+            map_encoder_version="global_local_spatial_v2",
+        )
+        vector = torch.zeros(5, 96)
+        vector[:, 2:45:9] = 1.0
+        vector[:, 0:45:9] = 0.5
+        vector[:, 1:45:9] = 0.5
+        graphic = torch.zeros(5, 11, 96, 96)
+        graphic[:, 6, 20:24, 70:74] = 1.0
+        output = model(vector, graphic, torch.arange(5, dtype=torch.int64))
+        self.assertTrue(torch.isfinite(output.action_logits).all())
+        self.assertIsNotNone(model.spatial_target_residual)
+
+    def test_multitarget_residual_runs_for_all_slots(self) -> None:
+        model = IPPOActorCritic(
+            hidden_dim=32,
+            entity_dim=8,
+            context_dim=8,
+            graphic_dim=16,
+            slot_embedding_dim=6,
+            map_encoder_version="global_local_multitarget_v3",
+        )
+        vector = torch.zeros(5, 96)
+        vector[:, 2:45:9] = 1.0
+        vector[:, 0:45:9] = 0.5
+        vector[:, 1:45:9] = 0.5
+        graphic = torch.zeros(5, 11, 96, 96)
+        graphic[:, 6, 20:24, 70:74] = 1.0
+        output = model(vector, graphic, torch.arange(5, dtype=torch.int64))
+        self.assertTrue(torch.isfinite(output.action_logits).all())
+        self.assertIsNotNone(model.multi_target_residual)
+
+    def test_team_relative_entity_order_is_side_invariant(self) -> None:
+        model = IPPOActorCritic(
+            hidden_dim=32,
+            entity_dim=8,
+            context_dim=8,
+            graphic_dim=16,
+            slot_embedding_dim=6,
+            entity_order_version="team_relative_v1",
+        ).eval()
+        team_a = torch.zeros(1, 96)
+        blocks = team_a[:, :90].reshape(1, 10, 9)
+        blocks[:, :5, 2] = 1.0
+        blocks[:, 5:, 2] = -1.0
+        blocks[:, :, 3] = 1.0
+        team_b = team_a.clone()
+        team_b_blocks = team_b[:, :90].reshape(1, 10, 9)
+        team_b_blocks[:, :5, 2] = -1.0
+        team_b_blocks[:, 5:, 2] = 1.0
+        team_b_blocks[:, :, 3] = 1.0
+        graphic = torch.zeros(1, 11, 32, 32)
+        slot = torch.tensor([2])
+        with torch.inference_mode():
+            first = model(team_a, graphic, slot)
+            second = model(team_b, graphic, slot)
+        self.assertTrue(torch.equal(first.action_logits, second.action_logits))
+
+    def test_continuous_head_submission_is_bounded(self) -> None:
+        policy = SubmissionPolicy(
+            hidden_dim=32,
+            entity_dim=8,
+            context_dim=8,
+            graphic_dim=16,
+            slot_embedding_dim=6,
+            action_head_version="continuous_tanh_v1",
+        )
+        action = policy(torch.zeros(5, 96), torch.zeros(5, 11, 32, 32))
+        self.assertEqual(tuple(action.shape), (5, 2))
+        self.assertTrue(torch.all((action >= -1.0) & (action <= 1.0)))
+
+    def test_recurrent_policy_tracks_and_resets_inference_state(self) -> None:
+        policy = SubmissionPolicy(
+            hidden_dim=32,
+            entity_dim=8,
+            context_dim=8,
+            graphic_dim=16,
+            slot_embedding_dim=6,
+            action_head_version="continuous_tanh_v1",
+            recurrent_version="gru_v1",
+        ).eval()
+        vector = torch.zeros(5, 96)
+        graphic = torch.zeros(5, 11, 32, 32)
+        with torch.inference_mode():
+            first = policy(vector, graphic)
+            second = policy(vector, graphic)
+            policy.reset_inference_state()
+            reset = policy(vector, graphic)
+        self.assertFalse(torch.equal(first, second))
+        self.assertTrue(torch.equal(first, reset))
+
     def test_same_observation_and_slot_use_the_same_shared_parameters(self) -> None:
         vector = torch.zeros(2, 96)
         graphic = torch.zeros(2, 11, 32, 32)
