@@ -44,11 +44,29 @@ def benchmark_inference(model: torch.nn.Module, inputs: tuple[torch.Tensor, ...]
     return LatencyResult(device,sum(p.numel() for p in model.parameters()),statistics.median(ordered),ordered[min(len(ordered)-1,int(.95*len(ordered)))],runs)
 
 
-def select_lightweight_candidate(results: Sequence[Mapping[str,float]], *, max_win_rate_drop: float=.01) -> str:
+def select_lightweight_candidate(
+    results: Sequence[Mapping[str, float]],
+    *,
+    max_win_rate_drop: float = .01,
+    max_score_drop: float | None = None,
+) -> str:
     if not results: raise ValueError("no lightweight candidates")
     baseline=next((row for row in results if row["candidate"]=="baseline"),None)
     if baseline is None: raise ValueError("lightweight comparison requires baseline")
     eligible=[row for row in results if row["win_rate"] >= baseline["win_rate"]-max_win_rate_drop]
+    if max_score_drop is not None:
+        if max_score_drop < 0:
+            raise ValueError("max_score_drop must be non-negative")
+        if "mean_score_diff" not in baseline or any(
+            "mean_score_diff" not in row for row in eligible
+        ):
+            raise ValueError("score-constrained selection requires mean_score_diff")
+        eligible = [
+            row for row in eligible
+            if row["mean_score_diff"] >= baseline["mean_score_diff"] - max_score_drop
+        ]
+    if not eligible:
+        raise ValueError("no lightweight candidate satisfies the performance constraints")
     return str(min(eligible,key=lambda row:(row["latency_ms"],row["parameters"]))["candidate"])
 
 

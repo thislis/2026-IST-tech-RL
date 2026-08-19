@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 import unittest
 import torch
 
@@ -37,10 +38,33 @@ class SubmissionTests(unittest.TestCase):
             {"candidate":"bad","win_rate":.4,"latency_ms":1,"parameters":10},])
         self.assertEqual(selected,"small")
 
+    def test_lightweight_selection_can_preserve_score_as_well_as_win_rate(self) -> None:
+        selected=select_lightweight_candidate([
+            {"candidate":"baseline","win_rate":.6,"mean_score_diff":3,"latency_ms":4,"parameters":100},
+            {"candidate":"small","win_rate":.6,"mean_score_diff":2.5,"latency_ms":2,"parameters":50},
+            {"candidate":"score_regression","win_rate":.6,"mean_score_diff":-10,"latency_ms":1,"parameters":20},
+        ],max_score_drop=1)
+        self.assertEqual(selected,"small")
+
     def test_final_promotion_requires_gpu_and_no_regression(self) -> None:
         evidence=PromotionEvidence("candidate",.6,2,.05,(),True,True,("cpu","mps"))
         self.assertTrue(promote_final_model(evidence))
         self.assertFalse(promote_final_model(PromotionEvidence("candidate",.6,2,.05,("old",),True,True,("cpu","mps"))))
+
+    def test_agent29_32_empirical_evidence_is_fail_closed(self) -> None:
+        payload=json.loads((ROOT/"logs/phase3_agent29_32_submission.json").read_text())
+        agent29=payload["agent29"]
+        self.assertEqual(agent29["selected"],"legacy_no_local_encoder")
+        baseline=agent29["candidates"]["baseline"]
+        selected=agent29["candidates"][agent29["selected"]]
+        self.assertLess(selected["parameters"],baseline["parameters"])
+        self.assertLess(selected["latency_ms"],baseline["latency_ms"])
+        self.assertGreaterEqual(selected["mean_score_diff"],baseline["mean_score_diff"])
+        self.assertEqual(set(payload["agent31"]["devices_passed"]),{"cpu","mps"})
+        self.assertTrue(payload["agent31"]["passed"])
+        self.assertEqual(payload["agent32"]["head_to_head"]["episodes"],10)
+        self.assertFalse(payload["agent32"]["candidate_gate_passed"])
+        self.assertFalse(payload["agent32"]["decision"]["submission_ready"])
 
 
 if __name__ == "__main__": unittest.main(verbosity=2)

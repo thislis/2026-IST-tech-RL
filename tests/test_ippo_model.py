@@ -120,6 +120,45 @@ class SharedActorCriticTests(unittest.TestCase):
         self.assertEqual(tuple(output.action_logits.shape), (5, 9))
         self.assertEqual(model.model_config["map_encoder_version"], "global_local_v1")
 
+    def test_entity_attention_and_auxiliary_heads_share_actor_latent(self) -> None:
+        model = IPPOActorCritic(
+            hidden_dim=32,
+            entity_dim=8,
+            context_dim=8,
+            graphic_dim=16,
+            slot_embedding_dim=6,
+            entity_encoder_version="self_attention_v1",
+            auxiliary_targets=("role", "holding_item"),
+        )
+        vector = torch.zeros(5, 96)
+        blocks = vector[:, :90].reshape(5, 10, 9)
+        blocks[:, :5, 2] = 1.0
+        blocks[:, 5:, 2] = -1.0
+        blocks[:, :, 3] = 1.0
+        graphic = torch.zeros(5, 11, 32, 32)
+        slots = torch.arange(5, dtype=torch.int64)
+        latent = model.encode(vector, graphic, slots)
+        predictions = model.predict_auxiliary(latent)
+        self.assertEqual(set(predictions), {"role", "holding_item"})
+        self.assertEqual(tuple(predictions["role"].shape), (5, 3))
+        self.assertEqual(tuple(predictions["holding_item"].shape), (5, 6))
+        loss = (
+            model.actor(latent).sum()
+            + predictions["role"].sum()
+            + predictions["holding_item"].sum()
+        )
+        loss.backward()
+        self.assertIsNotNone(model.entity_attention.attention.in_proj_weight.grad)
+        self.assertTrue(
+            torch.isfinite(model.entity_attention.attention.in_proj_weight.grad).all()
+        )
+
+    def test_unknown_attention_or_auxiliary_contract_fails_closed(self) -> None:
+        with self.assertRaisesRegex(ValueError, "unknown entity encoder"):
+            IPPOActorCritic(entity_encoder_version="transformer_future")
+        with self.assertRaisesRegex(ValueError, "unknown auxiliary"):
+            IPPOActorCritic(auxiliary_targets=("future_score",))
+
     def test_spatial_target_residual_runs_for_all_slots(self) -> None:
         model = IPPOActorCritic(
             hidden_dim=32,

@@ -12,6 +12,8 @@
   batteries; guard slot 3 transformed once; carrier slot 4 transformed once,
   collected two, and visited storage twice. No death occurred in this episode.
 
-Attention and global/local crop modules are implemented and shape-tested, but
-AGENT-06/08 remain open until trained held-out ablations are recorded. Auxiliary
-loss selection likewise remains open until an actual win-rate experiment exists.
+Attention, global/local crop, and four independent auxiliary losses were subsequently
+trained with a common 1,500-gradient-step budget and evaluated on five side-swapped
+dev seeds. None improved closed-loop win rate or score difference, so no candidate was
+promoted. Full evidence is in `agent06_08_11_representation_ablation.md` and
+`logs/phase3_representation_ablation.json`.

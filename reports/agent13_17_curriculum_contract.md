@@ -10,6 +10,7 @@
   Existing `BASE-S15` evidence failed that gate, so these features remain
   disabled rather than being promoted.
 
-The fixed-shaping sample-efficiency experiment (AGENT-14) remains open; the
-annealer is implemented but must not be claimed to improve learning before that
-experiment is run.
+AGENT-14 is now complete. The equal-budget 512-step live ablation produced 0/10
+wins for both arms, while navigation shaping reduced held-out mean score
+difference from `-89.7` to `-94.3`. The final shaping weight was zero and the
+navigation arm was not promoted. See `reports/agent14_navigation_shaping_ablation.md`.

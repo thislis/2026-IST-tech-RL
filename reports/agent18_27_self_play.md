@@ -13,6 +13,9 @@ Implemented and verified now:
 - PSRO decision gate that stays false before at least eight generations, a
   four-generation plateau, and repeated cyclic regressions.
 
-AGENT-21~24 remain unchecked because the repository does not yet contain an
-actual multi-generation self-play run. The code intentionally does not treat a
-unit-level gate as empirical stability or snapshot-pool saturation evidence.
+AGENT-21~24 now have an actual eight-generation run. PPO stability passed, the
+major-generation directed matrix is complete on a paired 5,000-step dev
+horizon, the defined past/exploiter regression suite passed, and the snapshot
+pool saturated. PSRO remains deferred because cyclic regressions were zero.
+See `reports/agent21_24_self_play_empirical.md` and
+`logs/phase3_agent21_24_self_play.json`.

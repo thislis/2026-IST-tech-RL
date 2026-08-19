@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import tempfile
 from pathlib import Path
 import unittest
@@ -49,6 +50,22 @@ class SelfPlayTests(unittest.TestCase):
         snapshot=snapshot_from_checkpoint(checkpoint,generation=0,global_step=0)
         with self.assertRaisesRegex(ValueError,"live learner"):
             FrozenCheckpointOpponent(snapshot,team=1,learner_sha256=snapshot.checkpoint_sha256)
+
+    def test_agent21_24_live_evidence_satisfies_declared_gates(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        payload = json.loads((root / "logs/phase3_agent21_24_self_play.json").read_text())
+        self.assertEqual(payload["generations"], 8)
+        self.assertEqual(len(payload["agent21"]["history"]), 8)
+        self.assertTrue(payload["agent21"]["stable"])
+        self.assertTrue(payload["snapshot_pool"]["saturated"])
+        self.assertEqual(payload["snapshot_pool"]["side_counts"], [4, 4])
+        ids = payload["agent22"]["major_generations"]
+        self.assertEqual(len(ids), 4)
+        for model in ids:
+            self.assertEqual(set(payload["agent22"]["matrix"][model]), set(ids) - {model})
+        self.assertTrue(payload["agent23"]["passes"])
+        self.assertTrue(payload["agent24"]["pool_saturated_before_decision"])
+        self.assertFalse(payload["agent24"]["expand_to_psro"])
 
 
 if __name__ == "__main__": unittest.main(verbosity=2)

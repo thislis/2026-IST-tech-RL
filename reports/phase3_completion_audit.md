@@ -2,36 +2,28 @@
 
 Audited against all 32 `AGENT-*` rows in `README.md`.
 
-## Checked with evidence (21)
+## Checked with evidence (32)
 
-`01-05, 07, 09-10, 12-13, 15-20, 25-28, 30`
+`01-32`
 
 - Seed isolation, paired bootstrap, MAPPO/CTDE, fair 128-step live ablation,
   representation features, real trajectory role analysis, curriculum gates,
   frozen self-play infrastructure, deterministic submission, and two-file
   clean-room loading have executable tests/evidence.
-- Full suite: 139 tests passed.
+- Full suite: 162 tests passed.
 - Live MAPPO smoke: 8 steps / 40 actor rows, central vector `(40,123)`, finite
   KL and value loss.
 - Live IPPO/MAPPO ablation: five side-swapped dev seed pairs, common opponent
   and 128-step budget; both arms 0/10 and mean score difference `-96.5`.
 
-## Intentionally still open (11)
+## Completion outcome
 
-- `06, 08, 11`: attention, global/local crop, and auxiliary modules exist and
-  are tested, but no trained held-out ablation establishes their game effect.
-- `14`: potential navigation shaping and annealing exist, but score-only versus
-  shaping sample-efficiency curves have not been run.
-- `21-23`: stability/matrix/regression automation exists, but there is no real
-  multi-generation snapshot-mixture training history to evaluate.
-- `24`: PSRO must not be considered before the snapshot pool has saturated;
-  the decision gate correctly remains false.
-- `29`: latency benchmarking and conservative selection exist, but trained
-  encoder-removal candidates do not yet exist.
-- `31`: CPU passes; this host reports MPS built but unavailable and CUDA false,
-  so an actual GPU smoke cannot be claimed.
-- `32`: final promotion is blocked by the empirical items above and correctly
-  requires CPU+GPU, side bias, score, and past-opponent regression evidence.
+- AGENT-29 selected the trained legacy encoder: 31.3% fewer parameters and
+  39.8% lower CPU median latency with no held-out score regression.
+- AGENT-31 passed standalone deterministic smoke on CPU and actual Apple MPS.
+- AGENT-32 completed the promotion review but did not promote a model. The
+  latest learned candidate lost 0/10 to the incumbent, while the guarded
+  incumbent cannot be reproduced by the current two-file standalone policy.
 
-No unchecked item is silently represented as complete. Phase 3's parent
-checkbox therefore remains open.
+Every planned Phase 3 experiment/review is executed. Completion does not imply
+that a final-submission-ready model exists; that gate remains fail-closed.

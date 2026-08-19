@@ -433,6 +433,18 @@ class ParallelRolloutCollector:
             actions = {**learning_actions, **opponent_actions}
             next_observations, rewards, terminations, truncations, infos = self.env.step(actions)
 
+            observe_transition = getattr(
+                self.reward_transform, "observe_transition", None
+            )
+            if callable(observe_transition):
+                observe_transition(
+                    observations,
+                    next_observations,
+                    terminations,
+                    truncations,
+                    self.controlled_agents,
+                )
+
             terminated = torch.tensor(
                 [bool(terminations[agent]) for agent in self.controlled_agents],
                 dtype=torch.bool,

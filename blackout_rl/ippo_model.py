@@ -17,6 +17,7 @@ from .observation import (
     UNIT_BLOCK_SIZE,
     VECTOR_SIZE,
 )
+from .representation import AUXILIARY_TARGETS, AuxiliaryHeads, UnitEntityAttention
 
 
 VECTOR_CONTEXT_SIZE = N_CLASSES + 3  # self class, own score, opponent score, time
@@ -272,10 +273,18 @@ class IPPOActorCritic(nn.Module):
         graphic_dim: int = 128,
         map_encoder_version: str = "legacy",
         entity_order_version: str = "absolute",
+        entity_encoder_version: str = "flatten_v1",
+        auxiliary_targets: tuple[str, ...] | list[str] = (),
         action_head_version: str = "categorical9",
         recurrent_version: str = "none",
     ) -> None:
         super().__init__()
+        auxiliary_targets = tuple(auxiliary_targets)
+        if len(auxiliary_targets) != len(set(auxiliary_targets)):
+            raise ValueError("auxiliary targets must be unique")
+        unknown_auxiliary = set(auxiliary_targets) - set(AUXILIARY_TARGETS)
+        if unknown_auxiliary:
+            raise ValueError(f"unknown auxiliary targets: {sorted(unknown_auxiliary)}")
         self.model_config = {
             "vector_size": vector_size,
             "n_channels": n_channels,
@@ -286,6 +295,8 @@ class IPPOActorCritic(nn.Module):
             "graphic_dim": graphic_dim,
             "map_encoder_version": map_encoder_version,
             "entity_order_version": entity_order_version,
+            "entity_encoder_version": entity_encoder_version,
+            "auxiliary_targets": list(auxiliary_targets),
             "action_head_version": action_head_version,
             "recurrent_version": recurrent_version,
             "n_actions": N_ACTIONS,
@@ -297,6 +308,8 @@ class IPPOActorCritic(nn.Module):
         )
         if entity_order_version not in {"absolute", "team_relative_v1"}:
             raise ValueError(f"unknown entity order version: {entity_order_version}")
+        if entity_encoder_version not in {"flatten_v1", "self_attention_v1"}:
+            raise ValueError(f"unknown entity encoder version: {entity_encoder_version}")
         if action_head_version not in {"categorical9", "continuous_tanh_v1"}:
             raise ValueError(f"unknown action head version: {action_head_version}")
         if recurrent_version not in {"none", "gru_v1"}:
@@ -325,10 +338,19 @@ class IPPOActorCritic(nn.Module):
             if map_encoder_version == "global_local_multitarget_v3"
             else None
         )
+        self.entity_attention = (
+            UnitEntityAttention(entity_dim, heads=4)
+            if entity_encoder_version == "self_attention_v1"
+            else None
+        )
         self.slot_embedding = nn.Embedding(N_TEAM_AGENTS, slot_embedding_dim)
+        attention_dim = entity_dim if self.entity_attention is not None else 0
         self.fusion = nn.Sequential(
             nn.Linear(
-                self.vector_encoder.output_dim + graphic_dim + slot_embedding_dim,
+                self.vector_encoder.output_dim
+                + attention_dim
+                + graphic_dim
+                + slot_embedding_dim,
                 hidden_dim,
             ),
             nn.ReLU(),
@@ -344,6 +366,9 @@ class IPPOActorCritic(nn.Module):
         actor_output_dim = N_ACTIONS if action_head_version == "categorical9" else 2
         self.actor = nn.Linear(hidden_dim, actor_output_dim)
         self.critic = nn.Linear(hidden_dim, 1)
+        self.auxiliary_heads = (
+            AuxiliaryHeads(hidden_dim) if auxiliary_targets else None
+        )
 
     def encode(
         self,
@@ -387,6 +412,7 @@ class IPPOActorCritic(nn.Module):
             self_position = entity_blocks[
                 torch.arange(len(vector), device=vector.device), slot_id, :2
             ]
+            self_indices = slot_id
         else:
             encoded_vector = vector
             ally_indices = torch.topk(
@@ -400,6 +426,11 @@ class IPPOActorCritic(nn.Module):
                 torch.arange(len(vector), device=vector.device), self_indices, :2
             ]
         vector_encoding = self.vector_encoder(encoded_vector)
+        entity_attention = (
+            self.entity_attention(vector_encoding.entities, self_indices)
+            if self.entity_attention is not None
+            else None
+        )
         graphic_latent = (
             self.graphic_encoder(graphic)
             if self.model_config["map_encoder_version"] == "legacy"
@@ -413,16 +444,19 @@ class IPPOActorCritic(nn.Module):
             graphic_latent = graphic_latent + self.multi_target_residual(
                 graphic, self_position, entity_blocks
             )
-        return self.fusion(
-            torch.cat(
-                (
-                    vector_encoding.latent,
-                    graphic_latent,
-                    self.slot_embedding(slot_id),
-                ),
-                dim=-1,
-            )
-        )
+        fusion_parts = [vector_encoding.latent]
+        if entity_attention is not None:
+            fusion_parts.append(entity_attention)
+        fusion_parts.extend((graphic_latent, self.slot_embedding(slot_id)))
+        return self.fusion(torch.cat(fusion_parts, dim=-1))
+
+    def predict_auxiliary(self, latent: torch.Tensor) -> dict[str, torch.Tensor]:
+        """Predict only the auxiliary targets declared by this model."""
+        selected = tuple(self.model_config["auxiliary_targets"])
+        if not selected or self.auxiliary_heads is None:
+            return {}
+        predictions = self.auxiliary_heads(latent)
+        return {name: predictions[name] for name in selected}
 
     def forward_recurrent(
         self,
