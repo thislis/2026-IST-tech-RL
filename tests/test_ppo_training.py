@@ -240,6 +240,36 @@ class ParallelCollectorTests(unittest.TestCase):
         self.assertTrue(torch.allclose(rewards[0], torch.full((5,), 0.01)))
         self.assertTrue(torch.allclose(rewards[1], torch.full((5,), 1.0)))
 
+    def test_collector_notifies_transition_aware_reward_before_transform(self) -> None:
+        class TransitionAwareReward:
+            def __init__(self) -> None:
+                self.observed = 0
+
+            def reset(self) -> None:
+                pass
+
+            def observe_transition(self, *args) -> None:
+                self.observed += 1
+
+            def __call__(self, rewards, terminations, truncations, infos, agents):
+                self.assert_observed()
+                return {agent: float(self.observed) for agent in agents}
+
+            def assert_observed(self) -> None:
+                if self.observed <= 0:
+                    raise AssertionError("reward transform ran before transition observation")
+
+        reward_transform = TransitionAwareReward()
+        collector = ParallelRolloutCollector(
+            MockParallelEnv(), small_model(), NoOpPolicy(), learning_team=0,
+            reward_transform=reward_transform,
+        )
+        batch = collector.collect(2, seed=12).as_batch(
+            gamma=0.99, gae_lambda=0.95, normalize_advantage=False
+        )
+        self.assertEqual(reward_transform.observed, 2)
+        self.assertTrue(torch.equal(batch.reward.reshape(2, 5)[:, 0], torch.tensor([1.0, 2.0])))
+
     def test_optional_teacher_actions_are_recorded_as_categorical_labels(self) -> None:
         collector = ParallelRolloutCollector(
             MockParallelEnv(),

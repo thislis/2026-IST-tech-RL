@@ -6,6 +6,10 @@ from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Any, Mapping, Sequence
 
+import numpy as np
+
+from .training_reward import TeamTrainingReward, TrainingRewardConfig
+
 
 class CurriculumStage(str, Enum):
     RANDOM = "random"
@@ -108,6 +112,90 @@ def combined_reward(
     environment_step: int, annealer: LinearShapingAnnealer,
 ) -> float:
     return score_reward + terminal_reward + annealer.weight(environment_step) * navigation_reward
+
+
+class NavigationShapedTeamReward:
+    """Add annealed team-average navigation potential to score/terminal reward."""
+
+    def __init__(
+        self,
+        learning_team: int,
+        *,
+        base_config: TrainingRewardConfig,
+        gamma: float,
+        initial_weight: float,
+        anneal_steps: int,
+    ) -> None:
+        self.learning_team = learning_team
+        self.base = TeamTrainingReward(learning_team, base_config)
+        self.potential = PotentialNavigationShaping(gamma=gamma)
+        self.annealer = LinearShapingAnnealer(initial_weight, 0.0, anneal_steps)
+        self.environment_step = 0
+        self.last_navigation_reward = 0.0
+        self.navigation_reward_sum = 0.0
+
+    @staticmethod
+    def _agent_distance(observation: Mapping[str, np.ndarray], agent: str) -> float:
+        vector = np.asarray(observation["vector"], dtype=np.float32)
+        graphic = np.asarray(observation["graphic"], dtype=np.float32)
+        unit_index = int(agent.rsplit("_", 1)[1])
+        block = vector[:90].reshape(10, 9)[unit_index]
+        self_position = block[:2]
+        holding_battery = int(np.argmax(block[3:9])) == 1
+        channel = 2 if holding_battery else 6
+        rows, columns = np.nonzero(graphic[:, :, channel] > 0.5)
+        if not len(rows):
+            return 0.0
+        height, width = graphic.shape[:2]
+        targets = np.stack(
+            (
+                columns / max(width - 1, 1),
+                1.0 - rows / max(height - 1, 1),
+            ),
+            axis=1,
+        )
+        return float(np.linalg.norm(targets - self_position, axis=1).min())
+
+    def observe_transition(
+        self,
+        observations: Mapping[str, Mapping[str, np.ndarray]],
+        next_observations: Mapping[str, Mapping[str, np.ndarray]],
+        terminations: Mapping[str, bool],
+        truncations: Mapping[str, bool],
+        controlled_agents: Sequence[str],
+    ) -> None:
+        current = np.mean(
+            [self._agent_distance(observations[agent], agent) for agent in controlled_agents]
+        )
+        terminal = all(
+            bool(terminations[agent] or truncations[agent]) for agent in controlled_agents
+        )
+        next_distance = (
+            0.0
+            if terminal
+            else np.mean(
+                [
+                    self._agent_distance(next_observations[agent], agent)
+                    for agent in controlled_agents
+                ]
+            )
+        )
+        raw = self.potential.reward(float(current), float(next_distance), terminal=terminal)
+        weight = self.annealer.weight(self.environment_step)
+        self.last_navigation_reward = weight * raw
+        self.navigation_reward_sum += self.last_navigation_reward
+        self.environment_step += 1
+
+    def __call__(self, rewards, terminations, truncations, infos, controlled_agents):
+        base = self.base(rewards, terminations, truncations, infos, controlled_agents)
+        return {
+            agent: float(base[agent]) + self.last_navigation_reward
+            for agent in controlled_agents
+        }
+
+    def reset(self) -> None:
+        self.base.reset()
+        self.last_navigation_reward = 0.0
 
 
 @dataclass(frozen=True)

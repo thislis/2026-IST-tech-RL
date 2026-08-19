@@ -132,8 +132,8 @@ win / draw / loss, 평균 최종 점수 차
     
     MAPPO는 원래 협력형 multi-agent 환경에서 검증된 방법이지만, BlackOut에서는 상대를 고정한 상태에서 한 팀의 5명을 협력 집단으로 보면 자연스럽게 적용가능. 이후 self-play에서 경쟁적 비정상성을 추가 예정. PPO/MAPPO 구현 세부사항은 PPO·GAE, CleanRL, MAPPO 공식 구현을 기준으로 삼는 것이 좋을 듯
     
-- [ ]  Phase 3
-    - [ ]  MAPPO와 CTDE
+- [x]  Phase 3
+    - [x]  MAPPO와 CTDE
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
@@ -145,47 +145,47 @@ win / draw / loss, 평균 최종 점수 차
     
     Centralized critic은 학습 중 전체 팀 또는 전체 게임 정보를 사용할 수 있지만, actor에는 제출 환경에서 실제로 제공되는 관측만 전달. 
     
-    - [ ]  표현력과 전략 개선
+    - [x]  표현력과 전략 개선
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
-    | AGENT-06 | ☐ unit entity attention 실험 | 단순 entity pooling 대비 held-out 성능 비교 |
+    | AGENT-06 | ☑ unit entity attention 실험 | [`reports/agent06_08_11_representation_ablation.md`](reports/agent06_08_11_representation_ablation.md), [`logs/phase3_representation_ablation.json`](logs/phase3_representation_ablation.json): 동일 budget dev 10경기에서 replay 정확도 `89.84→90.25%`지만 점수차 `-90.3→-93.4`로 악화되어 미승격 |
 | AGENT-07 | ☑ self-relative position feature 추가 | [`blackout_rl/representation.py`](blackout_rl/representation.py), [`tests/test_phase3_representation.py`](tests/test_phase3_representation.py): team-local self slot 기준 10개 유닛 상대 좌표 검증 |
-    | AGENT-08 | ☐ global map + local crop 구조 실험 | 전체 전략과 근거리 회피·전투를 함께 처리 |
+    | AGENT-08 | ☑ global map + local crop 구조 실험 | global/local replay 정확도 `91.04%`였으나 dev 점수차 `-95.4`로 legacy 대비 5.1점 악화되어 미승격 |
 | AGENT-09 | ☑ absorption phase feature 추가 | normalized `time_left`에서 반복되는 20초 sin/cos 경계 테스트 통과 |
 | AGENT-10 | ☑ auxiliary target logging | 역할·보유 item·다음 흡수 시간·score delta head/loss 및 strict JSONL logger 검증 |
-    | AGENT-11 | ☐ auxiliary loss 선택 실험 | 실제 승률을 개선하는 항목만 유지 |
+    | AGENT-11 | ☑ auxiliary loss 선택 실험 | role·holding item·absorption time·score delta를 독립 평가했으나 모두 0승, baseline 대비 점수차 `-0.1~-1.0`; 선택 target 없음 |
 | AGENT-12 | ☑ 역할 분화 시각화 | [`reports/phase3_role_differentiation.svg`](reports/phase3_role_differentiation.svg), [`logs/phase3_role_metrics.json`](logs/phase3_role_metrics.json), [`reports/agent07_12_representation_features.md`](reports/agent07_12_representation_features.md): 실제 325 slot 관측 분석 |
     
     현재 제출 인터페이스는 명시적인 hidden state와 reset API를 제공하지 않으므로, stateful model 허용 여부와 episode reset 감지가 검증된 후에만 RNN 도입.
     
-    - [ ]  Curriculum과 reward 개선
+    - [x]  Curriculum과 reward 개선
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
 | AGENT-13 | ☑ curriculum 단계 정의 | [`blackout_rl/curriculum.py`](blackout_rl/curriculum.py), [`reports/agent13_17_curriculum_contract.md`](reports/agent13_17_curriculum_contract.md): random→weak scripted→full scripted→frozen RL 순서와 승격 gate 검증 |
-    | AGENT-14 | ☐ 초기 navigation shaping 실험 | score/terminal-only 대비 sample efficiency 비교 |
+    | AGENT-14 | ☑ 초기 navigation shaping 실험 | [`reports/agent14_navigation_shaping_ablation.md`](reports/agent14_navigation_shaping_ablation.md), [`logs/phase3_agent14_navigation.json`](logs/phase3_agent14_navigation.json): 동일 512-step budget에서 navigation arm 점수차 `-94.3`, score-only `-89.7`로 미승격 |
 | AGENT-15 | ☑ shaping annealing 구현 | linear schedule 종료 후 navigation weight 0, score+terminal reward만 잔존 |
 | AGENT-16 | ☑ curriculum별 별도 evaluator 구성 | stage/opponent별 결과 분리와 중복 stage fail-closed 검증 |
 | AGENT-17 | ☑ 약탈·특수 아이템 curriculum 추가 | common-seed/common-budget 무회귀 승격 gate 구현; 기존 BASE-S15 성능 저하 증거에 따라 기본 비활성 유지 |
     
     게임 규칙 자체를 단순화한 별도 Unity 빌드를 curriculum으로 쓰면 최종 환경과 dynamics가 달라질 수 있음. 우선은 동일 환경에서 opponent 난이도, 초기 policy, reward weight를 조절.
     
-    - [ ]  Self-play
+    - [x]  Self-play
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
 | AGENT-18 | ☑ frozen checkpoint opponent loader 구현 | [`blackout_rl/self_play.py`](blackout_rl/self_play.py): immutable SHA 검증, inference-only opponent, learner SHA 재사용 차단 |
 | AGENT-19 | ☑ snapshot pool 구현 | bounded immutable pool과 configurable latest/history sampling 검증 |
 | AGENT-20 | ☑ side 균형 sampling | 모든 prefix에서 A/B 노출 차이가 최대 1인 alternating sampler 검증 |
-    | AGENT-21 | ☐ opponent mixture에 따른 PPO 안정화 | entropy, KL, value error가 급격히 붕괴하지 않음 |
-    | AGENT-22 | ☐ checkpoint evaluation matrix 자동화 | 모든 주요 세대 간 paired-seed 대전 결과 생성 |
-    | AGENT-23 | ☐ exploiter/과거 상대 회귀 검사 | 최신 모델이 특정 최신 상대에만 과적합하지 않음 |
-    | AGENT-24 | ☐ 필요 시 population/PSRO 확장 판단 | 단순 snapshot pool이 포화된 뒤에만 진행 |
+    | AGENT-21 | ☑ opponent mixture에 따른 PPO 안정화 | [`reports/agent21_24_self_play_empirical.md`](reports/agent21_24_self_play_empirical.md): 8세대 frozen mixture에서 entropy `1.699~1.929`, KL 최대 `0.0081`, value loss 최대 `0.00132`로 안정성 gate 통과 |
+    | AGENT-22 | ☑ checkpoint evaluation matrix 자동화 | [`logs/phase3_agent21_24_self_play.json`](logs/phase3_agent21_24_self_play.json): 주요 세대 0/2/4/8의 모든 12 directed cell을 dev seed 양 진영 5,000-step score horizon으로 생성 |
+    | AGENT-23 | ☑ exploiter/과거 상대 회귀 검사 | gen 4 기준 past gen 0/2 및 `win_70_vs_scripted.pt` 상대 5% tolerance 회귀 없음; 강도 향상 증거는 아님 |
+    | AGENT-24 | ☑ 필요 시 population/PSRO 확장 판단 | 8-slot pool 포화·6세대 plateau 뒤 cyclic regression 0으로 PSRO 확장 보류 |
     
     두 최신 정책을 동시에 계속 update하는 방식은 피할 것. 상대 정책이 매 update마다 변하면 PPO가 보는 환경도 계속 변하기 때문. 학습 팀 하나와 frozen opponent를 두고, 일정 시점마다 snapshot을 pool에 추가하는 방식이 안정적. Unity ML-Agents의 self-play 문서도 snapshot window와 최신 모델 sampling 비율을 통해 안정성과 상대 다양성의 균형을 잡도록 설명.
     
-    - [ ]  최종 평가와 제출
+    - [x]  최종 평가와 제출
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
@@ -193,10 +193,10 @@ win / draw / loss, 평균 최종 점수 차
 | AGENT-26 | ☑ paired-seed bootstrap CI 구현 | [`blackout_rl/evaluation_protocol.py`](blackout_rl/evaluation_protocol.py), [`tests/test_phase3_evaluation.py`](tests/test_phase3_evaluation.py): 개별 경기가 아닌 side-swapped seed pair 단위 재표본 검증 |
 | AGENT-27 | ☑ opponent suite 구성 | [`configs/opponent_suite_v1.json`](configs/opponent_suite_v1.json), [`reports/agent18_27_self_play.md`](reports/agent18_27_self_play.md): random·scripted·IPPO·historical MAPPO·latest candidate 고유 ID 계약 |
 | AGENT-28 | ☑ deterministic inference mode 확정 | [`submission/policy.py`](submission/policy.py), [`tests/test_phase3_submission.py`](tests/test_phase3_submission.py), [`reports/agent28_31_submission_validation.md`](reports/agent28_31_submission_validation.md): argmax 반복 bit-identical |
-    | AGENT-29 | ☐ 모델 경량화 | 추론 latency를 측정하고 불필요한 encoder 제거 |
+    | AGENT-29 | ☑ 모델 경량화 | [`reports/agent29_32_final_submission_review.md`](reports/agent29_32_final_submission_review.md): legacy encoder 선택으로 parameter 31.3%, CPU median latency 39.8% 감소, dev 점수 회귀 없음 |
 | AGENT-30 | ☑ clean-room 제출 테스트 | 임시 빈 디렉터리에 `policy.py`·`checkpoint.pt`만 복사해 `(5,2)` 추론 통과 |
-    | AGENT-31 | ☐ CPU와 GPU 양쪽 smoke test | device mismatch, dtype, batch 크기 변화 처리 |
-    | AGENT-32 | ☐ 최종 모델 승격 회의 | 승률뿐 아니라 score 차, side bias, 과거 상대 회귀를 함께 검토 |
+    | AGENT-31 | ☑ CPU와 GPU 양쪽 smoke test | [`logs/phase3_agent29_32_submission.json`](logs/phase3_agent29_32_submission.json): CPU·Apple MPS 실제 deterministic inference와 dtype·batch·device mismatch 검사 통과 |
+    | AGENT-32 | ☑ 최종 모델 승격 회의 | gen 8이 incumbent에 0/10, 점수차 `-94.9`로 미승격; guarded incumbent도 two-file clean-room 비호환이므로 final-submission-ready 모델 없음 |
 
 ## Reference
 

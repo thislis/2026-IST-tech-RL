@@ -45,7 +45,8 @@ class FrozenCheckpointOpponent:
     @property
     def optimizer_state(self) -> None: return None
 
-    def reset(self) -> None: pass
+    def reset(self) -> None:
+        self._policy.reset()
 
     def act(self, observations: Mapping[str, Mapping[str, Any]], agents: Sequence[str]) -> dict:
         before = self.snapshot.checkpoint_sha256
