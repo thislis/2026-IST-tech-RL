@@ -10,7 +10,7 @@ Audited against all 32 `AGENT-*` rows in `README.md`.
   representation features, real trajectory role analysis, curriculum gates,
   frozen self-play infrastructure, deterministic submission, and two-file
   clean-room loading have executable tests/evidence.
-- Full suite: 162 tests passed.
+- Full suite: 164 tests passed after adding the MAPPO-vs-win70 training path.
 - Live MAPPO smoke: 8 steps / 40 actor rows, central vector `(40,123)`, finite
   KL and value loss.
 - Live IPPO/MAPPO ablation: five side-swapped dev seed pairs, common opponent
