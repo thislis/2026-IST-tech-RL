@@ -198,6 +198,19 @@ win / draw / loss, 평균 최종 점수 차
     | AGENT-31 | ☑ CPU와 GPU 양쪽 smoke test | [`logs/phase3_agent29_32_submission.json`](logs/phase3_agent29_32_submission.json): CPU·Apple MPS 실제 deterministic inference와 dtype·batch·device mismatch 검사 통과 |
     | AGENT-32 | ☑ 최종 모델 승격 회의 | gen 8이 incumbent에 0/10, 점수차 `-94.9`로 미승격; guarded incumbent도 two-file clean-room 비호환이므로 final-submission-ready 모델 없음 |
 
+### MAPPO 장기 학습: `win_70_vs_scripted.pt` 상대 85%
+
+[`scripts/train_mappo_vs_win70.py`](scripts/train_mappo_vs_win70.py)는 frozen
+`win_70_vs_scripted.pt`를 상대로 진영을 번갈아 MAPPO를 학습한다. dev seed
+5개를 side-swap한 10경기 중 최소 9승일 때만
+`checkpoints/mappo_win_85_vs_win70.pt`를 저장한다. 기본 실행과 resume 방법,
+체크포인트·로그 계약은
+[`reports/mappo_vs_win70_training.md`](reports/mappo_vs_win70_training.md)에 정리했다.
+v1 실패 원인과 persistent collector, 초기 actor, 하이퍼파라미터 및 산출물
+경로 변경은
+[`reports/mappo_vs_win70_v2_plan_changes.md`](reports/mappo_vs_win70_v2_plan_changes.md)에
+별도로 기록했다.
+
 ## Reference
 
 ## 4. 우선 읽을 자료
@@ -232,3 +245,39 @@ MAPPO 연구는 주로 협력형 benchmark를 대상으로 하므로 BlackOut �
 - Pommerman: 팀 경쟁, sparse reward, rule-based 안전 계층과 curriculum 참고. Pommerman combines cooperative and competitive agents on randomly generated grid maps.
 - Melting Pot: unfamiliar opponent와 held-out scenario 평가 설계 참고.
 - SMACv2: 5대5 coordination과 procedural generalization 참고.
+
+## MAPPO 학습 실행 방법
+
+`checkpoints/win_70_vs_scripted.pt`를 적용한 상대를 대상으로 MAPPO를 학습하고, 승률 85% 이상을 달성하면 `checkpoints/mappo_win_85_vs_win70.pt`에 체크포인트를 저장합니다.
+
+### 학습 시작
+
+```bash
+cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
+./scripts/train_mappo_vs_win70.sh
+```
+
+학습을 중단하려면 `Ctrl+C`를 누릅니다. 중단 시점의 재개용 체크포인트가 저장됩니다.
+
+### 중단한 학습 재개
+
+```bash
+cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
+./scripts/train_mappo_vs_win70.sh --resume-latest
+```
+
+### 백그라운드 실행
+
+```bash
+cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
+mkdir -p logs/mappo_vs_win70_v2
+nohup ./scripts/train_mappo_vs_win70.sh > logs/mappo_vs_win70_v2/console.log 2>&1 &
+```
+
+실시간 콘솔 로그는 다음 명령으로 확인합니다.
+
+```bash
+tail -f logs/mappo_vs_win70_v2/console.log
+```
+
+학습 지표는 `logs/mappo_vs_win70_v2/training.jsonl`, 실행 요약은 `logs/mappo_vs_win70_v2/run_summary.json`에 기록됩니다. 재개용 최신 모델은 `checkpoints/mappo_vs_win70_v2_latest.pt`에 저장됩니다. 실패한 v1 산출물은 보존되며 v2에서 재개할 수 없습니다.
