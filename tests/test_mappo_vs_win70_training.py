@@ -9,6 +9,7 @@ import torch
 from blackout_rl import IPPOActorCritic, load_checkpoint
 from blackout_rl.mappo import initialize_mappo_from_ippo
 from scripts.train_mappo_vs_win70 import (
+    CyclicSeedStream,
     load_mappo_training_checkpoint,
     promotion_evaluation_eligible,
     required_target_wins,
@@ -21,6 +22,18 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class MAPPOVsWin70TrainingTests(unittest.TestCase):
+    def test_episode_seed_stream_is_cyclic_and_resumable(self) -> None:
+        stream = CyclicSeedStream((3001, 3002), cursor=1)
+        self.assertEqual(stream.next_seed(), 3002)
+        restored = CyclicSeedStream.from_state(
+            stream.state_dict(), expected_seeds=(3001, 3002)
+        )
+        self.assertEqual(restored.next_seed(), 3001)
+        with self.assertRaisesRegex(ValueError, "differs"):
+            CyclicSeedStream.from_state(
+                stream.state_dict(), expected_seeds=(3001, 3003)
+            )
+
     def test_eighty_five_percent_requires_nine_of_ten_side_swapped_games(self) -> None:
         self.assertEqual(required_target_wins(10, 0.85), 9)
         self.assertFalse(target_reached({"episodes": 10, "wins": 8}, 0.85))
@@ -55,6 +68,7 @@ class MAPPOVsWin70TrainingTests(unittest.TestCase):
                 initial_checkpoint=ROOT / "checkpoints/phase3_selfplay_gen_08.pt",
                 config=config,
                 best_evaluation={"win_rate": 0.2, "mean_model_score_diff": -10.0},
+                collector_state={"version": "persistent_two_side_v2"},
             )
             ordinary_policy, ordinary_payload = load_checkpoint(checkpoint)
             restored, restored_optimizer, payload = load_mappo_training_checkpoint(
@@ -63,6 +77,10 @@ class MAPPOVsWin70TrainingTests(unittest.TestCase):
 
         self.assertEqual(ordinary_payload["training"]["global_step"], 512)
         self.assertEqual(payload["mappo_training"]["update"], 1)
+        self.assertEqual(
+            payload["mappo_training"]["collector_state"]["version"],
+            "persistent_two_side_v2",
+        )
         self.assertEqual(restored_optimizer.param_groups[0]["lr"], 3e-4)
         for expected, actual in zip(
             model.actor_model.parameters(), ordinary_policy.actor_critic.parameters()

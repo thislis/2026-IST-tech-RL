@@ -206,6 +206,10 @@ win / draw / loss, 평균 최종 점수 차
 `checkpoints/mappo_win_85_vs_win70.pt`를 저장한다. 기본 실행과 resume 방법,
 체크포인트·로그 계약은
 [`reports/mappo_vs_win70_training.md`](reports/mappo_vs_win70_training.md)에 정리했다.
+v1 실패 원인과 persistent collector, 초기 actor, 하이퍼파라미터 및 산출물
+경로 변경은
+[`reports/mappo_vs_win70_v2_plan_changes.md`](reports/mappo_vs_win70_v2_plan_changes.md)에
+별도로 기록했다.
 
 ## Reference
 
@@ -266,14 +270,14 @@ cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
 
 ```bash
 cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
-mkdir -p logs/mappo_vs_win70
-nohup ./scripts/train_mappo_vs_win70.sh > logs/mappo_vs_win70/console.log 2>&1 &
+mkdir -p logs/mappo_vs_win70_v2
+nohup ./scripts/train_mappo_vs_win70.sh > logs/mappo_vs_win70_v2/console.log 2>&1 &
 ```
 
 실시간 콘솔 로그는 다음 명령으로 확인합니다.
 
 ```bash
-tail -f logs/mappo_vs_win70/console.log
+tail -f logs/mappo_vs_win70_v2/console.log
 ```
 
-학습 지표는 `logs/mappo_vs_win70/training.jsonl`, 실행 요약은 `logs/mappo_vs_win70/run_summary.json`에 기록됩니다.
+학습 지표는 `logs/mappo_vs_win70_v2/training.jsonl`, 실행 요약은 `logs/mappo_vs_win70_v2/run_summary.json`에 기록됩니다. 재개용 최신 모델은 `checkpoints/mappo_vs_win70_v2_latest.pt`에 저장됩니다. 실패한 v1 산출물은 보존되며 v2에서 재개할 수 없습니다.

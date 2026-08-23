@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 import numpy as np
 import torch
@@ -186,6 +186,9 @@ class JointRolloutBuffer:
         self.n_agents = n_agents
         self.rows: list[dict[str, torch.Tensor]] = []
 
+    def __len__(self) -> int:
+        return len(self.rows)
+
     def add(self, **fields: torch.Tensor) -> None:
         required = {
             "vector", "graphic", "slot_id", "central_vector", "central_graphic",
@@ -239,12 +242,16 @@ class MAPPOParallelRolloutCollector:
 
     def __init__(self, env: Any, model: MAPPOActorCritic, opponent: Any, *,
                  learning_team: int, device: str | torch.device = "cpu",
-                 reward_transform: Any | None = None) -> None:
+                 reward_transform: Any | None = None,
+                 episode_seed_provider: Callable[[], int | None] | None = None) -> None:
         self.env=env; self.model=model.to(device); self.opponent=opponent
         self.learning_team=learning_team; self.device=torch.device(device)
         self.controlled_agents=team_agents(learning_team); self.opponent_agents=team_agents(1-learning_team)
         self.reward_transform=reward_transform
-        self.builder=CentralizedStateBuilder(); self._observations=None; self.episodes_completed=0
+        self.episode_seed_provider=episode_seed_provider
+        self.builder=CentralizedStateBuilder(); self._observations=None
+        self.episodes_completed=0; self.terminal_episodes=0; self.truncated_episodes=0
+        self.wins=0; self.draws=0; self.losses=0; self.environment_steps=0
 
     @staticmethod
     def _reset_component(component: Any) -> None:
@@ -252,6 +259,8 @@ class MAPPOParallelRolloutCollector:
         if callable(reset): reset()
 
     def reset(self, *, seed: int | None=None) -> None:
+        if seed is None and self.episode_seed_provider is not None:
+            seed = self.episode_seed_provider()
         self._observations,_=self.env.reset(seed=seed)
         if set(self._observations) != set(canonical_agents()):
             raise ValueError("MAPPO collector requires all ten observations")
@@ -277,6 +286,7 @@ class MAPPOParallelRolloutCollector:
             if set(opponent_actions) != set(self.opponent_agents):
                 raise ValueError("opponent must return exactly its team actions")
             next_obs,rewards,terminations,truncations,infos=self.env.step({**learning_actions,**opponent_actions})
+            self.environment_steps += 1
             terminated=all(bool(terminations[a]) for a in self.controlled_agents)
             truncated=all(bool(truncations[a]) for a in self.controlled_agents)
             if any(bool(terminations[a]) for a in self.controlled_agents) != terminated:
@@ -298,9 +308,24 @@ class MAPPOParallelRolloutCollector:
                        reward=torch.tensor([float(transformed[a]) for a in self.controlled_agents]),
                        next_value=next_value,terminated=torch.tensor([terminated]),truncated=torch.tensor([truncated]))
             if terminated or truncated:
-                self.episodes_completed += 1; self._observations,_=self.env.reset()
-                self._reset_component(self.opponent)
-                if self.reward_transform is not None: self._reset_component(self.reward_transform)
+                self.episodes_completed += 1
+                if terminated:
+                    self.terminal_episodes += 1
+                    reference_info = infos[self.controlled_agents[0]]
+                    if "winner" not in reference_info:
+                        raise KeyError("terminal info is missing winner")
+                    winner = int(reference_info["winner"])
+                    if winner == -1:
+                        self.draws += 1
+                    elif winner == self.learning_team:
+                        self.wins += 1
+                    elif winner == 1 - self.learning_team:
+                        self.losses += 1
+                    else:
+                        raise ValueError(f"terminal winner must be -1, 0, or 1; got {winner}")
+                else:
+                    self.truncated_episodes += 1
+                self.reset()
             else: self._observations=next_obs
         return buffer
 

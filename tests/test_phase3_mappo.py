@@ -14,6 +14,7 @@ from blackout_rl.mappo import (
 from blackout_rl.ppo import PPOConfig
 from tests.test_ppo_training import MockParallelEnv, small_model
 from blackout_rl.policy import NoOpPolicy
+from blackout_rl.training_reward import TeamTrainingReward
 
 
 class CentralStateTests(unittest.TestCase):
@@ -74,6 +75,30 @@ class MAPPOModelTests(unittest.TestCase):
         batch=collector.collect(3,seed=4).as_batch(gamma=.99,gae_lambda=.95)
         self.assertEqual(len(batch),15)
         self.assertEqual(batch.central_vector.shape,(15,CENTRAL_VECTOR_SIZE))
+
+    def test_collector_persists_across_updates_and_reseeds_completed_episodes(self) -> None:
+        env = MockParallelEnv()
+        seeds = iter((3001, 3002, 3003))
+        collector = MAPPOParallelRolloutCollector(
+            env,
+            initialize_mappo_from_ippo(small_model()),
+            NoOpPolicy(),
+            learning_team=0,
+            reward_transform=TeamTrainingReward(0),
+            episode_seed_provider=lambda: next(seeds),
+        )
+
+        collector.collect(1)
+        collector.collect(2)
+
+        self.assertEqual(env.reset_seeds, [3001, 3002])
+        self.assertEqual(collector.environment_steps, 3)
+        self.assertEqual(collector.episodes_completed, 1)
+        self.assertEqual(collector.terminal_episodes, 1)
+        self.assertEqual(collector.truncated_episodes, 0)
+        self.assertEqual(collector.wins, 1)
+        self.assertEqual(collector.draws, 0)
+        self.assertEqual(collector.losses, 0)
 
 
 if __name__ == "__main__": unittest.main(verbosity=2)
