@@ -2,9 +2,26 @@
 
 from __future__ import annotations
 
+import importlib
+import threading
 from typing import Any
 
 from blackout_env import BlackOutEnv
+from mlagents_envs.environment import UnityEnvironment
+
+
+_UPSTREAM_ENV_MODULE = importlib.import_module(BlackOutEnv.__module__)
+_UNITY_ENV_PATCH_LOCK = threading.Lock()
+
+
+class _BackgroundUnityEnvironment(UnityEnvironment):
+    """Launch a rendered Unity player without its normal interactive UI."""
+
+    def _executable_args(self) -> list[str]:
+        args = super()._executable_args()
+        if "-batchmode" not in (arg.lower() for arg in args):
+            args.append("-batchmode")
+        return args
 
 
 class ContractBlackOutEnv(BlackOutEnv):
@@ -17,6 +34,32 @@ class ContractBlackOutEnv(BlackOutEnv):
     one hidden Unity step first makes the public reset follow the Gymnasium and
     PettingZoo expectation that `seed` applies to the returned episode.
     """
+
+    def __init__(self, *args: Any, background: bool = False, **kwargs: Any) -> None:
+        """Create the environment, optionally keeping the Unity player in background.
+
+        ``background=True`` adds Unity's ``-batchmode`` argument but deliberately
+        does not use ``-nographics``. BlackOut's semantic map is a rendered visual
+        observation, so disabling the graphics device would replace that map with
+        zeros and silently invalidate training.
+        """
+
+        if not background:
+            super().__init__(*args, **kwargs)
+            return
+
+        # The upstream wrapper constructs UnityEnvironment internally and does not
+        # expose ``additional_args``. Substitute the launch class only for the
+        # duration of its constructor. Environment construction in this process is
+        # serialized so two simultaneous callers cannot observe a half-restored
+        # upstream module global.
+        with _UNITY_ENV_PATCH_LOCK:
+            original = _UPSTREAM_ENV_MODULE.UnityEnvironment
+            _UPSTREAM_ENV_MODULE.UnityEnvironment = _BackgroundUnityEnvironment
+            try:
+                super().__init__(*args, **kwargs)
+            finally:
+                _UPSTREAM_ENV_MODULE.UnityEnvironment = original
 
     def reset(
         self,

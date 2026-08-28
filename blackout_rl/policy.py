@@ -143,11 +143,15 @@ class DeterministicCheckpointPolicy:
         model, payload = load_checkpoint(checkpoint, device=device)
         self._adapter = CanonicalTeamModel(model, team=team, device=device)
         self._safety_controller = None
+        self._guardrail_mode = None
         guardrail = payload.get("inference_guardrail")
         if guardrail is not None:
             if guardrail.get("version") != "scripted_counter_v1":
                 raise ValueError("unsupported checkpoint inference guardrail")
-            if guardrail.get("mode") != "planner_override":
+            if guardrail.get("mode") not in {
+                "planner_override",
+                "planner_residual_v1",
+            }:
                 raise ValueError("unsupported checkpoint guardrail mode")
             from .scripted_fsm import ScriptedTeamController
             from .team_state import Role
@@ -160,6 +164,7 @@ class DeterministicCheckpointPolicy:
                 roles=roles,
                 chase_radius_cells=int(guardrail["chase_radius_cells"]),
             )
+            self._guardrail_mode = str(guardrail["mode"])
         self.checkpoint_payload = payload
         self.team = team
         self.seed = seed
@@ -174,10 +179,23 @@ class DeterministicCheckpointPolicy:
         expected = team_agents(self.team)
         if tuple(agents) != expected:
             raise ValueError(f"checkpoint policy expected canonical agents {expected}")
-        if self._safety_controller is not None:
+        if self._guardrail_mode == "planner_override":
+            assert self._safety_controller is not None
             return self._safety_controller.act(observations, expected)
         selected = {agent: observations[agent] for agent in expected}
-        return self._adapter.act(selected)
+        neural_actions = self._adapter.act(selected)
+        if self._guardrail_mode != "planner_residual_v1":
+            return neural_actions
+        assert self._safety_controller is not None
+        planner_actions = self._safety_controller.act(observations, expected)
+        return {
+            agent: (
+                planner_actions[agent]
+                if float(np.linalg.norm(neural_actions[agent])) <= 1e-6
+                else neural_actions[agent]
+            )
+            for agent in expected
+        }
 
     def reset(self) -> None:
         self._adapter._policy.reset_inference_state()
