@@ -236,6 +236,7 @@ def _evaluation_job(job: Mapping[str, Any]) -> list[dict[str, Any]]:
     )
     env = ContractBlackOutEnv(
         env_path=str(build),
+        background=True,
         no_graphics=False,
         time_scale=float(job["time_scale"]),
     )
@@ -760,7 +761,10 @@ def main() -> int:
 
         for learner_team in (0, 1):
             env = ContractBlackOutEnv(
-                env_path=str(args.build), no_graphics=False, time_scale=args.time_scale
+                env_path=str(args.build),
+                background=True,
+                no_graphics=False,
+                time_scale=args.time_scale,
             )
             training_envs.append(env)
             collector = MAPPOParallelRolloutCollector(

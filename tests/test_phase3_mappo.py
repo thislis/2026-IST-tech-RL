@@ -10,6 +10,7 @@ from blackout_rl.mappo import (
     CENTRAL_VECTOR_SIZE, AblationArm, CentralizedStateBuilder, JointRolloutBuffer,
     MAPPOParallelRolloutCollector,
     compare_ippo_mappo, initialize_mappo_from_ippo, mappo_update, team_alive_mask,
+    initialize_planner_residual_head,
 )
 from blackout_rl.ppo import PPOConfig
 from tests.test_ppo_training import MockParallelEnv, small_model
@@ -37,6 +38,18 @@ class MAPPOModelTests(unittest.TestCase):
             expected = ippo(vector, graphic, slots).action_logits
             actual = mappo.decentralized_action_logits(vector, graphic, slots)
         self.assertTrue(torch.equal(expected, actual))
+
+    def test_planner_residual_head_starts_with_deterministic_fallback(self) -> None:
+        model = initialize_mappo_from_ippo(small_model())
+        initialize_planner_residual_head(model, fallback_logit_bias=4.0)
+        vector = torch.zeros(5, 96)
+        graphic = torch.zeros(5, 11, 16, 16)
+        slots = torch.arange(5)
+
+        logits = model.actor_logits(vector, graphic, slots)
+
+        self.assertEqual(torch.argmax(logits, dim=-1).tolist(), [0] * 5)
+        self.assertTrue(torch.equal(model.actor_model.actor.weight, torch.zeros_like(model.actor_model.actor.weight)))
 
     def test_death_and_respawn_only_mask_actor_rows(self) -> None:
         self.assertEqual(team_alive_mask(("unit_0", "unit_2"), 0).tolist(), [True, False, True, False, False])
@@ -99,6 +112,48 @@ class MAPPOModelTests(unittest.TestCase):
         self.assertEqual(collector.wins, 1)
         self.assertEqual(collector.draws, 0)
         self.assertEqual(collector.losses, 0)
+
+    def test_teacher_labels_and_forcing_are_recorded_on_joint_rollout(self) -> None:
+        env = MockParallelEnv()
+        collector = MAPPOParallelRolloutCollector(
+            env,
+            initialize_mappo_from_ippo(small_model()),
+            NoOpPolicy(),
+            learning_team=0,
+            teacher=NoOpPolicy(),
+            teacher_forcing_probability=1.0,
+            teacher_seed=42,
+        )
+
+        batch = collector.collect(1, seed=3001).as_batch(gamma=.99, gae_lambda=.95)
+
+        self.assertIsNotNone(batch.teacher_action_index)
+        self.assertTrue(torch.equal(batch.teacher_action_index, torch.zeros(5, dtype=torch.int64)))
+        self.assertEqual(collector.teacher_labeled_steps, 1)
+        self.assertEqual(collector.teacher_forced_steps, 1)
+        for agent in collector.controlled_agents:
+            self.assertTrue(np.array_equal(env.actions_seen[0][agent], np.zeros(2, dtype=np.float32)))
+
+    def test_residual_fallback_executes_planner_and_labels_action_zero(self) -> None:
+        env = MockParallelEnv()
+        model = initialize_mappo_from_ippo(small_model())
+        initialize_planner_residual_head(model)
+        planner = NoOpPolicy()
+        collector = MAPPOParallelRolloutCollector(
+            env,
+            model,
+            NoOpPolicy(),
+            learning_team=0,
+            residual_base=planner,
+            teacher_forcing_probability=1.0,
+            teacher_seed=42,
+        )
+
+        batch = collector.collect(1, seed=3001).as_batch(gamma=.99, gae_lambda=.95)
+
+        self.assertTrue(torch.equal(batch.teacher_action_index, torch.zeros(5, dtype=torch.int64)))
+        self.assertEqual(collector.residual_fallback_actions, 5)
+        self.assertEqual(collector.residual_override_actions, 0)
 
 
 if __name__ == "__main__": unittest.main(verbosity=2)

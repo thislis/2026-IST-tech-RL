@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from dataclasses import dataclass
+import math
 from typing import Any, Callable, Mapping, Sequence
 
 import numpy as np
@@ -151,6 +152,28 @@ def initialize_mappo_from_checkpoint(
     return model, payload
 
 
+def initialize_planner_residual_head(
+    model: MAPPOActorCritic, *, fallback_logit_bias: float = 4.0
+) -> None:
+    """Start a residual policy at the scripted planner with safe exploration.
+
+    Residual action index 0 means "use the planner action" while indices 1..8
+    replace it with a learned direction. Resetting only the final actor head
+    retains the pretrained representation and prevents the weak neural core from
+    replacing the audited planner before PPO has learned useful deviations.
+    """
+
+    actor = model.actor_model
+    if actor.model_config["action_head_version"] != "categorical9":
+        raise ValueError("planner residual training requires categorical9 actions")
+    if not math.isfinite(fallback_logit_bias) or fallback_logit_bias <= 0.0:
+        raise ValueError("fallback logit bias must be finite and positive")
+    with torch.no_grad():
+        actor.actor.weight.zero_()
+        actor.actor.bias.zero_()
+        actor.actor.bias[0] = fallback_logit_bias
+
+
 def team_alive_mask(active_agents: Sequence[str], learning_team: int) -> torch.Tensor:
     active = set(active_agents)
     return torch.tensor(
@@ -171,12 +194,17 @@ class MAPPORolloutBatch:
     old_value: torch.Tensor
     advantage: torch.Tensor
     return_: torch.Tensor
+    teacher_action_index: torch.Tensor | None = None
 
     def __len__(self) -> int:
         return int(self.vector.shape[0])
 
     def to(self, device: str | torch.device) -> "MAPPORolloutBatch":
-        return MAPPORolloutBatch(**{name: getattr(self, name).to(device) for name in self.__dataclass_fields__})
+        fields: dict[str, torch.Tensor | None] = {}
+        for name in self.__dataclass_fields__:
+            value = getattr(self, name)
+            fields[name] = value.to(device) if isinstance(value, torch.Tensor) else value
+        return MAPPORolloutBatch(**fields)
 
 
 class JointRolloutBuffer:
@@ -195,13 +223,20 @@ class JointRolloutBuffer:
             "team_mask", "action_index", "log_prob", "value", "reward",
             "next_value", "terminated", "truncated",
         }
-        if set(fields) != required:
+        optional = {"teacher_action_index"}
+        if not required <= set(fields) or set(fields) - required - optional:
             raise ValueError(f"joint rollout fields differ: {sorted(required ^ set(fields))}")
-        for name in ("vector", "graphic", "slot_id", "team_mask", "action_index", "log_prob", "reward"):
+        if self.rows and set(fields) != set(self.rows[0]):
+            raise ValueError("teacher labels must be present in every joint transition or none")
+        for name in ("vector", "graphic", "slot_id", "team_mask", "action_index", "log_prob", "reward", "teacher_action_index"):
+            if name not in fields:
+                continue
             if fields[name].shape[0] != self.n_agents:
                 raise ValueError(f"{name} must have leading team dimension")
         if fields["team_mask"].dtype != torch.bool:
             raise TypeError("team_mask must be boolean")
+        if "teacher_action_index" in fields and fields["teacher_action_index"].dtype != torch.int64:
+            raise TypeError("teacher_action_index must be int64")
         for name in ("value", "next_value", "terminated", "truncated"):
             if fields[name].numel() != 1:
                 raise ValueError(f"{name} must be one team-level scalar")
@@ -234,6 +269,11 @@ class JointRolloutBuffer:
             team_mask=valid, action_index=stacked["action_index"].flatten(),
             old_log_prob=stacked["log_prob"].flatten(), old_value=repeat(value).reshape(-1),
             advantage=flat_adv, return_=repeat(returns).reshape(-1),
+            teacher_action_index=(
+                stacked["teacher_action_index"].flatten()
+                if "teacher_action_index" in stacked
+                else None
+            ),
         )
 
 
@@ -243,15 +283,30 @@ class MAPPOParallelRolloutCollector:
     def __init__(self, env: Any, model: MAPPOActorCritic, opponent: Any, *,
                  learning_team: int, device: str | torch.device = "cpu",
                  reward_transform: Any | None = None,
-                 episode_seed_provider: Callable[[], int | None] | None = None) -> None:
+                 episode_seed_provider: Callable[[], int | None] | None = None,
+                 teacher: Any | None = None,
+                 residual_base: Any | None = None,
+                 teacher_forcing_probability: float = 0.0,
+                 teacher_seed: int = 0) -> None:
+        if not 0.0 <= teacher_forcing_probability <= 1.0:
+            raise ValueError("teacher_forcing_probability must be in [0,1]")
+        if teacher is not None and residual_base is not None:
+            raise ValueError("teacher and residual base are mutually exclusive")
+        if teacher_forcing_probability > 0.0 and teacher is None and residual_base is None:
+            raise ValueError("teacher forcing requires a teacher or residual base policy")
         self.env=env; self.model=model.to(device); self.opponent=opponent
         self.learning_team=learning_team; self.device=torch.device(device)
         self.controlled_agents=team_agents(learning_team); self.opponent_agents=team_agents(1-learning_team)
         self.reward_transform=reward_transform
         self.episode_seed_provider=episode_seed_provider
+        self.teacher=teacher; self.teacher_forcing_probability=teacher_forcing_probability
+        self.residual_base=residual_base
+        self._teacher_rng=np.random.default_rng(teacher_seed)
+        self.teacher_failures=0; self.teacher_forced_steps=0; self.teacher_labeled_steps=0
         self.builder=CentralizedStateBuilder(); self._observations=None
         self.episodes_completed=0; self.terminal_episodes=0; self.truncated_episodes=0
         self.wins=0; self.draws=0; self.losses=0; self.environment_steps=0
+        self.residual_fallback_actions=0; self.residual_override_actions=0
 
     @staticmethod
     def _reset_component(component: Any) -> None:
@@ -265,6 +320,8 @@ class MAPPOParallelRolloutCollector:
         if set(self._observations) != set(canonical_agents()):
             raise ValueError("MAPPO collector requires all ten observations")
         self._reset_component(self.opponent)
+        if self.teacher is not None: self._reset_component(self.teacher)
+        if self.residual_base is not None: self._reset_component(self.residual_base)
         if self.reward_transform is not None: self._reset_component(self.reward_transform)
 
     def collect(self, time_steps: int, *, seed: int | None=None) -> JointRolloutBuffer:
@@ -282,6 +339,73 @@ class MAPPOParallelRolloutCollector:
                 value=self.model.centralized_critic(central.vector,central.graphic)
             learning_actions={agent:selection.action[row].cpu().numpy().astype(np.float32,copy=False)
                               for row,agent in enumerate(local.agent_names)}
+            teacher_action_index=None
+            if self.residual_base is not None:
+                from .navigation import PathNotFound
+
+                try:
+                    planner_actions = self.residual_base.act(
+                        observations, self.controlled_agents
+                    )
+                except PathNotFound:
+                    self.teacher_failures += 1
+                    self._reset_component(self.residual_base)
+                    teacher_action_index = torch.full(
+                        (len(self.controlled_agents),),
+                        -100,
+                        dtype=torch.int64,
+                        device=self.device,
+                    )
+                else:
+                    if set(planner_actions) != set(self.controlled_agents):
+                        raise ValueError(
+                            "residual base policy must return exactly its five agent actions"
+                        )
+                    teacher_action_index = torch.zeros(
+                        len(self.controlled_agents), dtype=torch.int64, device=self.device
+                    )
+                    self.teacher_labeled_steps += 1
+                    force_planner = (
+                        self._teacher_rng.random() < self.teacher_forcing_probability
+                    )
+                    fallback = selection.index == 0
+                    if force_planner:
+                        fallback = torch.ones_like(fallback)
+                        self.teacher_forced_steps += 1
+                    learning_actions = {
+                        agent: (
+                            planner_actions[agent]
+                            if bool(fallback[row])
+                            else learning_actions[agent]
+                        )
+                        for row, agent in enumerate(local.agent_names)
+                    }
+                    fallback_count = int(fallback.sum())
+                    self.residual_fallback_actions += fallback_count
+                    self.residual_override_actions += len(fallback) - fallback_count
+            elif self.teacher is not None:
+                from .behavior_cloning import action_vector_to_index
+                from .navigation import PathNotFound
+
+                try:
+                    teacher_actions=self.teacher.act(observations,self.controlled_agents)
+                except PathNotFound:
+                    self.teacher_failures += 1
+                    self._reset_component(self.teacher)
+                    teacher_action_index=torch.full(
+                        (len(self.controlled_agents),),-100,dtype=torch.int64,device=self.device
+                    )
+                else:
+                    if set(teacher_actions) != set(self.controlled_agents):
+                        raise ValueError("teacher policy must return exactly its five agent actions")
+                    teacher_action_index=torch.tensor(
+                        [action_vector_to_index(teacher_actions[a]) for a in self.controlled_agents],
+                        dtype=torch.int64,device=self.device,
+                    )
+                    self.teacher_labeled_steps += 1
+                    if self._teacher_rng.random() < self.teacher_forcing_probability:
+                        learning_actions=teacher_actions
+                        self.teacher_forced_steps += 1
             opponent_actions=self.opponent.act(observations,self.opponent_agents)
             if set(opponent_actions) != set(self.opponent_agents):
                 raise ValueError("opponent must return exactly its team actions")
@@ -302,11 +426,17 @@ class MAPPOParallelRolloutCollector:
                          if self.reward_transform is None else
                          self.reward_transform(rewards,terminations,truncations,infos,self.controlled_agents))
             mask=torch.tensor([bool(infos[a].get("alive",True)) for a in self.controlled_agents],dtype=torch.bool)
-            buffer.add(vector=local.vector,graphic=local.graphic,slot_id=local.slot_id,
-                       central_vector=central.vector,central_graphic=central.graphic,team_mask=mask,
-                       action_index=selection.index,log_prob=selection.log_prob,value=value,
-                       reward=torch.tensor([float(transformed[a]) for a in self.controlled_agents]),
-                       next_value=next_value,terminated=torch.tensor([terminated]),truncated=torch.tensor([truncated]))
+            fields={
+                "vector":local.vector,"graphic":local.graphic,"slot_id":local.slot_id,
+                "central_vector":central.vector,"central_graphic":central.graphic,"team_mask":mask,
+                "action_index":selection.index,"log_prob":selection.log_prob,"value":value,
+                "reward":torch.tensor([float(transformed[a]) for a in self.controlled_agents]),
+                "next_value":next_value,"terminated":torch.tensor([terminated]),
+                "truncated":torch.tensor([truncated]),
+            }
+            if teacher_action_index is not None:
+                fields["teacher_action_index"]=teacher_action_index
+            buffer.add(**fields)
             if terminated or truncated:
                 self.episodes_completed += 1
                 if terminated:

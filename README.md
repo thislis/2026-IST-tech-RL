@@ -211,6 +211,12 @@ v1 실패 원인과 persistent collector, 초기 actor, 하이퍼파라미터 �
 [`reports/mappo_vs_win70_v2_plan_changes.md`](reports/mappo_vs_win70_v2_plan_changes.md)에
 별도로 기록했다.
 
+v2 장기 실행에서 planner를 사용하는 상대 전략이 neural learner에 전달되지 않는
+문제가 확인되어, 현재 권장 학습 경로는 DAgger teacher 증류와 단계별 상대 혼합을
+적용한 v3다. 구현과 변경 근거는
+[`reports/mappo_teacher_curriculum_v3_plan.md`](reports/mappo_teacher_curriculum_v3_plan.md)에
+정리했다.
+
 ## Reference
 
 ## 4. 우선 읽을 자료
@@ -246,7 +252,49 @@ MAPPO 연구는 주로 협력형 benchmark를 대상으로 하므로 BlackOut �
 - Melting Pot: unfamiliar opponent와 held-out scenario 평가 설계 참고.
 - SMACv2: 5대5 coordination과 procedural generalization 참고.
 
-## MAPPO 학습 실행 방법
+## MAPPO planner-residual v4 학습 실행 방법 (권장)
+
+현재 권장 실행은 검증된 planner를 action 0 fallback으로 보존하고 neural actor가
+방향 override만 학습하는 fail-closed v4입니다. 실패한 v3 장기 실행에서는
+재개하지 않습니다.
+
+### 학습 시작
+
+```bash
+cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
+./scripts/train_mappo_planner_residual_v4.sh
+```
+
+### 중단한 v4 학습 재개
+
+```bash
+cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
+./scripts/train_mappo_planner_residual_v4.sh --resume-latest
+```
+
+### 백그라운드 실행
+
+```bash
+cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
+mkdir -p logs/mappo_planner_residual_v4
+nohup ./scripts/train_mappo_planner_residual_v4.sh > logs/mappo_planner_residual_v4/console.log 2>&1 &
+```
+
+```bash
+tail -f logs/mappo_planner_residual_v4/console.log
+```
+
+학습 지표는 `logs/mappo_planner_residual_v4/training.jsonl`, 실행 요약은
+`logs/mappo_planner_residual_v4/run_summary.json`에 기록됩니다. 재개용 모델은
+`checkpoints/mappo_planner_residual_v4_latest.pt`, dev 최고 모델은
+`checkpoints/mappo_planner_residual_v4_best.pt`입니다. 전체 dev seed 양 진영
+10경기에서 9승 이상이면 `checkpoints/mappo_win_85_vs_win70.pt`를 저장합니다.
+
+실패 원인, residual action 계약, fail-closed gate, 백그라운드/배속 검증은
+[`reports/mappo_planner_residual_v4_plan_changes.md`](reports/mappo_planner_residual_v4_plan_changes.md)를
+참조합니다.
+
+## MAPPO v2 학습 실행 방법 (이전 실험 보존용)
 
 `checkpoints/win_70_vs_scripted.pt`를 적용한 상대를 대상으로 MAPPO를 학습하고, 승률 85% 이상을 달성하면 `checkpoints/mappo_win_85_vs_win70.pt`에 체크포인트를 저장합니다.
 

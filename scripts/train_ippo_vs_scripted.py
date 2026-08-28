@@ -84,6 +84,7 @@ def _evaluation_job(job: dict[str, object]) -> list[dict]:
     )
     env = ContractBlackOutEnv(
         env_path=str(build),
+        background=True,
         no_graphics=False,
         time_scale=float(job["time_scale"]),
     )
@@ -525,6 +526,7 @@ def main() -> int:
         for learning_team in (0, 1):
             env = ContractBlackOutEnv(
                 env_path=str(build),
+                background=True,
                 worker_id=learning_team,
                 no_graphics=False,
                 time_scale=args.time_scale,
