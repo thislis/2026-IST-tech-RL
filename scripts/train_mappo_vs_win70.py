@@ -286,6 +286,8 @@ def evaluate_candidate(
     max_episode_steps: int,
     global_step: int,
     output: Path,
+    candidate_policy_seed: int = 850001,
+    opponent_policy_seed: int = 850002,
 ) -> dict[str, Any]:
     jobs = [
         {
@@ -293,8 +295,8 @@ def evaluate_candidate(
             "candidate": str(candidate),
             "opponent": str(opponent),
             "seed": seed,
-            "candidate_policy_seed": 850001,
-            "opponent_policy_seed": 850002,
+            "candidate_policy_seed": candidate_policy_seed,
+            "opponent_policy_seed": opponent_policy_seed,
             "time_scale": time_scale,
             "max_episode_steps": max_episode_steps,
         }

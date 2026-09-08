@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Mapping, Protocol, Sequence, runtime_checkable
 
 import numpy as np
+import torch
 
 from .logging_schema import sha256_file
 
@@ -144,6 +145,8 @@ class DeterministicCheckpointPolicy:
         self._adapter = CanonicalTeamModel(model, team=team, device=device)
         self._safety_controller = None
         self._guardrail_mode = None
+        self._planner_residual_v2_head = None
+        self._device = torch.device(device)
         guardrail = payload.get("inference_guardrail")
         if guardrail is not None:
             if guardrail.get("version") != "scripted_counter_v1":
@@ -151,6 +154,7 @@ class DeterministicCheckpointPolicy:
             if guardrail.get("mode") not in {
                 "planner_override",
                 "planner_residual_v1",
+                "planner_residual_v2",
             }:
                 raise ValueError("unsupported checkpoint guardrail mode")
             from .scripted_fsm import ScriptedTeamController
@@ -165,6 +169,18 @@ class DeterministicCheckpointPolicy:
                 chase_radius_cells=int(guardrail["chase_radius_cells"]),
             )
             self._guardrail_mode = str(guardrail["mode"])
+            if self._guardrail_mode == "planner_residual_v2":
+                from .mappo import PlannerConditionedResidualHead
+
+                state = payload.get("planner_residual_v2_state")
+                if not isinstance(state, Mapping):
+                    raise ValueError("planner residual v2 checkpoint is missing its head state")
+                head = PlannerConditionedResidualHead(
+                    int(model.actor_critic.model_config["hidden_dim"]),
+                    fallback_logit_bias=float(guardrail["fallback_logit_bias"]),
+                ).to(self._device)
+                head.load_state_dict(state, strict=True)
+                self._planner_residual_v2_head = head.eval()
         self.checkpoint_payload = payload
         self.team = team
         self.seed = seed
@@ -182,6 +198,62 @@ class DeterministicCheckpointPolicy:
         if self._guardrail_mode == "planner_override":
             assert self._safety_controller is not None
             return self._safety_controller.act(observations, expected)
+        if self._guardrail_mode == "planner_residual_v2":
+            from .behavior_cloning import action_vector_to_index
+            from .mappo import planner_relative_residual_action, planner_residual_context
+            from .model_contract import team_model_input
+
+            assert self._safety_controller is not None
+            assert self._planner_residual_v2_head is not None
+            planner_actions = self._safety_controller.act(observations, expected)
+            selected = {agent: observations[agent] for agent in expected}
+            batch = team_model_input(selected, self.team, device=self._device)
+            planner_index = torch.tensor(
+                [action_vector_to_index(planner_actions[agent]) for agent in expected],
+                dtype=torch.int64,
+                device=self._device,
+            )
+            with torch.inference_mode():
+                latent = self._adapter._policy.actor_critic.encode(
+                    batch.vector, batch.graphic, batch.slot_id
+                )
+                context = planner_residual_context(
+                    batch.vector,
+                    batch.graphic,
+                    batch.slot_id,
+                    planner_index,
+                )
+                logits = self._planner_residual_v2_head(latent, context)
+                residual_index = torch.argmax(logits, dim=-1)
+                override_rows = torch.nonzero(residual_index != 0, as_tuple=False).flatten()
+                max_overrides = int(
+                    self.checkpoint_payload["inference_guardrail"].get(
+                        "max_overrides_per_step", 1
+                    )
+                )
+                if len(override_rows) > max_overrides:
+                    selected_logits = logits[override_rows, residual_index[override_rows]]
+                    fallback_logits = logits[override_rows, 0]
+                    keep = override_rows[
+                        torch.topk(selected_logits - fallback_logits, max_overrides).indices
+                    ]
+                    allowed = torch.zeros_like(residual_index, dtype=torch.bool)
+                    allowed[keep] = True
+                    residual_index = torch.where(
+                        allowed, residual_index, torch.zeros_like(residual_index)
+                    )
+                residual_actions = planner_relative_residual_action(
+                    residual_index, planner_index
+                ).cpu().numpy()
+            return {
+                agent: (
+                    planner_actions[agent]
+                    if int(residual_index[row]) == 0
+                    else residual_actions[row].astype(np.float32, copy=False)
+                )
+                for row, agent in enumerate(expected)
+            }
+
         selected = {agent: observations[agent] for agent in expected}
         neural_actions = self._adapter.act(selected)
         if self._guardrail_mode != "planner_residual_v1":
