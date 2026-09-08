@@ -156,13 +156,13 @@ def _scripted_evaluation_job(job: Mapping[str, Any]) -> list[dict[str, Any]]:
             if opponent_id == "base_scripted":
                 opponent = FrozenScriptedOpponent(
                     opponent_team,
-                    seed=880_000 + seed,
+                    seed=int(job.get("opponent_policy_seed", 880_000)) + seed,
                     enable_special_items=False,
                 )
             elif opponent_id == "weak_win70":
                 opponent = FrozenScriptedOpponent(
                     opponent_team,
-                    seed=880_000 + seed,
+                    seed=int(job.get("opponent_policy_seed", 880_000)) + seed,
                     enable_special_items=False,
                     roles=PLANNER_ROLES,
                     chase_radius_cells=12,
@@ -179,7 +179,10 @@ def _scripted_evaluation_job(job: Mapping[str, Any]) -> list[dict[str, Any]]:
                     seed=seed,
                     model_team=model_team,
                     model_policy=DeterministicCheckpointPolicy(
-                        candidate, team=model_team, seed=870_000 + seed, device="cpu"
+                        candidate,
+                        team=model_team,
+                        seed=int(job.get("candidate_policy_seed", 870_000)) + seed,
+                        device="cpu",
                     ),
                     opponent_policy=opponent,
                     model_artifact=model_artifact,
@@ -206,6 +209,8 @@ def evaluate_stage_candidate(
     max_episode_steps: int,
     global_step: int,
     output: Path,
+    candidate_policy_seed: int = 870_000,
+    opponent_policy_seed: int = 880_000,
 ) -> dict[str, Any]:
     if opponent_id == "full_win70":
         return evaluate_candidate(
@@ -218,6 +223,8 @@ def evaluate_stage_candidate(
             max_episode_steps=max_episode_steps,
             global_step=global_step,
             output=output,
+            candidate_policy_seed=candidate_policy_seed,
+            opponent_policy_seed=opponent_policy_seed,
         )
     jobs = [
         {
@@ -227,6 +234,8 @@ def evaluate_stage_candidate(
             "opponent_id": opponent_id,
             "time_scale": time_scale,
             "max_episode_steps": max_episode_steps,
+            "candidate_policy_seed": candidate_policy_seed,
+            "opponent_policy_seed": opponent_policy_seed,
         }
         for seed in seeds
     ]

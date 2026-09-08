@@ -252,47 +252,48 @@ MAPPO 연구는 주로 협력형 benchmark를 대상으로 하므로 BlackOut �
 - Melting Pot: unfamiliar opponent와 held-out scenario 평가 설계 참고.
 - SMACv2: 5대5 coordination과 procedural generalization 참고.
 
-## MAPPO planner-residual v4 학습 실행 방법 (권장)
+## MAPPO planner-conditioned residual v5 학습 실행 방법 (권장)
 
-현재 권장 실행은 검증된 planner를 action 0 fallback으로 보존하고 neural actor가
-방향 override만 학습하는 fail-closed v4입니다. 실패한 v3 장기 실행에서는
-재개하지 않습니다.
+현재 권장 실행은 planner 행동·역할·경로·가까운 목표를 residual actor 입력에 포함하고,
+한 step에서 한 agent만 제한적으로 방향 override를 탐색하는 v5입니다. v4의 all-zero BC
+warmup은 사용하지 않습니다.
 
 ### 학습 시작
 
 ```bash
 cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
-./scripts/train_mappo_planner_residual_v4.sh
+./scripts/train_mappo_planner_residual_v5.sh
 ```
 
-### 중단한 v4 학습 재개
+### 중단한 v5 학습 재개
 
 ```bash
 cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
-./scripts/train_mappo_planner_residual_v4.sh --resume-latest
+./scripts/train_mappo_planner_residual_v5.sh --resume-latest
 ```
 
 ### 백그라운드 실행
 
 ```bash
 cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
-mkdir -p logs/mappo_planner_residual_v4
-nohup ./scripts/train_mappo_planner_residual_v4.sh > logs/mappo_planner_residual_v4/console.log 2>&1 &
+./scripts/start_mappo_planner_residual_v5_background.sh
 ```
 
 ```bash
-tail -f logs/mappo_planner_residual_v4/console.log
+tail -f logs/mappo_planner_residual_v5/console.log
 ```
 
-학습 지표는 `logs/mappo_planner_residual_v4/training.jsonl`, 실행 요약은
-`logs/mappo_planner_residual_v4/run_summary.json`에 기록됩니다. 재개용 모델은
-`checkpoints/mappo_planner_residual_v4_latest.pt`, dev 최고 모델은
-`checkpoints/mappo_planner_residual_v4_best.pt`입니다. 전체 dev seed 양 진영
-10경기에서 9승 이상이면 `checkpoints/mappo_win_85_vs_win70.pt`를 저장합니다.
+학습 지표는 `logs/mappo_planner_residual_v5/training.jsonl`, 실행 요약은
+`logs/mappo_planner_residual_v5/run_summary.json`에 기록됩니다. latest, target-best,
+stage-best checkpoint를 분리하며 빠른 10게임 gate는 30게임 확인 평가를 통과해야
+승급합니다. 전체 dev 평가에서 85%를 확인하면
+`checkpoints/mappo_win_85_vs_win70_v5.pt`를 저장합니다.
 
 실패 원인, residual action 계약, fail-closed gate, 백그라운드/배속 검증은
-[`reports/mappo_planner_residual_v4_plan_changes.md`](reports/mappo_planner_residual_v4_plan_changes.md)를
+[`reports/mappo_planner_residual_v5_plan_changes.md`](reports/mappo_planner_residual_v5_plan_changes.md)를
 참조합니다.
+
+v4 실행 파일과 산출물은 이전 실험 재현용으로 보존합니다.
 
 ## MAPPO v2 학습 실행 방법 (이전 실험 보존용)
 

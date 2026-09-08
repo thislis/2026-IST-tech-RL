@@ -11,6 +11,8 @@ from blackout_rl.mappo import (
     MAPPOParallelRolloutCollector,
     compare_ippo_mappo, initialize_mappo_from_ippo, mappo_update, team_alive_mask,
     initialize_planner_residual_head,
+    initialize_planner_conditioned_residual, planner_residual_context,
+    planner_relative_residual_action,
 )
 from blackout_rl.ppo import PPOConfig
 from tests.test_ppo_training import MockParallelEnv, small_model
@@ -154,6 +156,74 @@ class MAPPOModelTests(unittest.TestCase):
         self.assertTrue(torch.equal(batch.teacher_action_index, torch.zeros(5, dtype=torch.int64)))
         self.assertEqual(collector.residual_fallback_actions, 5)
         self.assertEqual(collector.residual_override_actions, 0)
+
+    def test_v5_context_exposes_planner_role_path_and_target_features(self) -> None:
+        observations = MockParallelEnv()._observations()
+        from blackout_rl.model_contract import team_model_input
+
+        local = team_model_input(observations, 0)
+        planner_index = torch.tensor([1, 2, 3, 4, 5], dtype=torch.int64)
+        context = planner_residual_context(
+            local.vector, local.graphic, local.slot_id, planner_index
+        )
+
+        self.assertEqual(context.shape, (5, 18))
+        self.assertTrue(torch.equal(context[:3, 9:11], torch.tensor([[1., 0.]] * 3)))
+        self.assertTrue(torch.equal(context[3:, 9:11], torch.tensor([[0., 1.]] * 2)))
+        self.assertTrue(torch.equal(context[:, 11], torch.ones(5)))
+
+    def test_v5_collector_limits_exploration_to_one_agent_per_step(self) -> None:
+        model = initialize_mappo_from_ippo(small_model())
+        initialize_planner_conditioned_residual(model, fallback_logit_bias=6.5)
+        collector = MAPPOParallelRolloutCollector(
+            MockParallelEnv(),
+            model,
+            NoOpPolicy(),
+            learning_team=0,
+            residual_base=NoOpPolicy(),
+            max_residual_overrides_per_step=1,
+            teacher_seed=9,
+        )
+
+        batch = collector.collect(4, seed=3001).as_batch(gamma=.99, gae_lambda=.95)
+
+        self.assertIsNotNone(batch.planner_action_index)
+        self.assertIsNotNone(batch.residual_override_eligible)
+        eligible = batch.residual_override_eligible.reshape(4, 5)
+        self.assertTrue(torch.equal(eligible.sum(dim=1), torch.ones(4, dtype=torch.int64)))
+        self.assertLessEqual(collector.residual_override_actions, 4)
+        metrics = mappo_update(
+            model,
+            torch.optim.Adam(model.parameters(), 1e-3),
+            batch,
+            config=PPOConfig(update_epochs=1, minibatch_size=20),
+            override_penalty_coef=0.01,
+        )
+        self.assertTrue(np.isfinite(metrics.policy_loss))
+
+    def test_v5_residual_actions_are_relative_to_planner_direction(self) -> None:
+        planner_east = torch.tensor([1] * 9, dtype=torch.int64)
+        residual = torch.arange(9, dtype=torch.int64)
+
+        actions = planner_relative_residual_action(residual, planner_east)
+
+        expected = torch.tensor(
+            [
+                [1., 0.],
+                [1., 1.],
+                [1., -1.],
+                [0., 1.],
+                [0., -1.],
+                [0., 0.],
+                [-1., 0.],
+                [-1., 1.],
+                [-1., -1.],
+            ]
+        )
+        expected = expected / torch.linalg.vector_norm(
+            expected, dim=-1, keepdim=True
+        ).clamp_min(1.0)
+        self.assertTrue(torch.allclose(actions, expected))
 
 
 if __name__ == "__main__": unittest.main(verbosity=2)
