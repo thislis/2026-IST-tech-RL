@@ -16,9 +16,10 @@ from torch.nn import functional as F
 
 from .batching import N_TEAM_AGENTS
 from .observation import N_UNITS, UNIT_BLOCK_SIZE, VECTOR_SIZE
+from .strategy import DEFAULT_EPISODE_SECONDS
 
 
-EPISODE_SECONDS = 300.0
+EPISODE_SECONDS = DEFAULT_EPISODE_SECONDS
 ABSORPTION_SECONDS = 20.0
 
 
@@ -39,7 +40,7 @@ def self_relative_positions(vector: torch.Tensor, slot_id: torch.Tensor, team: t
 
 
 def absorption_phase_features(time_left: torch.Tensor) -> torch.Tensor:
-    """Encode the 20-second cycle from normalized 300-second time remaining."""
+    """Encode the 20-second cycle using the game's shared episode duration."""
     if torch.any((time_left < 0) | (time_left > 1)):
         raise ValueError("time_left must be normalized to [0,1]")
     elapsed = (1.0 - time_left) * EPISODE_SECONDS
@@ -90,9 +91,11 @@ class GlobalLocalMapEncoder(nn.Module):
         radius = self.crop_size // 2
         padded = F.pad(graphic, (radius, radius, radius, radius))
         height, width = graphic.shape[-2:]
-        xy = torch.round(self_position.clamp(0, 1) * torch.tensor(
-            [width - 1, height - 1], device=graphic.device
-        )).to(torch.int64)
+        position = self_position.clamp(0, 1)
+        xy = torch.floor(torch.stack((position[:, 0] * width,
+                                     (1 - position[:, 1]) * height), dim=-1)).to(torch.int64)
+        xy[:, 0].clamp_(0, width - 1)
+        xy[:, 1].clamp_(0, height - 1)
         crops = [
             padded[row, :, int(xy[row,1]):int(xy[row,1])+self.crop_size,
                    int(xy[row,0]):int(xy[row,0])+self.crop_size]

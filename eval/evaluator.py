@@ -54,6 +54,10 @@ def evaluate_episode(
     opponent_team = 1 - model_team
     build_path = Path(build).expanduser().resolve()
     executable = _executable_in(build_path)
+    for policy in (model_policy, opponent_policy):
+        reset = getattr(policy, "reset", None)
+        if callable(reset):
+            reset()
     obs, _ = env.reset(seed=seed)
     tracker = ScoreDeltaRewardTracker(target_score=target_score, terminal_win_reward=1.0)
     tracker.reset()
