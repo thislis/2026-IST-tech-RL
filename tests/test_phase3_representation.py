@@ -21,7 +21,7 @@ class RepresentationTests(unittest.TestCase):
         self.assertTrue(torch.allclose(relative[1,7], torch.zeros(2)))
 
     def test_absorption_phase_repeats_every_twenty_seconds(self) -> None:
-        time = torch.tensor([1.0, 1.0-20/300, 1.0-5/300])
+        time = torch.tensor([1.0, 1.0-20/420, 1.0-5/420])
         phase = absorption_phase_features(time)
         self.assertTrue(torch.allclose(phase[0], phase[1], atol=1e-5))
         self.assertTrue(torch.allclose(phase[2], torch.tensor([1.0, 0.0]), atol=1e-5))

@@ -1,5 +1,28 @@
 # 2026-IST-tech-RL
 
+## v6 — 학습 실행 준비 완료 (실제 학습 미실행)
+
+v5의 탐색 부족과 학습/평가 행동 선택 차이를 수정한 coordinated team residual PPO입니다.
+실제 planner 문맥, 41-way KEEP/유닛 수정 선택, train 실패 seed 재표집, B 진영 60% 노출,
+별도 confirmation 15개 맵, baseline 상대 승급, rollback 및 source/hash 기록을 제공합니다.
+시간(420초)·crop 좌표 계약도 수정했습니다. 성능 목표 달성 여부는 아직 평가하지 않았습니다.
+
+실행 명령과 재개·로그 확인 방법은 아래 [v6 학습 실행 방법](#v6-training)에 정리했습니다.
+
+기존과 같이 `logs/mappo_planner_residual_v6/`에 `training.jsonl`, `run_summary.json`,
+step별 평가 JSON, `console.log`, 실행 중 `training.pid`를 남깁니다. 체크포인트는
+`checkpoints/mappo_planner_residual_v6_{latest,target_best,stage_best}.pt`입니다.
+최종 dev 9/10 및 별도 confirmation ≥85%를 통과해야
+`checkpoints/mappo_win_85_vs_win70_v6.pt`와 `submission/v6/` 두 파일 export를 생성합니다.
+최초 실행은 학습 update 전에 baseline 80경기를 평가합니다.
+
+제출 export는 planner와 residual을 모두 포함하지만 canonical batch 순서와 stateful
+planner의 공식 허용 여부는 별도로 확인해야 합니다. 엄격한 독립 decentralized actor나
+순수 stateless neural policy로 표현하지 않습니다.
+
+구현·변경 근거·실행 옵션·산출물·제한은
+[`reports/mappo_planner_residual_v6_plan_changes.md`](reports/mappo_planner_residual_v6_plan_changes.md)를 참고하세요.
+
 ## To-Do
 
 - [x]  Phase 1
@@ -212,8 +235,8 @@ v1 실패 원인과 persistent collector, 초기 actor, 하이퍼파라미터 �
 별도로 기록했다.
 
 v2 장기 실행에서 planner를 사용하는 상대 전략이 neural learner에 전달되지 않는
-문제가 확인되어, 현재 권장 학습 경로는 DAgger teacher 증류와 단계별 상대 혼합을
-적용한 v3다. 구현과 변경 근거는
+문제가 확인되어, 이후 v3에서 DAgger teacher 증류와 단계별 상대 혼합을 적용했다.
+당시 구현과 변경 근거는
 [`reports/mappo_teacher_curriculum_v3_plan.md`](reports/mappo_teacher_curriculum_v3_plan.md)에
 정리했다.
 
@@ -252,10 +275,110 @@ MAPPO 연구는 주로 협력형 benchmark를 대상으로 하므로 BlackOut �
 - Melting Pot: unfamiliar opponent와 held-out scenario 평가 설계 참고.
 - SMACv2: 5대5 coordination과 procedural generalization 참고.
 
-## MAPPO planner-conditioned residual v5 학습 실행 방법 (권장)
+<a id="v6-training"></a>
 
-현재 권장 실행은 planner 행동·역할·경로·가까운 목표를 residual actor 입력에 포함하고,
-한 step에서 한 agent만 제한적으로 방향 override를 탐색하는 v5입니다. v4의 all-zero BC
+## MAPPO coordinated team residual v6 학습 실행 방법 (현재 권장)
+
+v6는 planner 유지 또는 한 유닛의 방향 수정을 41가지 선택으로 통일하고, 명시적 탐색
+확률과 실패 seed 재표집을 적용합니다. 실제 학습은 아직 실행하지 않았으며, 아래 명령은
+사용자가 학습을 시작할 때 사용합니다. v1~v5의 실행 기록과 체크포인트는 보존됩니다.
+
+### 사전 점검 — 학습 미실행
+
+```bash
+cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
+./scripts/start_mappo_planner_residual_v6_background.sh --check
+```
+
+초기/상대 체크포인트, Unity executable hash, seed 분리, 출력 경로 및 실행 설정을
+검사합니다. `preflight_passed`, `training_started=false`를 반환하며 Unity나 학습을
+시작하지 않습니다. 기존 v6 산출물이 있으면 `--resume-latest --check`로 재개 조건을
+점검합니다.
+
+### 백그라운드 학습 시작 (권장)
+
+```bash
+cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
+./scripts/start_mappo_planner_residual_v6_background.sh
+```
+
+터미널과 분리된 프로세스로 실행하고 PID 및 `console.log` 경로를 출력합니다. Unity는
+`-batchmode`로 실행하되 시각 관측을 위해 graphics를 유지합니다. 최초 실행에서는
+scripted/full win70 상대의 dev·confirmation **baseline 80경기 평가를 먼저 수행**하므로,
+그동안 PPO update 로그가 없는 것은 정상입니다.
+
+### 중단한 v6 학습 재개
+
+```bash
+cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
+./scripts/start_mappo_planner_residual_v6_background.sh --resume-latest
+```
+
+model·optimizer·난수 상태·seed 표집 분포를 복원합니다. Unity 내부 물리 상태는 복원하지
+않으므로 진행 중이던 경기는 폐기 내역을 기록하고 새 episode에서 시작합니다. 저장된
+checkpoint보다 앞선 로그는 `recovery_*.jsonl`로 보존합니다.
+
+`budget_exhausted`로 종료된 실행은 전체 step 상한을 늘려 재개할 수 있습니다.
+
+```bash
+./scripts/start_mappo_planner_residual_v6_background.sh --resume-latest --max-env-steps 5000000
+```
+
+`stage_blocked`, `rollback_limit`, `target_reached`는 종료 조건이 확정된 run이므로 동일
+설정의 재개를 거부합니다. 새 실험은 log directory뿐 아니라 latest/best/target checkpoint,
+snapshot 및 export 경로도 분리해야 합니다.
+
+### 로그와 결과 확인
+
+```bash
+tail -f logs/mappo_planner_residual_v6/console.log
+cat logs/mappo_planner_residual_v6/run_summary.json
+```
+
+| 산출물 | 경로 |
+| --- | --- |
+| update별 PPO·rollout·탐색률 및 승급/rollback 기록 | `logs/mappo_planner_residual_v6/training.jsonl` |
+| 현재 단계·step·종료 상태·best/latest 평가 | `logs/mappo_planner_residual_v6/run_summary.json` |
+| 양 진영 평가 원자료 | `logs/mappo_planner_residual_v6/*_eval_step_*.json` |
+| 완료된 학습 경기의 seed·진영·상대·승패 | `logs/mappo_planner_residual_v6/training_episodes.jsonl` |
+| 실행 설정·소스 보존 | `logs/mappo_planner_residual_v6/run_config.json`, `source_snapshot.zip` |
+| 백그라운드 출력·실행 중 PID | `logs/mappo_planner_residual_v6/console.log`, `training.pid` |
+| 재개용 최신 모델 | `checkpoints/mappo_planner_residual_v6_latest.pt` |
+| target-best / stage-best | `checkpoints/mappo_planner_residual_v6_target_best.pt`, `checkpoints/mappo_planner_residual_v6_stage_best.pt` |
+| immutable best 사본·historical 상대 | `checkpoints/mappo_v6_snapshots/` |
+| 최종 목표 통과 모델 | `checkpoints/mappo_win_85_vs_win70_v6.pt` |
+| 목표 통과 후 두 파일 export | `submission/v6/policy.py`, `submission/v6/checkpoint.pt` |
+
+최종 모델은 dev **9/10 이상**, 별도 confirmation **26/30 이상**, confirmation의 각
+진영 **11/15 이상**을 모두 만족할 때 생성합니다. 이후 test seed 10개·20경기는 최종
+보고에만 사용하고 모델 선택에는 사용하지 않습니다. 현재 v6의 실제 승률 결과는 없습니다.
+
+### 기본 설정과 직접 실행
+
+기본값은 CPU, 최대 4,000,000 environment step, rollout 2,048 step, 평가 간격
+50,000 step, 저장 간격 25,000 step입니다. 학습 time scale은 50, 평가 time scale은
+100이며 실제 평가·저장은 rollout 경계에서 이루어집니다. 옵션은 `.sh` 뒤에 그대로
+전달할 수 있고, 전체 목록은 다음 명령으로 확인합니다.
+
+```bash
+./scripts/train_mappo_planner_residual_v6.sh --help
+```
+
+터미널에서 직접 실행하려면 아래 명령을 사용합니다. `Ctrl+C`를 누르면 중단 요청을
+기록하고 진행 중인 rollout/평가가 끝나는 경계에서 저장합니다.
+
+```bash
+./scripts/train_mappo_planner_residual_v6.sh
+```
+
+구현 차이, 검증 범위 및 planner를 포함한 제출 계약은
+[`reports/mappo_planner_residual_v6_plan_changes.md`](reports/mappo_planner_residual_v6_plan_changes.md)를
+참고하세요.
+
+## MAPPO planner-conditioned residual v5 학습 실행 방법 (이전 실험 보존용)
+
+v5는 planner 행동·역할·경로·가까운 목표를 residual actor 입력에 포함하고,
+한 step에서 한 agent만 제한적으로 방향 override를 탐색하는 이전 버전입니다. v4의 all-zero BC
 warmup은 사용하지 않습니다.
 
 ### 학습 시작

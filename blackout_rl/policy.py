@@ -131,6 +131,8 @@ class DeterministicCheckpointPolicy:
     artifact for subsequent residual/PPO fine-tuning.
     """
 
+    _v6_policy = None
+
     def __init__(
         self,
         checkpoint: str | Path,
@@ -142,6 +144,14 @@ class DeterministicCheckpointPolicy:
         from .model_contract import CanonicalTeamModel, load_checkpoint
 
         model, payload = load_checkpoint(checkpoint, device=device)
+        self._v6_policy = None
+        if payload.get("v6_schema") is not None:
+            from .mappo_v6 import V6Policy, model_from_payload
+
+            self._v6_policy = V6Policy(model_from_payload(payload, device), team=team, seed=seed)
+            self.checkpoint_payload = payload
+            self.team, self.seed = team, seed
+            return
         self._adapter = CanonicalTeamModel(model, team=team, device=device)
         self._safety_controller = None
         self._guardrail_mode = None
@@ -193,6 +203,8 @@ class DeterministicCheckpointPolicy:
         from .batching import team_agents
 
         expected = team_agents(self.team)
+        if self._v6_policy is not None:
+            return self._v6_policy.act(observations, agents)
         if tuple(agents) != expected:
             raise ValueError(f"checkpoint policy expected canonical agents {expected}")
         if self._guardrail_mode == "planner_override":
@@ -270,6 +282,9 @@ class DeterministicCheckpointPolicy:
         }
 
     def reset(self) -> None:
+        if self._v6_policy is not None:
+            self._v6_policy.reset()
+            return
         self._adapter._policy.reset_inference_state()
         if self._safety_controller is not None:
             self._safety_controller.reset()

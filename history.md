@@ -1,17 +1,28 @@
-# MAPPO v1–v5 발전 과정
+# MAPPO v1–v6 발전 과정
+
+> 2026-09-09 갱신: v6 장기 실행은 1,159,168 step에서 `stage_blocked`로 종료됐다.
+> 최종 target 평가는 5/10으로 목표 미달이며, 아래에 실제 실행 결과를 반영했다.
+> v6의 문제별 대책과 구현 검증 범위는
+> [`reports/mappo_planner_residual_v6_plan_changes.md`](reports/mappo_planner_residual_v6_plan_changes.md)에 정리했다.
 
 ## 목표와 공통 평가 기준
 
 최종 목표는 고정 상대 `checkpoints/win_70_vs_scripted.pt`를 상대로 MAPPO 정책을
 학습해, dev seed 5개를 양 진영으로 바꿔 치르는 10경기에서 승률 85% 이상을
 달성하는 것이다. 10경기에서는 최소 9승이 필요하며 무승부는 승리로 계산하지
-않는다. 모든 세대는 decentralized actor와 centralized critic을 사용하는 MAPPO
-CTDE를 기반으로 한다.
+않는다. v1~v5는 decentralized actor와 centralized critic을 사용하는 MAPPO
+CTDE를 기반으로 한다. v6는 centralized critic을 유지하되 팀 전체의 수정 행동을
+하나의 분포에서 선택하므로 엄밀한 decentralized actor 구조와는 구분한다.
+
+v6에서는 dev 9/10 외에 별도 confirmation seed 15개를 양 진영으로 평가한
+30경기에서 최소 26승, 진영별 최소 11/15승을 최종 승급 조건으로 사용한다.
+train/dev/confirmation/test seed는 분리하며 test 결과는 모델 선택에 사용하지 않는다.
 
 핵심 발전 흐름은 다음과 같다.
 
 > 직접 PPO(v1) → 에피소드 수집 정상화(v2) → planner 모방(v3) → planner 보존형
-> residual(v4) → planner-conditioned 안전 탐색과 롤백(v5)
+> residual(v4) → planner-conditioned 안전 탐색과 롤백(v5) → 팀 단위 행동 선택과
+> 탐색 확률 보장·실패 seed 재표집(v6)
 
 ## 한눈에 보는 결과
 
@@ -22,6 +33,7 @@ CTDE를 기반으로 한다.
 | v3 | DAgger·teacher forcing·BC와 단계별 상대 curriculum | planner 행동을 neural actor에 증류한 뒤 PPO로 개선 시도 | 3,000,320 step, 최종 평가 0/10, 점수 차 -94.1 | 단일-step 모방 오차 누적, NoOp 편향, 실패 단계 강제 승격, 성능 회귀 |
 | v4 | action 0은 planner 유지, 1~8은 방향 override인 planner residual | 불완전한 planner 복제 대신 검증된 planner 성능을 그대로 보존 | 100,352 step, scripted 8/10·target 5/10 그대로, 첫 단계에서 안전 중단 | warm-up이 fallback 정답만 BC하고 PPO도 꺼져 있어 개선 신호가 없었음 |
 | v5 | planner 문맥 기반 상대 방향 residual, 한 step당 override 1개, PPO·확인 평가·롤백 | planner를 보존하면서 제한된 수정 행동을 실제 보상으로 학습 | 317,440 step, scripted 8/10·target 5/10, 롤백 1회 후 단계 상한에서 중단 | PPO override가 평균 0.184%에 그쳐 정책이 planner에서 벗어나지 못함 |
+| v6 | 팀 단위 41-way residual, 명시적 탐색 하한, 실패 seed 재표집 | 실행 행동과 PPO 확률을 일치시키고 B 진영·실패 경기의 학습 비중 확대 | 1,159,168 step, 최종 target 5/10, 롤백 2회 후 full_win70 단계 상한에서 중단 | 탐색은 증가했지만 best는 초기 baseline 그대로이며 성능 악화가 반복됨 |
 
 ## v1 — 직접 MAPPO fine-tuning
 
@@ -149,7 +161,7 @@ planner를 기본 행동으로 고정한 채 더 나은 예외 행동만 학습�
 - 전용 background launcher를 추가하고 v4와 동일하게 학습 time scale 50,
   평가 time scale 100을 유지했다.
 
-### 결과와 현재 문제
+### 결과와 새로 드러난 문제
 
 - planner 보존 확인 평가는 30게임 24승 6패로 통과했다.
 - 116,736 step에서 target 성능이 10게임 2승 8패, 30게임 재확인 6승 24패로
@@ -162,6 +174,88 @@ planner를 기본 행동으로 고정한 채 더 나은 예외 행동만 학습�
 - scripted 평가에서 model-side A는 100%, B는 60%였고 물리적 진영 승률도 A 70%,
   B 30%로 편향되어 B 진영이 명확한 병목으로 남았다.
 
+**v6로 이어진 결론:** 독립적으로 행동을 뽑은 뒤 한 agent만 남기는 선택 과정과
+PPO의 확률 계산을 일치시키고, 탐색 하한과 B 진영·실패 seed 표집을 통해 실제로
+수정 행동을 학습할 기회를 늘려야 했다. 평가와 승급 기준도 baseline에 맞게
+재보정하고 서로 다른 map seed로 확인해야 했다.
+
+## v6 — 팀 단위 residual, 탐색 확률 보장과 실패 seed 재표집
+
+### v5 문제를 해결한 구현
+
+- 행동을 `KEEP + 5 agent × 8 correction`의 팀 단위 41-way categorical로 바꿨다.
+  한 step에 최대 한 agent만 수정하며, 실제로 표집한 혼합 분포의 log probability를
+  저장하고 PPO 업데이트에서도 같은 분포로 다시 계산한다.
+- 4,096-step planner 보존 단계 이후에는 BC 없이 PPO를 사용한다. 유효한 수정
+  행동에 대한 명시적 탐색 하한을 단계별 15%에서 2%까지 낮추고 override penalty를
+  제거했다. 이 비율은 팀 step 기준이며 v5의 agent action 기준 override율과 다르다.
+- planner의 실제 목표·경로, 이동·정체 상태, 역할·아이템·적의 상대 위치와 시간
+  문맥을 입력한다. 연속 방향을 기준으로 correction을 회전하고, 정지 중에도
+  8개 방향을 구별하며 B 진영의 좌표와 행동 방향을 함께 변환한다.
+- 관측의 시간 기준을 실제 420초 경기와 일치시키고 `GlobalLocalMapEncoder`의
+  local crop Y축 오류를 수정했다. 기존 IPPO encoder의 crop 동작은 변경하지 않았다.
+- 진영별 persistent collector를 유지하면서 update 비중을 A 40%, B 60%로
+  조정했다. 학습 seed는 실패 점수의 이동 평균과 40% 균등 표집을 혼합해 선택한다.
+  과거 PPO transition을 재사용하는 대신 실패한 seed의 새 경기를 수집한다.
+- curriculum을 planner 보존 → balanced residual → target 혼합 → full target →
+  historical 혼합으로 구성했다. 초기 gate는 측정한 baseline 대비 승률·점수 차
+  허용 범위를 사용하고, 단계 budget 소진만으로 강제 승급하지 않는다.
+- confirmation은 동일 map의 RNG replica 대신 별도 map seed 15개를 사용한다.
+  target-best와 stage-best를 분리하고, dev와 confirmation 모두 같은 기준점보다
+  악화된 경우에만 롤백한다. 최종 test 20경기는 승급한 모델의 보고용으로만 사용한다.
+- score delta와 terminal 중심 보상, 긴 경기용 discount, value/gradient clipping,
+  KL 조기 종료와 비정상 수치 검사를 적용했다. 고정 encoder의 feature와 압축된
+  critic 입력을 저장해 rollout 메모리 사용도 줄였다.
+- 기존 JSONL·summary·평가 JSON·checkpoint 방식을 v6 전용 경로로 유지한다.
+  source/config snapshot과 hash, checkpoint별 불변 best 사본, 로그 offset 및
+  crash 이후 로그 복구를 추가했다. 재개 시 Unity 경기는 새로 시작하며 중단된
+  경기의 폐기는 기록한다. 따라서 중단 전 궤적의 bitwise 재현을 의미하지 않는다.
+- background launcher와 사전 점검·재개 옵션을 제공하고, planner와 residual을
+  모두 포함하는 두 파일 제출 export를 구현했다. 실행 명령은
+  [README의 v6 학습 실행 방법](README.md#v6-training)에 정리했다.
+
+### 결과와 현재 문제
+
+- 전체 테스트 200개가 통과했으며 이 중 v6 테스트는 17개다. 합성 환경 기반으로
+  PPO·재개·로그 복구·export 등을 확인했고 shell 문법 및 background `--check`도
+  통과했다. 이 검증은 실제 Unity 경기나 학습 성능 검증을 대체하지 않는다.
+- 구현 당시에는 학습을 실행하지 않았으며, 이후 사용자가 백그라운드 학습을 시작했다.
+  실제 실행은 한국 시간 2026-09-08 16:21부터 09-09 11:52까지 약 19시간 31분 동안
+  진행됐다. 실행 시간에는 baseline 평가 80경기와 이후 평가가 포함된다. 학습량은
+  1,159,168 environment step, 566 update이며 이 중 PPO update는 564회였다.
+- 4,096 step에서 planner 보존 단계를, 55,296 step에서 balanced residual 단계를,
+  157,696 step에서 target 혼합 단계를 통과했다. 앞의 두 단계 scripted 확인 평가는
+  각각 23/30, target 혼합 단계의 full win70 확인 평가는 15/30이었다.
+- `full_win70` 단계에서 1,001,472 step을 사용했지만 승률 70% 및 진영별 최소 50%
+  gate를 충족하지 못했다. `maximum_stage_budget_without_confirmed_gate` 사유로
+  `stage_blocked` 종료했으며, 전체 4,000,000-step 상한 소진이나 목표 달성 종료는
+  아니다. historical 혼합 단계에는 진입하지 못했다.
+- 최종 target dev 평가는 5승 5패, 평균 점수 차 `0.0`이었다. model-side A는 3/5,
+  B는 2/5로 B 진영의 열세가 남았다. target-best도 global step 0의 초기 baseline
+  5/10으로 유지되어, planner 대비 평가 성능 향상은 확인되지 않았다.
+- 567,296 step에서 target 확인 평가가 0승 30패, 평균 점수 차 `-44.8`로 떨어져
+  첫 롤백이 작동했다. 925,696 step에서는 2승 28패, 점수 차 약 `-32.97`로 두 번째
+  롤백이 작동했다. 두 번 모두 초기 target-best를 복원했고 최종 dev 50%를 회복했다.
+  이 확인 평가들은 회귀 판단용이며 최종 모델의 confirmation 결과는 아니다.
+- PPO 구간 1,155,072 team step에서 수정 행동 540,856회를 실행했다. team step 기준
+  override율은 46.82%, agent action 기준은 9.36%로 v5의 약 0.184%보다 증가했다.
+  `full_win70` 단계의 team override율은 50.28%였다. 탐색 부족은 완화됐지만 수정
+  빈도 증가가 유효한 전략 개선으로 이어지지 않았고, 성능 악화도 두 차례 발생했다.
+- 완료된 학습 경기는 226경기, 37승 1무 188패였다. 상대별로 scripted 34경기 중 6승,
+  weak win70 8경기 중 4승, full win70 184경기 중 27승이었다. 학습 중 탐색과 상대
+  혼합을 포함하므로 이 수치는 deterministic dev 평가 승률과 직접 비교하지 않는다.
+- latest·target-best·stage-best checkpoint와 실행 로그는 저장됐다. 최종 dev 9/10 및
+  confirmation 조건을 통과하지 못해 `mappo_win_85_vs_win70_v6.pt`와 `submission/v6/`
+  산출물은 생성되지 않았고, 최종 test 평가도 실행되지 않았다.
+- 제출 export의 독립 실행은 테스트했지만 stateful planner와 canonical batch 순서를
+  공식 평가 환경이 허용하는지는 별도 확인이 필요하다. 순수 stateless Torch actor만
+  허용된다면 추가 증류 또는 제출 구조 변경이 필요하다.
+
+**현재 결론:** v6는 초기 단계 정체와 탐색 부족을 완화했지만 planner보다 좋은 수정
+행동을 학습하지 못했다. 다음 개선에서는 탐색 빈도를 더 높이는 것만으로 해결된다고
+가정하지 말고, 수정 행동의 장기 보상 기여와 학습·평가 행동 차이, B 진영 실패 및
+롤백 직전의 정책 변화를 분석해야 한다. 세부 원인은 아직 확정하지 않았다.
+
 ## 세대 전체에서 얻은 핵심 결론
 
 1. **v1→v2:** 긴 게임에서는 rollout과 episode의 수명을 분리해야 terminal 보상을
@@ -172,13 +266,17 @@ planner를 기본 행동으로 고정한 채 더 나은 예외 행동만 학습�
    closed-loop 오류에 취약하다. 강한 baseline을 직접 보존하는 편이 안정적이다.
 4. **v4→v5:** 안전한 residual만으로는 부족하다. planner를 이길 만큼의 탐색 빈도와
    실패 상태에 집중된 학습 신호가 있어야 한다.
-5. **현재:** v5는 성능 붕괴 방지에는 성공했지만 성능 향상에는 실패했다. 다음 버전은
-   B 진영 및 planner 실패 상태를 별도로 표집하고, 안전 범위 안에서 override 빈도를
-   높이며, 고정 10게임 gate와 학습 난이도를 baseline에 맞게 재보정해야 한다.
+5. **v5→v6:** 성능 붕괴 방지와 성능 향상은 별개다. 실행 행동과 학습 확률을
+   일치시키고, 탐색 하한·B 진영 비중·실패 seed 재표집을 구현했으며 초기 gate는
+   baseline 기준으로, 최종 gate는 분리된 dev/confirmation 기준으로 구성했다.
+6. **현재:** v6에서 탐색률이 증가하고 초기 단계 승급과 롤백이 작동해도 최종 target
+   성능은 5/10에 머물렀다. 탐색량이나 안전장치의 동작을 전략 개선으로 간주할 수
+   없으며, 보상에 도움이 되는 수정 행동을 학습하지 못한 원인을 추가 분석해야 한다.
 
 또한 v4/v5 checkpoint는 Python evaluator가 planner와 residual head를 함께 실행한다.
-최종 제출이 순수 Torch actor만 허용한다면 planner+residual을 단일 actor로 증류하거나
-planner 실행 코드를 제출 패키지에 포함하는 별도 작업이 필요하다.
+v6는 planner 실행 코드까지 포함하는 제출 export를 구현했지만 공식 제출 계약과의
+호환성은 아직 검증하지 않았다. 순수 stateless Torch actor만 허용한다면 별도 증류가
+필요하다는 제약은 남아 있다.
 
 ## 구현 및 근거 위치
 
@@ -189,3 +287,4 @@ planner 실행 코드를 제출 패키지에 포함하는 별도 작업이 필�
 | v3 | 당시 구현은 v4 entry point로 발전했으며 설계 문서로 보존 | `logs/mappo_teacher_curriculum_v3/`, `reports/mappo_teacher_curriculum_v3_plan.md` |
 | v4 | `scripts/train_mappo_planner_residual_v4.py` 및 v4 호환 학습기 | `logs/mappo_planner_residual_v4/`, `reports/mappo_planner_residual_v4_plan_changes.md` |
 | v5 | `scripts/train_mappo_planner_residual_v5.py`, `blackout_rl/mappo_curriculum_v5.py` | `logs/mappo_planner_residual_v5/`, `reports/mappo_planner_residual_v5_plan_changes.md` |
+| v6 | `scripts/train_mappo_planner_residual_v6.py`, `blackout_rl/mappo_v6.py`, `blackout_rl/mappo_v6_training.py`, `blackout_rl/mappo_curriculum_v6.py` | `logs/mappo_planner_residual_v6/`의 `run_summary.json`, `training.jsonl`, `training_episodes.jsonl`, `target_eval_step_1159168.json`, `confirmation_rollback_eval_step_*.json`; 구현 검증: `tests/test_mappo_v6.py`, `reports/mappo_planner_residual_v6_plan_changes.md` |
