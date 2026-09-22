@@ -1,29 +1,95 @@
 # 2026-IST-tech-RL
 
-## v6 — 학습 실행 준비 완료 (실제 학습 미실행)
+BlackOut 5대5 환경에서 scripted planner, IPPO/MAPPO 및 planner residual PPO를
+구현하고 평가하는 연구 작업 공간입니다. 현재 목표는 고정 상대
+`checkpoints/win_70_vs_scripted.pt`를 상대로 dev 10경기 중 9승 이상을 달성하는 것입니다.
 
-v5의 탐색 부족과 학습/평가 행동 선택 차이를 수정한 coordinated team residual PPO입니다.
-실제 planner 문맥, 41-way KEEP/유닛 수정 선택, train 실패 seed 재표집, B 진영 60% 노출,
-별도 confirmation 15개 맵, baseline 상대 승급, rollback 및 source/hash 기록을 제공합니다.
-시간(420초)·crop 좌표 계약도 수정했습니다. 성능 목표 달성 여부는 아직 평가하지 않았습니다.
+## 현재 상태 — v7 파일럿 완료 (2026-09-19 확인)
 
-실행 명령과 재개·로그 확인 방법은 아래 [v6 학습 실행 방법](#v6-training)에 정리했습니다.
+v7-1 파일럿 9개와 오류 수정 후 v7-2 실행 4개가 등록된 step 예산을 완료했고,
+최종 체크포인트 저장까지 확인했습니다. 다음 단계는 두 버전의 dev 성능 평가입니다.
+**[v7 파일럿 실행 방법](#파일럿-한-번에-실행)**의 한 줄 명령으로 완료된 학습을 건너뛰고
+평가까지 백그라운드에서 실행할 수 있습니다. 별도로 **[4,600만 스텝 본실험 실행](#대규모-본실험-실행)**도 준비했습니다.
+본실험은 2026-09-21에 사용자 요청으로 정상 중단했습니다. A0·A1 시드 11은 각각 200만
+스텝 완료, A2 시드 11은 **147,456스텝**에서 저장했습니다. 아래 본실험 명령은
+가속 설정으로 이 지점부터 재개합니다. 본실험 완료나 승률 개선을 의미하지 않습니다.
 
-기존과 같이 `logs/mappo_planner_residual_v6/`에 `training.jsonl`, `run_summary.json`,
-step별 평가 JSON, `console.log`, 실행 중 `training.pid`를 남깁니다. 체크포인트는
-`checkpoints/mappo_planner_residual_v6_{latest,target_best,stage_best}.pt`입니다.
-최종 dev 9/10 및 별도 confirmation ≥85%를 통과해야
-`checkpoints/mappo_win_85_vs_win70_v6.pt`와 `submission/v6/` 두 파일 export를 생성합니다.
-최초 실행은 학습 update 전에 baseline 80경기를 평가합니다.
+## v6 실행 기록 — 목표 미달 (2026-09-10 갱신)
 
-제출 export는 planner와 residual을 모두 포함하지만 canonical batch 순서와 stateful
-planner의 공식 허용 여부는 별도로 확인해야 합니다. 엄격한 독립 decentralized actor나
-순수 stateless neural policy로 표현하지 않습니다.
+v6는 **centralized critic을 사용하는 coordinated team residual PPO**입니다.
+장기 실행은 2026-09-09에 `stage_blocked`로 종료됐으며, 최종 target 승률은 **50%**입니다.
+단계별 승급 기준을 충족하지 못한 안전 중단으로, 목표 달성이나 전체 학습 예산 완주는 아닙니다.
 
-구현·변경 근거·실행 옵션·산출물·제한은
-[`reports/mappo_planner_residual_v6_plan_changes.md`](reports/mappo_planner_residual_v6_plan_changes.md)를 참고하세요.
+| 항목 | v6 실제 실행 결과 |
+| --- | --- |
+| 실행 시간 (한국 시간) | 09-08 16:21 → 09-09 11:52, 약 19시간 31분 (baseline 및 중간 평가 포함) |
+| 학습량 | 1,159,168 environment step, 566 update (PPO 564회) |
+| 진행 단계 | planner 보존 → balanced residual → target 혼합 통과, `full_win70`에서 종료 |
+| 종료 사유 | `full_win70`의 1,001,472-step 예산 소진, 승률 70%·각 진영 50% gate 미달 |
+| 최종 target dev | 5승 5패, 평균 점수 차 0.0; A 3/5, B 2/5 |
+| target-best | 학습 시작 시점(global step 0)의 baseline 5/10 유지 |
+| 성능 회귀·복구 | 확인 평가 0/30 및 2/30 이후 롤백 2회, 최종 dev 5/10 회복 |
+| PPO 수정 행동 비율 | team step 기준 46.82%, agent action 기준 9.36% |
+| 완료된 학습 경기 | 226경기, 37승 1무 188패 (탐색·상대 혼합 포함, dev 평가와 구분) |
+| 목표 모델·제출·test | 목표 미달로 최종 모델 및 `submission/v6/` 미생성, 최종 test 미실행 |
 
-## To-Do
+근거: [실행 요약](logs/mappo_planner_residual_v6/run_summary.json),
+[최종 target 평가](logs/mappo_planner_residual_v6/target_eval_step_1159168.json),
+[학습·승급·롤백 기록](logs/mappo_planner_residual_v6/training.jsonl),
+[완료 경기 기록](logs/mappo_planner_residual_v6/training_episodes.jsonl).
+
+탐색 부족과 초기 단계 정체는 완화됐지만 planner보다 좋은 수정 행동의 학습에는
+성공하지 못했습니다. 다음 분석 과제는 수정 행동의 장기 보상 기여, 탐색 학습과
+deterministic 평가의 차이, B 진영 실패 및 롤백 직전 정책 변화입니다. 세부 원인은
+아직 확정하지 않았습니다. **단순한 step 상한 증가는 종료된 이 run의 재개 방법이 아닙니다.**
+
+### 완료된 MAPPO 장기 실험
+
+| 세대 | 학습 step | 최종 target dev | 핵심 관찰 | 실행 근거 |
+| --- | ---: | --- | --- | --- |
+| v1 | 2,000,384 | 0/10 | rollout마다 환경 초기화, 완료된 학습 경기 0개 | [요약](logs/mappo_vs_win70/run_summary.json) |
+| v2 | 2,000,896 | 0/10 | episode 수집은 복구했지만 neural core가 상대 planner 실력을 재현하지 못함 | [요약](logs/mappo_vs_win70_v2/run_summary.json) |
+| v3 | 3,000,320 | 0/10 | planner 모방 정확도가 closed-loop 성능으로 이어지지 않음 | [요약](logs/mappo_teacher_curriculum_v3/run_summary.json) |
+| v4 | 100,352 | 5/10 | planner 보존, 개선 신호 부족으로 첫 단계 중단 | [요약](logs/mappo_planner_residual_v4/run_summary.json) |
+| v5 | 317,440 | 5/10 | 탐색 부족, 롤백 1회 후 단계 상한 중단 | [요약](logs/mappo_planner_residual_v5/run_summary.json) |
+| v6 | 1,159,168 | 5/10 | 탐색 증가에도 best 개선 없음, 롤백 2회 후 full_win70 단계 중단 | [요약](logs/mappo_planner_residual_v6/run_summary.json) |
+
+위 수치는 각 실행의 최종 target 평가이며 동일 budget의 통제 실험은 아닙니다.
+이전 scripted 상대 승률과 현재 win70 상대 승률, 서로 다른 seed 집합의 결과도
+구분해야 합니다. 세대별 문제·해결 과정·남은 한계는 [history.md](history.md)를 참고하세요.
+
+### 구현과 문서 위치
+
+| 역할 | 주요 코드·자료 |
+| --- | --- |
+| 환경·관측·행동·게임 계약 | [env.py](blackout_rl/env.py), [observation.py](blackout_rl/observation.py), [game_spec.md](game_spec.md), [versions.md](versions.md) |
+| scripted planner와 팀 전략 | [navigation.py](blackout_rl/navigation.py), [scripted_fsm.py](blackout_rl/scripted_fsm.py), [strategy.py](blackout_rl/strategy.py) |
+| IPPO·기존 MAPPO | [ippo_model.py](blackout_rl/ippo_model.py), [ppo.py](blackout_rl/ppo.py), [mappo.py](blackout_rl/mappo.py) |
+| v6 actor·collector·PPO | [mappo_v6.py](blackout_rl/mappo_v6.py), [mappo_v6_training.py](blackout_rl/mappo_v6_training.py) |
+| v6 승급·seed 분리 | [mappo_curriculum_v6.py](blackout_rl/mappo_curriculum_v6.py), [seed_splits_v6.json](configs/seed_splits_v6.json) |
+| v6 학습·백그라운드 실행 | [학습기](scripts/train_mappo_planner_residual_v6.py), [launcher](scripts/launch_mappo_v6_background.py), [실행 안내](#v6-training) |
+| 평가·저장·export | [evaluator.py](eval/evaluator.py), [mappo_v6_artifacts.py](blackout_rl/mappo_v6_artifacts.py), [export CLI](scripts/export_mappo_v6.py) |
+| 변경 근거·검증 기록 | [v6 구현 보고서](reports/mappo_planner_residual_v6_plan_changes.md), [v6 테스트](tests/test_mappo_v6.py), [실행 이력](history.md) |
+
+v6는 frozen encoder와 원래 planner를 보존하고 `KEEP + 5유닛 × 8수정`의 41-way 팀
+분포를 최적화합니다. 실제 planner 문맥, 실패 seed 재표집, B 진영 60% update 노출,
+별도 confirmation 15개 맵, baseline 기준 초기 승급과 롤백을 구현했습니다.
+420초 시간 기준 및 별도 `GlobalLocalMapEncoder`의 crop Y축 계약도 수정했습니다.
+
+구현 당시 전체 테스트 200개(v6 17개 포함), shell 문법 및 사전 점검이 통과했습니다.
+이는 구현 검증 기록이며 목표 승률 달성의 증거는 아닙니다. v6 구현 보고서의
+“미실행” 표기는 09-08 작성 당시 상태이고, 이후 실측 결과는 위 로그와 history에 반영돼 있습니다.
+Phase 1–3의 제출 테스트 역시 당시 모델의 검증이며 v6의 공식 제출 승인을 의미하지 않습니다.
+v6 export는 planner와 residual을 함께 포함하지만 canonical batch 순서와 stateful
+planner의 공식 허용 여부는 미확인입니다. 엄격한 독립 decentralized actor나 순수
+stateless neural policy로 표현하지 않습니다.
+
+## 구현·실험 체크리스트 — Phase 1–3 기록
+
+아래 체크 표시는 해당 구현·테스트·실험 수행의 완료를 뜻합니다. 성능 향상에 실패한
+ablation도 포함하며, 목표 승률 달성이나 최종 제출 준비 완료를 뜻하지 않습니다.
+당시 구조·설계 원칙을 보존한 기록이므로 최신 v6의 팀 단위 actor와 B 진영 60% 표집은
+위 구현 설명 및 v6 실행 설정을 기준으로 합니다.
 
 - [x]  Phase 1
 
@@ -277,11 +343,17 @@ MAPPO 연구는 주로 협력형 benchmark를 대상으로 하므로 BlackOut �
 
 <a id="v6-training"></a>
 
-## MAPPO coordinated team residual v6 학습 실행 방법 (현재 권장)
+## MAPPO coordinated team residual v6 실행·재개·로그 안내
 
 v6는 planner 유지 또는 한 유닛의 방향 수정을 41가지 선택으로 통일하고, 명시적 탐색
-확률과 실패 seed 재표집을 적용합니다. 실제 학습은 아직 실행하지 않았으며, 아래 명령은
-사용자가 학습을 시작할 때 사용합니다. v1~v5의 실행 기록과 체크포인트는 보존됩니다.
+확률과 실패 seed 재표집을 적용합니다. 현재 기본 경로의 run은 `stage_blocked`로
+종료됐습니다. 아래 기본 경로 명령은 최초 실행 당시 방법을 보존한 것으로, 현재는
+새 실행 시 산출물 충돌, 재개 시 terminal status 검사로 거부됩니다. 로그와 checkpoint를
+삭제해 우회하지 마세요. 새 실험은 아래 별도 출력 경로 예시를 사용합니다.
+
+전제 조건은 프로젝트의 `.venv/bin/python`, 설치된 의존성, `builds/BlackOut.app`,
+`checkpoints/win_70_vs_scripted.pt`입니다. launcher는 이 로컬 Python 환경을 사용하며,
+입력 checkpoint의 planner 설정과 Unity executable SHA를 검사합니다.
 
 ### 사전 점검 — 학습 미실행
 
@@ -292,10 +364,11 @@ cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
 
 초기/상대 체크포인트, Unity executable hash, seed 분리, 출력 경로 및 실행 설정을
 검사합니다. `preflight_passed`, `training_started=false`를 반환하며 Unity나 학습을
-시작하지 않습니다. 기존 v6 산출물이 있으면 `--resume-latest --check`로 재개 조건을
-점검합니다.
+시작하지 않습니다. 검사를 통과한 경우에만 위 결과를 반환합니다. 기존 산출물이 있는
+기본 경로는 현재 충돌 오류가 나며, `--resume-latest --check`도 종료된 run이므로
+재개를 거부하는 것이 정상입니다.
 
-### 백그라운드 학습 시작 (권장)
+### 최초 백그라운드 실행 명령 (기록용)
 
 ```bash
 cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
@@ -307,7 +380,10 @@ cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
 scripted/full win70 상대의 dev·confirmation **baseline 80경기 평가를 먼저 수행**하므로,
 그동안 PPO update 로그가 없는 것은 정상입니다.
 
-### 중단한 v6 학습 재개
+### 재개 가능한 중단과 종료된 run 구분
+
+다음 명령은 정상 진행 중 사용자 중단·프로세스 장애 등으로 멈춘 run의 재개용입니다.
+현재 저장된 `stage_blocked` run에는 적용할 수 없습니다.
 
 ```bash
 cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
@@ -319,6 +395,7 @@ model·optimizer·난수 상태·seed 표집 분포를 복원합니다. Unity �
 checkpoint보다 앞선 로그는 `recovery_*.jsonl`로 보존합니다.
 
 `budget_exhausted`로 종료된 실행은 전체 step 상한을 늘려 재개할 수 있습니다.
+이는 현재 v6의 단계별 예산 소진(`stage_blocked`)과 다른 경우입니다.
 
 ```bash
 ./scripts/start_mappo_planner_residual_v6_background.sh --resume-latest --max-env-steps 5000000
@@ -328,12 +405,40 @@ checkpoint보다 앞선 로그는 `recovery_*.jsonl`로 보존합니다.
 설정의 재개를 거부합니다. 새 실험은 log directory뿐 아니라 latest/best/target checkpoint,
 snapshot 및 export 경로도 분리해야 합니다.
 
+### 기존 결과를 보존하는 새 실험 경로
+
+아래는 **사전 점검만** 수행하는 예시입니다. `v6_trial_02`는 아직 사용하지 않은 실험명으로
+바꾸세요. 코드·학습 설정은 기본값 그대로이며, 경로 분리가 성능 개선을 뜻하지는 않습니다.
+
+```bash
+cd /Users/safeailab_macmini/Desktop/2026-IST-tech-RL
+./scripts/start_mappo_planner_residual_v6_background.sh \
+  --log-dir logs/mappo_v6_trial_02 \
+  --latest-checkpoint checkpoints/mappo_v6_trial_02_latest.pt \
+  --target-best-checkpoint checkpoints/mappo_v6_trial_02_target_best.pt \
+  --stage-best-checkpoint checkpoints/mappo_v6_trial_02_stage_best.pt \
+  --target-checkpoint checkpoints/mappo_v6_trial_02_target.pt \
+  --snapshot-dir checkpoints/mappo_v6_trial_02_snapshots \
+  --export-dir submission/v6_trial_02 \
+  --check
+```
+
+사용자가 실제 학습을 시작하려면 동일 명령에서 마지막 `--check`를 제거합니다.
+해당 새 run을 재개할 때는 같은 출력 경로와 학습 옵션을 유지하고 `--resume-latest`를
+붙입니다. source/config/hash 일치 검사도 통과해야 합니다. 기존 v1~v6 산출물은 보존합니다.
+
 ### 로그와 결과 확인
 
 ```bash
-tail -f logs/mappo_planner_residual_v6/console.log
-cat logs/mappo_planner_residual_v6/run_summary.json
+tail -n 20 logs/mappo_planner_residual_v6/console.log
+jq '{status, global_step, update, stage, target_reached,
+     latest_target_evaluation: (.latest_target_evaluation |
+       {wins, draws, losses, win_rate, mean_model_score_diff})}' \
+  logs/mappo_planner_residual_v6/run_summary.json
 ```
+
+위 명령은 완료된 기본 run의 기록을 읽습니다. 실행 중인 새 실험을 추적할 때는
+해당 log directory로 바꾸고 `tail -f .../console.log`를 사용합니다.
 
 | 산출물 | 경로 |
 | --- | --- |
@@ -341,17 +446,19 @@ cat logs/mappo_planner_residual_v6/run_summary.json
 | 현재 단계·step·종료 상태·best/latest 평가 | `logs/mappo_planner_residual_v6/run_summary.json` |
 | 양 진영 평가 원자료 | `logs/mappo_planner_residual_v6/*_eval_step_*.json` |
 | 완료된 학습 경기의 seed·진영·상대·승패 | `logs/mappo_planner_residual_v6/training_episodes.jsonl` |
-| 실행 설정·소스 보존 | `logs/mappo_planner_residual_v6/run_config.json`, `source_snapshot.zip` |
-| 백그라운드 출력·실행 중 PID | `logs/mappo_planner_residual_v6/console.log`, `training.pid` |
+| 실행 설정·소스 보존 | `logs/mappo_planner_residual_v6/run_config.json`, `logs/mappo_planner_residual_v6/source_snapshot.zip` |
+| 백그라운드 출력·실행 중 PID | `logs/mappo_planner_residual_v6/console.log`, `logs/mappo_planner_residual_v6/training.pid` (종료 후 PID 파일 제거) |
 | 재개용 최신 모델 | `checkpoints/mappo_planner_residual_v6_latest.pt` |
 | target-best / stage-best | `checkpoints/mappo_planner_residual_v6_target_best.pt`, `checkpoints/mappo_planner_residual_v6_stage_best.pt` |
 | immutable best 사본·historical 상대 | `checkpoints/mappo_v6_snapshots/` |
-| 최종 목표 통과 모델 | `checkpoints/mappo_win_85_vs_win70_v6.pt` |
-| 목표 통과 후 두 파일 export | `submission/v6/policy.py`, `submission/v6/checkpoint.pt` |
+| 최종 목표 통과 모델 (현재 미생성) | `checkpoints/mappo_win_85_vs_win70_v6.pt` |
+| 목표 통과 후 두 파일 export (현재 미생성) | `submission/v6/policy.py`, `submission/v6/checkpoint.pt` |
 
 최종 모델은 dev **9/10 이상**, 별도 confirmation **26/30 이상**, confirmation의 각
 진영 **11/15 이상**을 모두 만족할 때 생성합니다. 이후 test seed 10개·20경기는 최종
-보고에만 사용하고 모델 선택에는 사용하지 않습니다. 현재 v6의 실제 승률 결과는 없습니다.
+보고에만 사용하고 모델 선택에는 사용하지 않습니다. 이번 실행은 최종 dev 5/10으로
+목표 미달입니다. 회귀 확인용 30경기 결과를 최종 모델의 confirmation/test로 해석하면
+안 됩니다. latest·best 저장 완료와 목표 모델 승격은 별개입니다.
 
 ### 기본 설정과 직접 실행
 
@@ -364,8 +471,9 @@ cat logs/mappo_planner_residual_v6/run_summary.json
 ./scripts/train_mappo_planner_residual_v6.sh --help
 ```
 
-터미널에서 직접 실행하려면 아래 명령을 사용합니다. `Ctrl+C`를 누르면 중단 요청을
-기록하고 진행 중인 rollout/평가가 끝나는 경계에서 저장합니다.
+터미널에서 직접 실행하는 entry point는 아래와 같습니다. 역시 기존 기본 경로에서는
+산출물 충돌로 거부되므로 새 실험에는 위의 출력 경로 옵션을 모두 전달해야 합니다.
+`Ctrl+C`를 누르면 중단 요청을 기록하고 진행 중인 rollout/평가가 끝나는 경계에서 저장합니다.
 
 ```bash
 ./scripts/train_mappo_planner_residual_v6.sh
@@ -380,6 +488,9 @@ cat logs/mappo_planner_residual_v6/run_summary.json
 v5는 planner 행동·역할·경로·가까운 목표를 residual actor 입력에 포함하고,
 한 step에서 한 agent만 제한적으로 방향 override를 탐색하는 이전 버전입니다. v4의 all-zero BC
 warmup은 사용하지 않습니다.
+
+실제 실행은 317,440 step에서 `stage_blocked`, 최종 target 5/10으로 종료됐습니다.
+아래는 당시 실행 방법의 기록이며 기존 로그·checkpoint 경로에 새 실행을 덮어쓰지 마세요.
 
 ### 학습 시작
 
@@ -422,6 +533,10 @@ v4 실행 파일과 산출물은 이전 실험 재현용으로 보존합니다.
 
 `checkpoints/win_70_vs_scripted.pt`를 적용한 상대를 대상으로 MAPPO를 학습하고, 승률 85% 이상을 달성하면 `checkpoints/mappo_win_85_vs_win70.pt`에 체크포인트를 저장합니다.
 
+실제 실행은 2,000,896 step, 최종 target 0/10으로 종료돼 목표를 달성하지 못했습니다.
+아래 명령은 당시 실행 방법의 기록입니다. v2의 입력은 neural core이며 v6의 planner
+보존형 초기화와 다릅니다. 기존 산출물을 덮어쓰는 새 실행은 피하세요.
+
 ### 학습 시작
 
 ```bash
@@ -453,3 +568,153 @@ tail -f logs/mappo_vs_win70_v2/console.log
 ```
 
 학습 지표는 `logs/mappo_vs_win70_v2/training.jsonl`, 실행 요약은 `logs/mappo_vs_win70_v2/run_summary.json`에 기록됩니다. 재개용 최신 모델은 `checkpoints/mappo_vs_win70_v2_latest.pt`에 저장됩니다. 실패한 v1 산출물은 보존되며 v2에서 재개할 수 없습니다.
+
+## v7 connectome 실험
+
+v7-1은 FAFB v783 실제 부분 회로를 기존 v6 특징 뒤의 PPO 보정 모듈로 사용한다. v7-2는 MaleCNS 전체 유지 그래프로 한 유닛을 직접 제어하며, F0 고정 제어와 F1 출력층 PPO를 제공한다. 실제 데이터·체크포인트 해시 검사, 실행 잠금, 백그라운드 실행, 재개 및 paired-side 평가를 포함한다.
+
+### 대규모 본실험 실행
+
+아래 한 줄은 **중단한 본실험을 저장 지점부터 가속 재개**합니다. 준비 작업에서는
+본실험을 다시 시작하지 않았으며, 이 명령을 사용자가 실행하면 시작됩니다.
+2026-09-19에 요청한 예산으로 v7-1 **4천만** + v7-2 **6백만**, 합계 **4,600만 환경 스텝**입니다.
+
+```bash
+bash "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/start_connectome_fast.sh"
+```
+
+| 구분 | 구성 | 학습 예산 | 학습 후 dev 평가 |
+| --- | --- | --- | --- |
+| 1 | v7-1 A0 MLP / A1 파라미터 수 대응 MLP / A2 재배선 / A3 FlyWire × 시드 11·22·33·44·55 | 20개 × 2,000,000 = 40,000,000 step | 20개 × 60 = 1,200경기 |
+| 2 | v7-2 현재 구현된 F1 출력층 PPO, teammate-v2, 한 유닛 제어 × 시드 11·22·33 | 3개 × 2,000,000 = 6,000,000 step | 3개 × 60 = 180경기 |
+
+사전 검사 후 터미널에서 분리하여 **최대 12개 독립 실행**을 병렬 처리합니다.
+전뇌 MPS 작업은 이 중 최대 2개입니다. 이 Mac의 단기 동시 수집 벤치마크에서 선택한 값입니다.
+v7-1 완료를 기다리지 않고 v7-2도 함께 시작하며, 남는 작업 슬롯에 학습 완료 모델의
+dev 평가를 배치합니다. 개별 모델의 rollout·PPO·난수는 다른 모델과 섞지 않습니다.
+실행 중에는 `caffeinate`로 자동 유휴 잠자기를 막고, 종료 시 해제합니다.
+수동 잠자기·재부팅·전원 종료까지 막는 기능은 아닙니다.
+
+적용한 가속은 **native Protobuf 메시지 해석, 프로세스 내부 재직렬화 제거,
+작은 게임 표시 창과 프레임 제한 해제, 라이브러리 스레드 과다 생성 억제,
+v7-2 전뇌 희소 행렬 계산의 MPS/Metal 실행**입니다. 인코더는 측정상 MPS가 더 느려 CPU를
+유지합니다. 원본 `.venv`, 학습 코드·설정과 Protobuf wire schema는 보존하고 별도 실행
+오버레이의 해시·체크포인트 이력을 기록합니다. 자세한 병렬 수·측정 결과·검증 범위는
+[가속 및 재개 보고서](reports/v7/acceleration_and_resume.md)를 참고하세요.
+
+- **A2 시드 11은 147,456스텝에서 optimizer·난수 상태를 포함해 재개**합니다.
+  완료된 A0·A1 시드 11은 재학습하지 않고 평가만 남깁니다. 아직 시작하지 않은 모델만
+  새로 초기화하며, 파일럿 체크포인트를 이어받지 않습니다.
+  기존 고정 인코더·상대 체크포인트, 그래프, 맵 분할, 보상과 상대 전환 일정은 유지합니다.
+- 별도 설정은 `configs/v7/main_study/`, 학습 기록은
+  `logs/v7/<experiment_id>_main_2m_v1/<seed>/`에 저장합니다. 기존 파일럿은 보존합니다.
+- 중단 후 **동일 명령으로 재개**합니다. 본실험의 미완료 체크포인트는 이어서 학습하고,
+  완료된 학습과 해당 체크포인트의 완전한 평가 결과는 건너뜁니다. Unity 진행 중 경기는
+  복원하지 않고 새 경기로 시작하며, 부분 평가만 남았다면 그 모델의 평가를 다시 수행합니다.
+- 오류가 나면 다음 실행으로 넘어가지 않고 중단합니다. 설정·소스·등록 파일이 바뀌면
+  해시 검사로 중단하며, 체크포인트 없는 기존 실행 기록을 자동 덮어쓰지 않습니다.
+- 평가는 **200만 스텝 최종 체크포인트**를 고정 target 상대, dev 30맵 × A/B 두 진영으로
+  수행합니다. dev 성적에 따라 학습 시드를 제외하거나 예산을 변경하지 않습니다.
+
+**v7-2 범위는 사용자가 지정한 현재 F1 모델의 장기 학습입니다.** B2 재배선 전뇌와
+B3 CNN/GRU 대조군, F2 및 다섯 유닛 제어를 포함한 전체 비교 연구는 포함하지 않습니다.
+이 스크립트는 학습과 dev 평가까지 수행하며, confirmation·블라인드 최종 test·제출은 별도입니다.
+
+실행 없이 전체 설정·체크포인트·데이터 검사:
+
+```bash
+bash "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/start_connectome_fast.sh" --check
+```
+
+실행 상태 확인:
+
+```bash
+bash "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/start_connectome_fast.sh" --status
+```
+
+정상 중단 요청(현재 학습의 저장·종료를 기다리며, 재개는 최초 실행 명령과 동일):
+
+```bash
+bash "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/start_connectome_fast.sh" --stop
+```
+
+| 경로 | 내용 |
+| --- | --- |
+| `logs/v7/main_study/accelerated/console.log` | 가속 관리자 시작·검사 로그 |
+| `logs/v7/main_study/accelerated/*_train.log`, `*_evaluate.log` | 실행별 학습·평가 콘솔 및 오류 |
+| `logs/v7/main_study/accelerated/status.json` | 현재 동시 실행 목록·대기 수·실패 상태 |
+| `logs/v7/main_study/accelerated/summary.json` | 두 버전의 모델·시드별 dev 평가 결과 |
+| `logs/v7/main_study/pre_acceleration_backup/` | 중단 시점 원본 체크포인트·설정·상태 백업 |
+| `logs/v7/<experiment_id>_main_2m_v1/<seed>/status.json` | 해당 모델의 현재 학습 스텝 |
+| `logs/v7/<experiment_id>_main_2m_v1/<seed>/checkpoints/latest.pt` | 해당 모델의 저장된 재개 지점 |
+| [본실험 사전 등록](reports/v7/main_study_preregistration.md) | 비교 범위, 예산, 선택·중단 규칙, 검증 범위 |
+| [기계 판독 등록 파일](reports/v7/main_study_registration.json) | 코드·설정 해시 및 소스 보관본 |
+| [가속 실행 등록 파일](reports/v7/acceleration_registration.json) | 통신·MPS·병렬 설정과 추가 코드 해시 |
+
+`--status`의 통합 `status: complete`와 `summary.json`의 `complete: true`는
+**23개 학습과 1,380경기 dev 평가가 모두 끝났음**을 뜻합니다. 목표 승률 달성 판정은 아닙니다.
+이전 `start_connectome_main.sh`는 순차 실행 재현용으로 보존합니다. 이제 재개·상태·정지는
+`start_connectome_fast.sh`를 사용하세요. 기존 순차 실행과 가속 실행은 공유 잠금으로 중복을 막습니다.
+
+### 파일럿 한 번에 실행
+
+아래 **한 줄만 실행**하면 v7-1과 수정된 v7-2 파일럿의 학습 확인·재개와 dev 평가를
+순서대로 수행합니다. 어느 디렉터리에서 실행해도 되며, 사전 검사 후 백그라운드로
+전환되므로 터미널을 닫아도 계속 실행됩니다. Mac이 잠자기 상태가 되면 실행은 진행되지 않습니다.
+
+```bash
+bash "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/start_connectome_experiments.sh"
+```
+
+| 순서 | 실행 범위 | 완료된 학습 예산 | dev 평가 |
+| --- | --- | --- | --- |
+| 1 | v7-1 A0 MLP / A2 rewired / A3 FlyWire × 시드 11·22·33 | 9개 × 200,000 step | 9개 × 60경기 = 540경기 |
+| 2 | v7-2 teammate-v2 F1 PPO × 시드 11·22·33, F0 고정 정책 × 시드 11 | F1 3개 × 128,000 step, F0 22,000 step | 4개 × 60경기 = 240경기 |
+
+- **현재는 13개 모두 학습이 완료되어, 남은 dev 평가 최대 780경기를 실행합니다.**
+  각 실행을 고정 target 상대에 대해 dev 30맵 × A/B 두 진영으로 평가합니다.
+- 학습이 미완료라면 저장된 체크포인트에서 재개하고, 새 실행이면 등록된 예산으로 시작합니다.
+  완료된 학습 및 동일 체크포인트의 완전한 paired 평가 결과는 재사용합니다.
+  체크포인트 없이 기존 학습 기록만 남았거나 설정·소스 해시가 달라지면 중단합니다.
+- 중간 오류나 중단 후에는 **같은 한 줄을 다시 실행**하면 됩니다. 부분 평가만 남은 모델은
+  해당 모델의 60경기를 처음부터 다시 평가하며, 완료된 다른 모델은 건너뜁니다.
+- 동시에 같은 통합 명령을 입력해도 중복 실행하지 않습니다. 기존 개별 학습·평가가
+  실행 중이면 잠금 충돌로 중단하므로 그 작업이 끝난 뒤 통합 명령을 실행하세요.
+- v7-1은 학습 당시 등록된 소스 스냅샷, v7-2는 수정된 teammate-v2 소스로 검증·실행합니다.
+  기존 v7-2 실패 기록은 보존하며 복구된 실행을 사용합니다.
+
+이 명령의 범위는 **현재 등록된 파일럿 + dev 평가**입니다. 계획서의 v7-1 A1 포함
+4천만 step 본실험, v7-2 B2/B3 대조군, F2, confirmation 및 최종 test는 포함하지 않습니다.
+본실험 규모는 파일럿의 성능·처리량·비용을 확인한 뒤 별도로 확정합니다.
+
+### 검사·상태·결과 확인
+
+Unity 실행 없이 설정·데이터·체크포인트 검사:
+
+```bash
+bash "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/start_connectome_experiments.sh" --check
+```
+
+통합 실행 및 각 버전의 진행 상태 확인:
+
+```bash
+bash "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/start_connectome_experiments.sh" --status
+```
+
+| 파일 | 내용 |
+| --- | --- |
+| `logs/v7/pilot_experiments/console.log` | 통합 실행 로그와 오류 원인 |
+| `logs/v7/pilot_experiments/status.json` | 현재 버전, 실행·완료·실패 상태 |
+| `logs/v7/pilot_experiments/summary.json` | 두 버전의 실행별 승률·무승부율·맵 bootstrap 신뢰구간 |
+| `logs/v7/pilot_v7_1_dev_evaluation/status.json` | v7-1 현재 모델·평가 완료 개수 |
+| `logs/v7/pilot_v7_2_dev_evaluation/status.json` | v7-2 현재 모델·평가 완료 개수 |
+| `logs/v7/<experiment_id>/<seed>/eval_dev_target_*.json` | 모델별 평가 원자료 (`*.progress.json`은 진행 중 기록) |
+
+`--status`의 `active`는 통합 실행 잠금의 실제 점유 여부입니다. 통합 `status`가
+`complete`이고 `summary.json`의 `complete`가 `true`이면 두 버전의 평가까지 끝난 것입니다.
+실행별 신뢰구간은 맵 변동성을 나타내며, 학습 시드 전체를 합친 유의성 검정 결과는 아닙니다.
+
+기존 `scripts/start_pilot_evaluation.sh`는 v7-1 평가만 수행합니다.
+두 버전을 함께 실행할 때는 위 통합 스크립트를 사용하세요.
+
+상세 설정·실행·정지·재개와 검증 범위는 [v7 실행 안내](reports/v7/implementation_and_runbook.md)를 참고한다. F2, 전뇌 대조군 전체 연구, 공식 제출 export는 후속 범위이며 현재 승률 개선을 주장하지 않는다.

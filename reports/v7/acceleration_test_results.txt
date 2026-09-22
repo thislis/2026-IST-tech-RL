@@ -1,0 +1,53 @@
+test_real_metal_csr_includes_transfers_and_preserves_empty_rows (tests.v7.test_accelerated_runtime.MetalTests) ... ok
+test_completed_and_stopped_main_checkpoints_remain_unmodified (tests.v7.test_accelerated_runtime.RuntimeTests) ... ok
+test_native_generated_schemas_match_original_wire_descriptors (tests.v7.test_accelerated_runtime.RuntimeTests) ... ok
+test_queue_duplex_poll_and_message_order (tests.v7.test_accelerated_runtime.RuntimeTests) ... ok
+test_scheduling_enforces_shared_mps_limit_and_refills_cpu (tests.v7.test_accelerated_runtime.RuntimeTests) ... ok
+test_state_refresh_accepts_prior_scheduler_metadata (tests.v7.test_accelerated_runtime.RuntimeTests) ... ok
+test_stop_request_does_not_launch_new_jobs (tests.v7.test_accelerated_runtime.RuntimeTests) ... ok
+test_supervisor_failure_stops_other_workers (tests.v7.test_accelerated_runtime.RuntimeTests) ... ok
+test_detached_worker_reenters_main_instead_of_pilot (tests.v7.test_main_study.MainStudyTests) ... ok
+test_registered_budgets_and_runs_are_separate_from_pilots (tests.v7.test_main_study.MainStudyTests) ... ok
+test_registration_rejects_changed_config (tests.v7.test_main_study.MainStudyTests) ... ok
+test_stage_uses_main_queue_and_current_sources (tests.v7.test_main_study.MainStudyTests) ... ok
+test_reuse_requires_exact_checkpoint_and_full_pairs (tests.v7.test_pilot_evaluation.PilotEvaluationTests) ... ok
+test_worker_skips_complete_results_and_builds_summary (tests.v7.test_pilot_evaluation.PilotEvaluationTests) ... ok
+test_worker_stops_on_failure_without_success_summary (tests.v7.test_pilot_evaluation.PilotEvaluationTests) ... v7 백그라운드 실험 시작: PID 123
+로그: /var/folders/dv/mp_x8mzs18g3jcy6_3mr09_r0000gn/T/tmp2ddptdpt/console.log
+상태: /var/folders/dv/mp_x8mzs18g3jcy6_3mr09_r0000gn/T/tmp2ddptdpt/status.json
+[1/2] /var/folders/dv/mp_x8mzs18g3jcy6_3mr09_r0000gn/T/tmp6ppbq6go
+ok
+test_combined_collects_both_summaries_sequentially (tests.v7.test_connectome_experiments.CombinedExperimentTests) ... 실행: v7-1 학습 확인/재개 → dev 평가
+실행: v7-2 학습 확인/재개 → dev 평가
+ok
+test_combined_failure_prevents_second_suite_and_removes_pid (tests.v7.test_connectome_experiments.CombinedExperimentTests) ... 실행: v7-1 학습 확인/재개 → dev 평가
+ok
+test_pipeline_resumes_only_incomplete_run_then_evaluates (tests.v7.test_connectome_experiments.CombinedExperimentTests) ... 학습 완료: /var/folders/dv/mp_x8mzs18g3jcy6_3mr09_r0000gn/T/tmpmo9w0s1b/done (건너뜀)
+ok
+test_training_failure_never_starts_evaluation (tests.v7.test_connectome_experiments.CombinedExperimentTests) ... ok
+test_checkpoint_replay_and_sensory_dependence (tests.v7.test_contracts.DynamicsTests) ... ok
+test_explicit_tick_cache_reset_and_state_replay (tests.v7.test_contracts.DynamicsTests) ... ok
+test_readout_joint_ratio_and_update (tests.v7.test_contracts.DynamicsTests) ... ok
+test_reference_tick_and_independent_slots (tests.v7.test_contracts.DynamicsTests) ... ok
+test_sensor_wall_occlusion_and_world_y (tests.v7.test_contracts.DynamicsTests) ... ok
+test_head_determinism_gradients_keep (tests.v7.test_contracts.GraphTests) ... ok
+test_roundtrip_and_source_refusal (tests.v7.test_contracts.GraphTests) ... ok
+test_sparse_direction_and_dense_gradient (tests.v7.test_contracts.GraphTests) ... ok
+test_v6_mlp_equivalence_and_ppo_ratio (tests.v7.test_contracts.GraphTests) ... ok
+test_collector_real_ppo_path_and_episode_boundary (tests.v7.test_contracts.RunnerTests) ... ok
+test_resume_restores_checkpoint_and_discards_inflight_unity (tests.v7.test_contracts.RunnerTests) ... {"environment_steps": 4, "unit_actions": 20, "neural_ticks": 0, "sensor_frames": 0, "team_override_rate": 0.0, "steps_per_second": 7.933358483348712, "ppo": {"policy_loss": 0.0, "value_loss": 0.00028762914371327497, "entropy": 0.6940609663724899, "approximate_kl": 3.725290298461914e-09, "clip_fraction": 0.0, "gradient_norm": 0.03901334339752793, "explained_variance": -0.00017642974853515625, "epochs_completed": 4, "minibatches": 4, "samples": 2, "early_stopped": false}}
+{"environment_steps": 6, "unit_actions": 30, "neural_ticks": 0, "sensor_frames": 0, "team_override_rate": 0.0, "steps_per_second": 10.946630348690476, "ppo": {"policy_loss": -1.564621925354004e-07, "value_loss": 0.14828228950500488, "entropy": 0.6942996680736542, "approximate_kl": 9.313225746154785e-09, "clip_fraction": 0.0, "gradient_norm": 0.6880720406770706, "explained_variance": 0.2710255980491638, "epochs_completed": 4, "minibatches": 4, "samples": 2, "early_stopped": false}}
+ok
+test_rewire_preserves_degrees (tests.v7.test_contracts.RunnerTests) ... ok
+test_active_scripted_worker_can_leave_forbidden_start (tests.v7.test_teammates.TeammateTests) ... ok
+test_original_failure_and_excluded_neural_unit (tests.v7.test_teammates.TeammateTests) ... ok
+test_team_b_multiple_slots_and_full_neural_team (tests.v7.test_teammates.TeammateTests) ... ok
+test_unreachable_unit_waits_without_stopping_other_units (tests.v7.test_teammates.TeammateTests) ... ok
+test_wall_is_not_opened_when_start_is_exempted (tests.v7.test_teammates.TeammateTests) ... ok
+test_log_copy_preserves_parent_and_drops_only_uncommitted_tail (tests.v7.test_recovery.RecoveryTests) ... ok
+test_only_explicit_revision_is_accepted (tests.v7.test_recovery.RecoveryTests) ... ok
+
+----------------------------------------------------------------------
+Ran 38 tests in 3.075s
+
+OK

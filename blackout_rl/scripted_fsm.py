@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from typing import Iterable, Mapping, Sequence
 
@@ -254,9 +254,15 @@ class ScriptedTeamController:
         enable_danger_map: bool = True,
         enable_special_items: bool = False,
         roles: tuple[Role, ...] = DEFAULT_ROLES,
+        active_agents: tuple[str, ...] | None = None,
     ) -> None:
         self.team = team
         self.agents = team_agents(team)
+        if active_agents is not None and (not active_agents or len(set(active_agents)) != len(active_agents)
+                                          or not set(active_agents).issubset(self.agents)):
+            raise ValueError("active_agents must be a nonempty unique subset of this team")
+        # None preserves the legacy full-team planner contract exactly.
+        self.active_agents = active_agents
         self.seed = seed
         self.chase_radius_cells = chase_radius_cells
         self.evade_radius_cells = evade_radius_cells
@@ -360,10 +366,15 @@ class ScriptedTeamController:
         forbidden: Iterable[GridCell],
         *,
         role: Role | None = None,
+        start: GridCell | None = None,
     ) -> AStarPlanner | WeightedAStarPlanner:
         assert self._planner is not None
         grid = self._planner.walkable_grid.copy()
         for cell in forbidden:
+            # A hybrid-controlled unit may already occupy a role-forbidden shrine.
+            # Permit exiting it; never change the underlying wall walkability.
+            if self.active_agents is not None and cell == start:
+                continue
             if 0 <= cell.x < grid.shape[1] and 0 <= cell.y < grid.shape[0]:
                 grid[cell.y, cell.x] = False
         if self.enable_danger_map and role is not None and role in self.last_danger_maps:
@@ -429,7 +440,7 @@ class ScriptedTeamController:
         if route is None:
             planner = self._planner_avoiding(
                 self._forbidden_cells(runtime, state) | runtime.temporarily_blocked,
-                role=runtime.role,
+                role=runtime.role, start=state.cell,
             )
             route = planner.plan(state.cell, target)
         runtime.target = target
@@ -700,7 +711,7 @@ class ScriptedTeamController:
         assert self._static_map is not None
         planner = self._planner_avoiding(
             self._forbidden_cells(runtime, state),
-            role=runtime.role,
+            role=runtime.role, start=state.cell,
         )
         candidates = set(self._static_map.cells("ally_storage")) - runtime.failed_storage_cells
         if not candidates:
@@ -803,7 +814,7 @@ class ScriptedTeamController:
         if runtime.phase == GuardPhase.SEEK_SHRINE:
             planner = self._planner_avoiding(
                 {carrier_shrine_cell(self.team)},
-                role=Role.GUARD,
+                role=Role.GUARD, start=state.cell,
             )
             target, route, cost = nearest_reachable_cell(
                 state.cell,
@@ -962,7 +973,7 @@ class ScriptedTeamController:
             runtime.temporarily_blocked.add(waypoint)
         planner = self._planner_avoiding(
             self._forbidden_cells(runtime, state) | runtime.temporarily_blocked,
-            role=runtime.role,
+            role=runtime.role, start=state.cell,
         )
         try:
             route = planner.plan(state.cell, runtime.target)
@@ -1016,6 +1027,9 @@ class ScriptedTeamController:
             assert self._tracker is not None
             snapshot = self._tracker.update(observations, step=0)
         self._last_time_left = snapshot.time_left
+        planning_agents = self.agents if self.active_agents is None else self.active_agents
+        if self.active_agents is not None:
+            snapshot = replace(snapshot, units=tuple(state for state in snapshot.units if state.agent in planning_agents))
         dynamic_batteries = battery_cells_from_graphic(
             observations[self.agents[0]]["graphic"],
             resolution_scale=self._static_map.resolution_scale,
@@ -1075,24 +1089,32 @@ class ScriptedTeamController:
             )
 
         state_by_agent = snapshot.by_agent()
-        for agent in self.agents:
+        for agent in planning_agents:
             state = state_by_agent[agent]
             runtime = self._runtimes[agent]
-            if runtime.role == Role.WORKER and runtime.phase == WorkerPhase.DELIVER:
-                self._assign_delivery(state)
-            elif runtime.role == Role.GUARD:
-                self._update_guard(state, enemies)
-            elif runtime.role == Role.CARRIER:
-                self._update_carrier(state, enemies, batteries)
-                if runtime.phase == CarrierPhase.DELIVER:
+            try:
+                if runtime.role == Role.WORKER and runtime.phase == WorkerPhase.DELIVER:
                     self._assign_delivery(state)
+                elif runtime.role == Role.GUARD:
+                    self._update_guard(state, enemies)
+                elif runtime.role == Role.CARRIER:
+                    self._update_carrier(state, enemies, batteries)
+                    if runtime.phase == CarrierPhase.DELIVER:
+                        self._assign_delivery(state)
+            except PathNotFound as exc:
+                if self.active_agents is None:
+                    raise
+                # Only the unreachable scripted unit waits; retry on the next observation.
+                # Neural slots are not in this loop and receive no planner fallback.
+                self._clear_target(agent)
+                self._emit(agent, "assignment_unreachable", reason=str(exc), cell=[state.cell.x, state.cell.y])
 
         actions = {
             agent: np.zeros(2, dtype=np.float32)
             for agent in requested
         }
         self.last_decisions = {}
-        for agent in self.agents:
+        for agent in planning_agents:
             if agent not in actions:
                 continue
             state = state_by_agent[agent]

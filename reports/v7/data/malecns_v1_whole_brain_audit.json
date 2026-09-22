@@ -1,0 +1,27 @@
+{
+  "contacts": 124177617,
+  "edges": 25582938,
+  "exclusions": {
+    "excluded_endpoint_rows": 126273746,
+    "external_input_contacts": 6276306,
+    "external_output_contacts": 170891397
+  },
+  "isolated_nodes": 217,
+  "nodes": 166700,
+  "output_reachable_at_k4": [
+    true,
+    true,
+    true,
+    true,
+    true,
+    true
+  ],
+  "self_edges": 101,
+  "sides": {
+    "left": 81823,
+    "right": 83935,
+    "unknown": 942
+  },
+  "strongly_connected_components": 1385,
+  "synthetic": false
+}

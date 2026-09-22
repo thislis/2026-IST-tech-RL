@@ -1,0 +1,56 @@
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=4194304"
+    "memorysetup-bucket-allocator-block-count=1"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=4194304"
+    "memorysetup-profiler-bucket-allocator-block-count=1"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=4194304"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+{
+  "config": "configs/v7/main_study/v7_1_rewired.yaml",
+  "steps": 768,
+  "seconds": 21.986035792157054,
+  "steps_per_second": 34.93126306443857,
+  "threads": 2,
+  "engine": true,
+  "profile": false,
+  "fast": "both",
+  "mps_brain": false,
+  "training_updates": 0,
+  "batch_sha256": {
+    "features": "df690941d6dc1bd09984643945f3e75298c30707dbc2f76062ae29dffdd68ef4",
+    "central": "a1343ec9781db834faaf9d6fa3088b716fe8217910400b72958ca0d6b9c02970",
+    "action": "d9ce69a194a347f987fe676f2746d2afcfc659231ef5432ee51b96598d140ea9",
+    "old_log_prob": "4c5371c29d21ba30c98a6296bfd21dffdc24f5b4d8d494d578c4dca516c7d982",
+    "old_value": "1b06a104fb9a8ea4652387a1338ae318e1c721e6a8968017f0a1220abd582b09",
+    "reward": "8ced090c8b148d4ca0376bcda6d97ae69c0d0daa6be4eff74b4fea8c51ee153f",
+    "next_value": "b05ab1f9c33b9a7dd5653290a4dac0e40cde4a133a76ad389b7eacbc7784dd83",
+    "terminated": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b",
+    "truncated": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b",
+    "valid": "197c6f02d26eefc63e4b943d56f5fc1108afe868cc840fb9744b927e89b25eda",
+    "advantage": "ff035ddffd91ddb9dea3c09f78777fa3afa136005d000e8290b6f7120ee2d880",
+    "return_": "652b0fcd793677aca75ee5bc899213af736876a3138ba2826a224b340a8d7425"
+  }
+}

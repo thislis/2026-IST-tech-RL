@@ -1,0 +1,25 @@
+{
+  "config": "configs/v7/main_study/v7_2_readout_ppo.yaml",
+  "steps": 512,
+  "seconds": 9.93863270804286,
+  "steps_per_second": 51.51614060409566,
+  "threads": 2,
+  "engine": true,
+  "profile": false,
+  "fast": "both",
+  "mps_brain": true,
+  "training_updates": 0,
+  "batch_sha256": {
+    "features": "95b945230dd7a3b7a21dfa0a1da6773fa6a35c79629682752065ac8745d1da4d",
+    "central": "3228bc92cc21e50f1b97fec12a97c2184f5a1201750c3678fe135593d7f7e44d",
+    "action": "f13f46f3582947ec4316d7e8931f72c70bba570e45d2ab2e98301b0d77d6399e",
+    "old_log_prob": "90caa4d3701c0629e7738f2f651f21ae71076313b9fbb5df232c2b0fccbbca95",
+    "old_value": "3fa2ccb3b37579534f55e8d728057e09f7fd4a0e095bf756ca2a1e39f83e3c99",
+    "reward": "ae0549918d503d4cfb61cbd9c57def4ffc1db390c2059232f304b8ff8811ddf3",
+    "next_value": "69260a71592789c22629dd343485bcd8bf097aec45f6d20011711a43ec11e9fd",
+    "terminated": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    "truncated": "076a27c79e5ace2a3d47f9dd2e83e4ff6ea8872b3c2218f66c92b89b55f36560",
+    "advantage": "2a73efc11c14276281eaccc3abff52949e38ba480b238e378ed9316a3fa30d2a",
+    "return_": "994a5b621bc2932e3dfe4708a9dee78bb80a20934b9cdea7d9574bbd975a138e"
+  }
+}

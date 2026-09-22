@@ -1,0 +1,22 @@
+{
+  "v7_1_flywire": {
+    "trainable_parameters": 127209,
+    "frozen_parameters": 229594
+  },
+  "v7_1_matched_mlp": {
+    "trainable_parameters": 127131,
+    "frozen_parameters": 229594
+  },
+  "v7_1_mlp_control": {
+    "trainable_parameters": 133641,
+    "frozen_parameters": 229594
+  },
+  "v7_1_rewired": {
+    "trainable_parameters": 127209,
+    "frozen_parameters": 229594
+  },
+  "v7_2_readout_ppo": {
+    "trainable_parameters": 109888,
+    "frozen_parameters": 0
+  }
+}

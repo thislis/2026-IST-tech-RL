@@ -1,0 +1,39 @@
+{
+  "acceleration_equivalence_baseline": {
+    "baseline_sps": 28.447272378746955,
+    "accelerated_sps": 57.24722285370873,
+    "batch_exact": true,
+    "fields": {
+      "features": true,
+      "central": true,
+      "action": true,
+      "old_log_prob": true,
+      "old_value": true,
+      "reward": true,
+      "next_value": true,
+      "terminated": true,
+      "truncated": true,
+      "valid": true,
+      "advantage": true,
+      "return_": true
+    }
+  },
+  "acceleration_direct_baseline": {
+    "baseline_sps": 13.240243473662389,
+    "accelerated_sps": 23.20561793985616,
+    "batch_exact": true,
+    "fields": {
+      "features": true,
+      "central": true,
+      "action": true,
+      "old_log_prob": true,
+      "old_value": true,
+      "reward": true,
+      "next_value": true,
+      "terminated": true,
+      "truncated": true,
+      "advantage": true,
+      "return_": true
+    }
+  }
+}
