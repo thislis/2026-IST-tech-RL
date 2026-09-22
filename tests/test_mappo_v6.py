@@ -255,6 +255,10 @@ class V6Contracts(unittest.TestCase):
     def test_preflight_does_not_start_unity_or_create_outputs(self):
         with tempfile.TemporaryDirectory() as temp:
             args = build_parser().parse_args(["--log-dir", str(Path(temp)/"logs"), "--check"])
+            # Existing workspace training artifacts must not affect a read-only unit test.
+            for name in ("latest_checkpoint", "target_best_checkpoint", "stage_best_checkpoint", "target_checkpoint",
+                         "snapshot_dir", "export_dir"):
+                setattr(args, name, Path(temp)/name)
             with patch("scripts.train_mappo_planner_residual_v6.ContractBlackOutEnv", side_effect=AssertionError("Unity forbidden")):
                 preflight(args)
             self.assertFalse(args.log_dir.exists())

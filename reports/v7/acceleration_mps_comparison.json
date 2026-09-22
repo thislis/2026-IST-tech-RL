@@ -1,0 +1,13 @@
+{
+  "cpu_encoder_ms": 1.728250402957201,
+  "mps_encoder_with_transfers_ms": 3.8942433521151543,
+  "encoder_max_abs_difference": 7.4803829193115234e-06,
+  "cpu_csr_ms": 19.10072499886155,
+  "mps_csr_with_transfers_ms": 5.150160379707813,
+  "csr_max_abs_difference": 0.0,
+  "cpu_brain_tick_ms": 20.853849637205712,
+  "mps_brain_tick_ms": 7.136220039683394,
+  "brain_spikes_exact": true,
+  "brain_rates_exact": true,
+  "brain_voltage_max_abs_difference": 0.0
+}

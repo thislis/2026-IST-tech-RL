@@ -1,0 +1,36 @@
+{
+  "acquisition": "janelia_official",
+  "annotation_version": "v1.0",
+  "dataset": "male_cns",
+  "files": [
+    {
+      "bytes": 14483314,
+      "license": "CC-BY-4.0",
+      "name": "body-annotations-male-cns-v1.0-minconf-0.5.feather",
+      "sha256": "2177e246113e4cfbf1e7772ec37c6da1955ff22e8063d0b1f833101f99a9a3b2",
+      "source_url_without_token": "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/body-annotations-male-cns-v1.0-minconf-0.5.feather"
+    },
+    {
+      "bytes": 43282834,
+      "license": "CC-BY-4.0",
+      "name": "body-neurotransmitters-male-cns-v1.0.feather",
+      "sha256": "95c9289220663abeb3409f3ad9e5a7f8a53f8093f5139d15502cd08da8879621",
+      "source_url_without_token": "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/body-neurotransmitters-male-cns-v1.0.feather"
+    },
+    {
+      "bytes": 1051241946,
+      "license": "CC-BY-4.0",
+      "name": "connectome-weights-male-cns-v1.0-minconf-0.5.feather",
+      "sha256": "e35da783d1c686b2b58b3b87cd6a403ae43bfcfba8bff28e08ef752c1a56afc1",
+      "source_url_without_token": "https://storage.googleapis.com/flyem-male-cns/v1.0/connectome-data/flat-connectome/connectome-weights-male-cns-v1.0-minconf-0.5.feather"
+    },
+    {
+      "bytes": 111565,
+      "license": "CC-BY-4.0",
+      "name": "optic-columns.xlsx",
+      "sha256": "d4af1cacb751036f7e84bfecc9bec79ca010066ac066559c29b566003ec080d3",
+      "source_url_without_token": "https://raw.githubusercontent.com/flyconnectome/2025malecns/67767d2233657983993ff6c2be48e836a935863c/supplemental_data/optic-column-type-assignments-v1.0.xlsx"
+    }
+  ],
+  "version": "v1.0"
+}

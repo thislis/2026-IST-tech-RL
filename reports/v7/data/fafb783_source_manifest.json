@@ -1,0 +1,22 @@
+{
+  "acquisition": "official_public_archive",
+  "annotation_version": "8587524c1748ce5ef2080822a2fc890fc03bf597",
+  "dataset": "flywire_fafb",
+  "files": [
+    {
+      "bytes": 31718505,
+      "license": "CC-BY-NC-4.0",
+      "name": "annotations.tsv",
+      "sha256": "9a4f8b2f843196074431ebd7cd883536afa1be86c8a4ce90970441e8be81d1be",
+      "source_url_without_token": "https://raw.githubusercontent.com/flyconnectome/flywire_annotations/8587524c1748ce5ef2080822a2fc890fc03bf597/supplemental_files/Supplemental_file1_neuron_annotations.tsv"
+    },
+    {
+      "bytes": 852022274,
+      "license": "CC-BY-NC-4.0",
+      "name": "proofread_connections_783.feather",
+      "sha256": "24f960ae3e7d4f8cd30db3b62e99fb5179cc3d1e76d8c155bfb441e9737d3faf",
+      "source_url_without_token": "https://zenodo.org/records/10676866/files/proofread_connections_783.feather"
+    }
+  ],
+  "version": "783"
+}

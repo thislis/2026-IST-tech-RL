@@ -1,0 +1,19 @@
+{
+  "checkpoint_steps": 34816,
+  "current_run": "logs/v7/v7_2_malecns_readout_ppo_S0_one_unit_fly64_proxy_v1_repeat1_plasticity_off_teammate_v2/11",
+  "lineage_entries": 1,
+  "note": "Resumed into a fresh Unity episode; passing the old global-step count is a liveness check, not exact failed-episode replay.",
+  "old_failure_step": 34123,
+  "parent_checkpoint_sha256": "a3dee79b1c2f1a241f8be515cc9e1dfc4dc4898d2be315b3d38edf113dbc78b0",
+  "queue": "logs/v7/pilot_v7_2_recovery_queue/status.json",
+  "status": {
+    "environment_steps": 35072,
+    "neural_ticks": 35072,
+    "pid": 55270,
+    "sensor_frames": 7017,
+    "status": "running",
+    "steps_per_second": 14.639212044410712,
+    "team_override_rate": 0.0,
+    "unit_actions": 175360
+  }
+}

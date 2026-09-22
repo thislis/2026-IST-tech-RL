@@ -1,0 +1,15 @@
+{"environment_steps": 4, "unit_actions": 20, "neural_ticks": 0, "sensor_frames": 0, "team_override_rate": 0.0, "steps_per_second": 11.450283338952147, "ppo": {"policy_loss": 0.0, "value_loss": 0.00028762914371327497, "entropy": 0.6940609663724899, "approximate_kl": 3.725290298461914e-09, "clip_fraction": 0.0, "gradient_norm": 0.03901334339752793, "explained_variance": -0.00017642974853515625, "epochs_completed": 4, "minibatches": 4, "samples": 2, "early_stopped": false}}
+{"environment_steps": 6, "unit_actions": 30, "neural_ticks": 0, "sensor_frames": 0, "team_override_rate": 0.0, "steps_per_second": 8.817483654046919, "ppo": {"policy_loss": -1.564621925354004e-07, "value_loss": 0.14828228950500488, "entropy": 0.6942996680736542, "approximate_kl": 9.313225746154785e-09, "clip_fraction": 0.0, "gradient_norm": 0.6880720406770706, "explained_variance": 0.2710255980491638, "epochs_completed": 4, "minibatches": 4, "samples": 2, "early_stopped": false}}
+update=1 step=2 side=0 stage=planner_preservation override=0.0000
+status=rollback_limit step=2
+update=1 step=2 side=0 stage=planner_preservation override=0.0000
+update=2 step=4 side=1 stage=balanced_residual override=1.0000
+status=budget_exhausted step=4
+update=3 step=6 side=1 stage=target_mix override=1.0000
+status=budget_exhausted step=6
+update=1 step=2 side=0 stage=planner_preservation override=0.0000
+status=target_reached step=2
+----------------------------------------------------------------------
+Ran 29 tests in 6.903s
+
+OK

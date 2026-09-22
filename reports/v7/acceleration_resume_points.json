@@ -1,0 +1,32 @@
+[
+  {
+    "run": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/logs/v7/v7_1_fafb783_matched_mlp_main_2m_v1/11",
+    "checkpoint_sha256": "22bacc6a3b7e061e778435fc45d0cd752291ea7f906446910fa2a5b4568da811",
+    "backup": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/logs/v7/main_study/pre_acceleration_backup/v7_1_fafb783_matched_mlp_main_2m_v1/11",
+    "status": {
+      "environment_steps": 2000000,
+      "pid": 85421,
+      "status": "budget_complete"
+    }
+  },
+  {
+    "run": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/logs/v7/v7_1_fafb783_mlp_control_main_2m_v1/11",
+    "checkpoint_sha256": "cecbfc302cd4fb5697c8e1cd2670ab0b160d5dfad4f3c4f18f365e4d43f7582c",
+    "backup": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/logs/v7/main_study/pre_acceleration_backup/v7_1_fafb783_mlp_control_main_2m_v1/11",
+    "status": {
+      "environment_steps": 2000000,
+      "pid": 75994,
+      "status": "budget_complete"
+    }
+  },
+  {
+    "run": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/logs/v7/v7_1_fafb783_rewired_main_2m_v1/11",
+    "checkpoint_sha256": "b81a3db5b5c6be022f3c9a9aa746c94b78b64c6656de7efccfae408607181a38",
+    "backup": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/logs/v7/main_study/pre_acceleration_backup/v7_1_fafb783_rewired_main_2m_v1/11",
+    "status": {
+      "environment_steps": 147456,
+      "pid": 94947,
+      "status": "stopped"
+    }
+  }
+]

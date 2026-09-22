@@ -1,0 +1,11 @@
+{
+  "config": "configs/v7/main_study/v7_1_rewired.yaml",
+  "steps": 256,
+  "seconds": 4.721676042303443,
+  "steps_per_second": 54.218035652253654,
+  "threads": 2,
+  "engine": false,
+  "profile": false,
+  "fast": "both",
+  "training_updates": 0
+}

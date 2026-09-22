@@ -25,3 +25,5 @@ files_directory.md
 checkpoints/*.pt
 checkpoints
 logs/
+# v7 official source data and derived graphs (recreate from pinned manifests).
+data/connectomes/

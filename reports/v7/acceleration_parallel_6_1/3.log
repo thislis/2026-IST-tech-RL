@@ -1,0 +1,56 @@
+[UnityMemory] Configuration Parameters - Can be set up in boot.config
+    "memorysetup-allocator-temp-initial-block-size-main=262144"
+    "memorysetup-allocator-temp-initial-block-size-worker=262144"
+    "memorysetup-temp-allocator-size-background-worker=32768"
+    "memorysetup-temp-allocator-size-job-worker=262144"
+    "memorysetup-temp-allocator-size-preload-manager=262144"
+    "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+    "memorysetup-temp-allocator-size-audio-worker=65536"
+    "memorysetup-temp-allocator-size-cloud-worker=32768"
+    "memorysetup-bucket-allocator-granularity=16"
+    "memorysetup-bucket-allocator-bucket-count=8"
+    "memorysetup-bucket-allocator-block-size=4194304"
+    "memorysetup-bucket-allocator-block-count=1"
+    "memorysetup-main-allocator-block-size=16777216"
+    "memorysetup-thread-allocator-block-size=16777216"
+    "memorysetup-gfx-main-allocator-block-size=16777216"
+    "memorysetup-gfx-thread-allocator-block-size=16777216"
+    "memorysetup-cache-allocator-block-size=4194304"
+    "memorysetup-typetree-allocator-block-size=2097152"
+    "memorysetup-profiler-bucket-allocator-granularity=16"
+    "memorysetup-profiler-bucket-allocator-bucket-count=8"
+    "memorysetup-profiler-bucket-allocator-block-size=4194304"
+    "memorysetup-profiler-bucket-allocator-block-count=1"
+    "memorysetup-profiler-allocator-block-size=16777216"
+    "memorysetup-profiler-editor-allocator-block-size=1048576"
+    "memorysetup-temp-allocator-size-main=4194304"
+    "memorysetup-job-temp-allocator-block-size=2097152"
+    "memorysetup-job-temp-allocator-block-size-background=1048576"
+    "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+    "memorysetup-temp-allocator-size-gfx=262144"
+{
+  "config": "configs/v7/main_study/v7_1_rewired.yaml",
+  "steps": 832,
+  "seconds": 21.37346470914781,
+  "steps_per_second": 38.92677258095199,
+  "threads": 2,
+  "engine": true,
+  "profile": false,
+  "fast": "both",
+  "mps_brain": false,
+  "training_updates": 0,
+  "batch_sha256": {
+    "features": "6e348f2b965304573bf134299735d6bf20640e80872958ae1c35a807fc69ef10",
+    "central": "72b704871369318c238fcdd5e1833709ba91e98be8bffcf85f5dba08e78c25a9",
+    "action": "b516be486206c47a73663638abee35e4d00da1a2d70f2c72bb9769164fd3efd7",
+    "old_log_prob": "2e7bdea2c1d933e68e4a49dd725dc8d89d8d6898292e31b762c345b077023fd8",
+    "old_value": "29cfa79aa15d51da9d32ded1db057fc5bab758aaa0e523c39e4e05c7dc861233",
+    "reward": "5341e6b2646979a70e57653007a1f310169421ec9bdd9f1a5648f75ade005af1",
+    "next_value": "89349c66e3bbe7777773b414def321a763af552891fc1c3d20826badebd297b2",
+    "terminated": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b",
+    "truncated": "f5a5fd42d16a20302798ef6ed309979b43003d2320d9f0e8ea9831a92759fb4b",
+    "valid": "3d46aa2a68586223554d8f89f394eb78059c3bda8dbc09763ef34bfc03d76878",
+    "advantage": "0ff06b6faf1fa0813b2d382734e053084e6051854a4125a9a4c6ed791ab33a15",
+    "return_": "843bbc4182a6f034fc8e46cfe56d1ed82b7f2de342c8e97a876a76af638fac0d"
+  }
+}
