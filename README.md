@@ -1,10 +1,56 @@
 # 2026-IST-tech-RL
 
-BlackOut 5대5 환경에서 scripted planner, IPPO/MAPPO 및 planner residual PPO를
-구현하고 평가하는 연구 작업 공간입니다. 현재 목표는 고정 상대
-`checkpoints/win_70_vs_scripted.pt`를 상대로 dev 10경기 중 9승 이상을 달성하는 것입니다.
+**현재 상태 (2026-09-30): 원본 환경 v8 실험 완료, 성능 개선 미확인.** 원본 `BlackOut.app`과
+제공 API/obs 생성 코드를 유지하며 6개 run, 총 6,291,456 step과 dev 780경기를 완료했습니다.
+제공 로컬 runner 기준 780경기 전패이며 초기 관측 반복도 확인됐습니다. 제출 파일 생성·loader
+검증은 통과했지만 공식 서버 성능 인증은 아닙니다. 상세 결과는 [history.md](history.md)에 있습니다.
+**[현재 실행·제출 안내](docs/v8/competition.md)** · [환경 복구 기록](docs/v8/environment_restoration.md)
 
-## 현재 상태 — v7 파일럿 완료 (2026-09-19 확인)
+```bash
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/run_v8_fast.sh
+```
+
+위 명령은 `provided_competition_v1` 실행기이며 현재는 완료 작업을 건너뛰고 집계·export를
+재검증합니다. 아래 수정 Unity 연구 환경의
+성능·실행 설명은 과거 기록이며 새 제공 환경 실험 결과와 구분합니다.
+
+**선정 모델 관전:** 다음 한 줄로 v6 최종 모델과 v7-1 A3(FlyWire) seed 11의 실제 플레이를
+게임 창에서 볼 수 있습니다. 기본값은 정상 속도, 진영을 바꾼 두 경기이며 Ctrl+C로 종료합니다.
+
+```bash
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/watch_best_models.sh
+```
+
+`--check`는 모델·게임 검사만 수행하며 창을 열지 않습니다. `--games 1 --speed 2`도 사용할 수
+있습니다. 관전은 원본 API로 수행하는 시범 경기이며 과거 평가나 공식 성능 검증이 아닙니다.
+로그·reports·submission·체크포인트·빌드·그래프 원자료는 Git에 포함하지 않고 로컬에 보존합니다.
+새 clone에서는 관전에 필요한 이 로컬 자산과 Python 환경을 별도로 준비해야 합니다.
+
+BlackOut 5대5 환경에서 scripted planner, IPPO/MAPPO 및 planner residual PPO를
+구현하고 평가하는 연구 작업 공간입니다. 현재 v8은 고정 상대
+`checkpoints/win_70_vs_scripted.pt`에 대해 제공 `run_match()` 결과를 평가합니다.
+
+## 과거 v8 수정 환경 구현·로컬 통합 검증 (2026-09-27)
+
+별도 Unity 연구용 빌드, 결과·보상·타이머 계약, 단일 policy factory, C1/flat PPO,
+불변 checkpoint, 노출 장부, 통계 분석, 연구 export를 구현했습니다.
+실제 Unity에서 양 arm 각각 384 step의 기술 검증과 격리 export 재연을 완료했습니다.
+이는 정규 파일럿 완료나 승률 개선·공식 제출 인증을 뜻하지 않습니다.
+**[v8 실행 안내](docs/v8/README.md)** · **[구현·검증 범위](docs/v8/implementation_status.md)**
+
+## 과거 v8 수정 환경 가속 파일럿 (2026-09-28)
+
+후속 실행 완료: 6개 학습과 780개 dev 경기를 완료했고, 최종 집계의 모듈 경로 오류를 수정해
+[최종 요약](logs/v8/accelerated_pilot_v1/summary.json)을 복구했습니다.
+[수정 내역과 검증](docs/v8/import_fix.md). 이 실행 경로는 이후 철회되었습니다.
+
+C1/flat × 3 seeds를 최대 6개 worker로 실행하고 dev 평가까지 이어가는 백그라운드 실행기를
+준비했습니다. native 통신, 중복 계산 제거, mask 일괄 계산, 무손실 로그 압축을 적용했습니다.
+당시 예산은 총 6,291,456 학습 step과 780 dev 경기였습니다.
+현재 `run_v8_fast.sh`는 문서 상단의 새 제공 환경 실험을 실행합니다.
+**[가속 내용·검증 결과·상태 확인과 재개 방법](docs/v8/acceleration.md)**
+
+## v7 과거 실행 기록 (2026-09-19~21 시점)
 
 v7-1 파일럿 9개와 오류 수정 후 v7-2 실행 4개가 등록된 step 예산을 완료했고,
 최종 체크포인트 저장까지 확인했습니다. 다음 단계는 두 버전의 dev 성능 평가입니다.

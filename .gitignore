@@ -29,5 +29,13 @@ logs/
 # v7 official source data and derived graphs (recreate from pinned manifests).
 data/connectomes/
 
-# prepairing
+# other local files
 /plans
+/scripts
+/submissions
+/reports
+
+# Generated submissions and local experiment/verification artifacts.
+/submission/
+/artifacts/
+*.log

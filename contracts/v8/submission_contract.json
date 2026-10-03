@@ -1,0 +1,48 @@
+{
+  "schema": "blackout.v8.submission_contract.v2",
+  "status": "documented_interface_local_loader_verified_by_tests",
+  "source_document": "blackout_last_4_pages.md",
+  "source_document_sha256": "1db8611a50f0a460cc6451fc2951089529628934c3a84eecf3e99afa472ed4a3",
+  "files": [
+    "policy.py",
+    "checkpoint.pt"
+  ],
+  "model_class": "MyPolicy",
+  "constructor": {
+    "vector_size": 96,
+    "n_channels": 11
+  },
+  "forward": {
+    "vector": "float32[B,96]",
+    "graphic": "float32[B,11,96,96]",
+    "action": "float32[B,2]",
+    "action_range": [
+      -1,
+      1
+    ]
+  },
+  "checkpoint": {
+    "state_dict_key": "policy_state",
+    "loader": "blackout_env.load_checkpoint",
+    "weights_only": true
+  },
+  "supplied_loader_sha256": "d0dab47cd9672bdddf85455620edee68f4dd692ba167a14e6eea52c2f4226f37",
+  "supplied_match_sha256": "508dc0b449ff0ef39cdf4121211c72c12cb3283f38597d2df131ff7500696f06",
+  "policy_dependencies": [
+    "torch",
+    "Python standard library"
+  ],
+  "actor_requires_agent_ids": false,
+  "actor_requires_reset_callback": false,
+  "actor_stateful": false,
+  "batch_identity_assumptions": false,
+  "uses_custom_observations": false,
+  "modifies_game_or_api": false,
+  "documented_vs_local_runner_discrepancy": "slides say rewards do not determine competition scoring; supplied run_match compares cumulative team rewards",
+  "local_evaluation_metric": "provided_run_match_reward_total_W_over_N",
+  "engine_winner_equivalence_claimed": false,
+  "external_server_verified": false,
+  "external_submission_sent": false,
+  "resource_limits": null,
+  "conditional_followup": "actual server/device/deadline rules must be tested when supplied; packaging is available without claiming server certification"
+}
