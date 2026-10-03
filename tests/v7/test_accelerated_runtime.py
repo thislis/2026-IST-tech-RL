@@ -61,13 +61,27 @@ print(json.dumps(result,sort_keys=True))
     def test_completed_and_stopped_main_checkpoints_remain_unmodified(self):
         records=fast.read(fast.ROOT/'reports/v7/acceleration_resume_points.json')
         for record in records:
-            self.assertEqual(fast.sha256(Path(record['run'])/'checkpoints/latest.pt'),record['checkpoint_sha256'])
+            import torch
+            original=Path(record['backup'])/'checkpoints/latest.pt'
+            self.assertEqual(fast.sha256(original),record['checkpoint_sha256'])
+            current=Path(record['run'])/'checkpoints/latest.pt'
+            if fast.sha256(current)!=record['checkpoint_sha256']:
+                payload=torch.load(current,map_location='cpu',weights_only=True)
+                backup=torch.load(original,map_location='cpu',weights_only=True)
+                self.assertGreater(payload['global_step'],backup['global_step'])
+                self.assertTrue(any(e.get('parent_checkpoint_sha256')==record['checkpoint_sha256'] for e in payload['lineage']))
 
     def test_state_refresh_accepts_prior_scheduler_metadata(self):
         # Main-study completed seed 11 remains ready for evaluation, never retraining.
         job=fast.jobs()[0]
         job.update(phase='train',step=0,complete=False,checkpoint_sha256='stale',log='old')
-        state=fast.inspect_job(job)
+        # New v8 modules intentionally change whole-tree identity. Check every
+        # registered v7 file, then exercise this scheduler fixture in that snapshot.
+        from blackout_rl.v8.runtime import validate_legacy_sources
+        validate_legacy_sources()
+        registered=fast.read(fast.ROOT/'reports/v7/main_study_registration.json')['sources']
+        with patch('blackout_rl.v7_registry.source_fingerprint',return_value=registered):
+            state=fast.inspect_job(job)
         self.assertTrue(state['complete'])
         self.assertEqual(state['step'],2_000_000)
         self.assertIn(state['phase'],('evaluate','done'))

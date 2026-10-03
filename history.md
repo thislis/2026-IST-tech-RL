@@ -1,10 +1,12 @@
-# MAPPO 및 connectome v1–v7 발전 과정
+# MAPPO 및 connectome v1–v8 발전 과정
 
-> 2026-09-22 갱신: v7 본실험 23개 실행이 각 2,000,000 step을 완료했고,
-> 고정 target 상대 dev 평가 1,380경기도 완료됐다. 실제 FlyWire와 재배선 대조군은
-> 모두 승률 50%로, 생물학적 배선의 우월성은 확인되지 않았다. 최종 test는 미실행이다.
-> 실행 근거는 [`logs/v7/main_study/accelerated/summary.json`](logs/v7/main_study/accelerated/summary.json),
-> 사전 등록 범위는 [`reports/v7/main_study_preregistration.md`](reports/v7/main_study_preregistration.md)에 있다.
+> 2026-09-30 갱신: 원본 게임·제공 API를 사용하는 v8 `provided_competition_v1`이
+> 학습 6개, 총 6,291,456 step과 dev 780경기를 완료했다. C1-obs9·flat9·planner
+> 기준선 모두 제공 로컬 runner 기준 승률 0%였다. 제출 파일 생성·loader 검증은
+> 통과했지만 성능 개선은 확인되지 않았다. 이전 수정 게임 실험과 현재 결과를 구분한다.
+> 실행 근거: [`v8 최종 집계`](logs/v8/provided_competition_v1/summary.json),
+> 실행·제출 계약: [`v8 안내`](docs/v8/competition.md). 로그·reports·체크포인트·submission은
+> 로컬 산출물로 보존하며 Git 추적 대상에서 제외한다.
 
 ## 목표와 공통 평가 기준
 
@@ -24,12 +26,18 @@ v7은 같은 고정 target 상대를 사용하되, 구조 비교를 위해 고�
 dev 성적으로 중간 checkpoint를 선택하지 않는다. v7의 승률은 v1~v6의 10경기와
 평가 맵·표본 수가 다르므로 직접적인 세대 간 성능 향상 수치로 해석하지 않는다.
 
+v8의 최종 실행 경로는 제공 `run_match()`의 경기 전체 누적 reward 비교를 승패 기준으로
+사용한다. 이전 평가기의 terminal `info['winner']` 기준과 같다고 가정하지 않는다.
+원본 게임·obs 생성 경로를 변경하지 않는 조건에서 30회 × 양 진영을 평가했으며,
+실제 map seed 적용이 검증되지 않아 30개의 서로 다른 맵을 평가했다고 표현하지 않는다.
+
 핵심 발전 흐름은 다음과 같다.
 
 > 직접 PPO(v1) → 에피소드 수집 정상화(v2) → planner 모방(v3) → planner 보존형
 > residual(v4) → planner-conditioned 안전 탐색과 롤백(v5) → 팀 단위 행동 선택과
 > 탐색 확률 보장·실패 seed 재표집(v6) → 고정 예산의 connectome residual 대조 실험과
-> 전뇌 특징 기반 PPO 직접 제어(v7)
+> 전뇌 특징 기반 PPO 직접 제어(v7) → 명시적 개입 gate와 동일 용량 대조군,
+> 원본 환경·두 입력 제출 인터페이스에 맞춘 관측 기반 정책(v8)
 
 ## 한눈에 보는 결과
 
@@ -43,6 +51,7 @@ dev 성적으로 중간 checkpoint를 선택하지 않는다. v7의 승률은 v1
 | v6 | 팀 단위 41-way residual, 명시적 탐색 하한, 실패 seed 재표집 | 실행 행동과 PPO 확률을 일치시키고 B 진영·실패 경기의 학습 비중 확대 | 1,159,168 step, 최종 target 5/10, 롤백 2회 후 full_win70 단계 상한에서 중단 | 탐색은 증가했지만 best는 초기 baseline 그대로이며 성능 악화가 반복됨 |
 | v7-1 | 실제 FlyWire 부분회로, 재배선, MLP, 파라미터 수 대응 MLP 비교 | 동일 planner·encoder·학습 예산에서 residual 구조의 영향을 분리 | 4모델 × 5시드 × 200만 step 완료; dev 승률 A0 15.33%, A1 21.67%, A2/A3 각 50% | 실제 배선과 재배선의 경기 기록이 같아 배선 고유의 이득이나 planner 대비 개선을 입증하지 못함 |
 | v7-2 | 고정 MaleCNS 전뇌 특징 + PPO 출력층, 한 유닛 직접 제어 | 제어 슬롯의 planner 우회 없이 감각→전뇌→행동 경로를 실행 | 3시드 × 200만 step 완료; dev 32승 148패, 승률 17.78% | 전뇌 재배선·CNN/GRU 대조군과 최종 test가 없으며 전뇌 배선의 우월성을 판정할 수 없음 |
+| v8 | C1 개입 gate / flat 대조군, 원본 환경용 stateless C1-obs9·flat9와 두 파일 export | agent ID·reset callback 없는 제출 계약에 맞추고 원본 게임·obs 생성 경로 보존 | 최종 경로 6개 × 1,048,576 step 완료; 중간·최종 및 planner 평가 총 780경기 전패 | 초기 관측 반복, greedy 행동 편중, planner 제거 후 약한 baseline, 로컬/공식 승패 계약 차이 검증 필요 |
 
 ## v1 — 직접 MAPPO fine-tuning
 
@@ -340,6 +349,90 @@ PPO의 확률 계산을 일치시키고, 탐색 하한과 B 진영·실패 seed 
 다음에는 그래프 residual이 평가에서 실제로 어떤 수정을 선택했는지와 MLP 성능
 저하 원인을 분석하고, 전뇌 대조군 및 별도 최종 평가를 통해 해석 범위를 넓혀야 한다.
 
+## v8 — 개입 gate 실험과 원본 환경·제출 인터페이스 대응
+
+### v7 문제를 해결하기 위한 구현
+
+- 기존 `KEEP + 5유닛 × 8방향` flat 분포에서 수정 logit이 KEEP보다 낮으면 학습 중
+  탐색을 하더라도 greedy 실행은 KEEP에 머물 수 있어, KEEP/개입 gate와 조건부
+  수정 분포를 분리한 C1을 구현했다. 동일 용량 flat 대조군과 frozen encoder,
+  작은 64×64 trunk, centralized critic, 공동 행동 log probability 기반 PPO를 사용했다.
+- 초기 연구 경로에는 별도 Unity 결과·타이머 코드와 추가 side-channel을 구현했다.
+  이후 사용자가 제공 게임·강화학습 환경·obs 생성 코드 변경을 금지하여 해당 경로를
+  철회했다. 원본 앱·upstream 저장소·설치된 API를 복원했고, 수정 빌드·로그는 별도
+  보관했다. 수정 게임 checkpoint를 원본 환경에서 학습한 것으로 바꾸어 사용하지 않았다.
+- 제공 제출 안내는 `MyPolicy.forward(vector, graphic)`와 두 파일
+  `policy.py`, `checkpoint.pt`를 요구한다. 입력은 `float32[B,96]`와
+  `float32[B,11,96,96]`, 출력은 `float32[B,2]`, 범위 [-1,1]이다.
+  이 인터페이스에는 agent ID·canonical slot·episode reset callback이 없다.
+- 최종 경로는 이에 맞춰 배치 순서·분할 호출에 의존하지 않는 stateless
+  **C1-obs9 / flat9**로 변경했다. 각 입력 행이 KEEP 또는 8방향 수정을 선택한다.
+  기존 팀당 최대 한 유닛 개입 조건은 유지되지 않으므로 joint41과 같은 정책으로
+  부르지 않는다. PPO는 팀원 5명의 log probability 합을 사용한다.
+- 제출 모델의 KEEP baseline은 기존 target checkpoint의 동결 신경망을 관측 기반으로
+  적응시킨 것이다. self slot 대신 평균 slot embedding과 관측된 아군 중심 crop을
+  사용한다. 과거 target의 완전한 planner override와 동일한 강도를 보장하지 않는다.
+  기존 scripted planner는 별도 평가 기준선, 완전한 target 정책은 고정 상대로 유지했다.
+- 원본 API의 reward 평균을 학습에 사용하고, 에피소드마다 원본 Unity를 새로 실행했다.
+  reset/step·seed 전송·obs cache·점수·타이머를 패치하거나 숨은 step을 넣지 않았다.
+  요청 seed가 실제 맵에 적용됐다는 보장은 없으며 평가에는 seed 인자가 없는 제공
+  `run_match()`를 그대로 사용했다.
+- 실험은 C1/flat × seed 11·22·33, run당 1,048,576 step으로 고정했다.
+  rollout 2,048, PPO epochs 4, minibatch 128, LR 1e-4, gamma .9995, lambda .99,
+  기존 상대 혼합 일정과 진영 순환 `[A,A,B,B,B]`를 유지했다. 여섯 worker, CPU/BLAS
+  1 thread, 백그라운드 관리자, 불변 checkpoint·등록 검사·중지 후 재개를 연결했다.
+
+### 수정 환경 실험과 원본 환경 실험의 구분
+
+| 경로 | 최종 C1 | 최종 flat | planner 기준선 | 지위 |
+| --- | --- | --- | --- | --- |
+| 과거 `accelerated_pilot_v1` | 26/180, 14.44% | 25/180, 13.89% | 30/60, 50% | 수정 Unity·연구용 결과 계약, 이후 철회. 원본 환경 성능으로 사용하지 않음 |
+| 현재 `provided_competition_v1` | 0/180, 0% | 0/180, 0% | 0/60, 0% | 원본 게임·제공 API, 누적 reward 기반 로컬 runner 결과 |
+
+두 경로는 각각 총 6,291,456 학습 step과 중간·최종·기준선 dev 780경기를 수행했다.
+환경·정책 입력 및 실행 구조·reward·승패 기준이 바뀌었으므로 두 승률의 차이를
+같은 조건에서의 성능 증감으로 해석하지 않는다.
+
+### 결과와 현재 문제
+
+- 2026-09-29 첫 원본 환경 실행에서 터미널 프로세스는 분리됐지만 Unity 창은 표시됐다.
+  중지 요청에 따라 6개 run 모두 2,048 step에서 저장·종료했다. 이후 원본 실행 파일에
+  `-batchmode`만 추가하는 별도 실행 스크립트를 연결했다. `-nographics`는 사용하지
+  않아 렌더링을 유지하며 원본 게임·환경 코드는 변경하지 않았다.
+- 창 숨김 기술 검사에서 10개 에이전트의 `96×96×11` graphic, 픽셀별 one-hot과
+  벽·양 팀 유닛 채널을 확인했고, 32 step 동안 화면에 표시된 Unity 창은 감지되지
+  않았다. 기존 checkpoint·등록을 보존하고 tensor·optimizer·RNG 상태가 같은 자식
+  checkpoint로 실행 방식 변경을 기록한 뒤 사용자가 같은 명령으로 재개했다.
+- **2026-09-30 02:49 KST**에 원본 환경 실험의 최종 완료 상태가 기록됐다.
+  6개 run 각각 1,048,576 step과 PPO 업데이트 512회, 총 6,291,456 step을 완료했다.
+  학습 6개와 평가 shard 78개로 84/84 작업이 완료됐고 실패 기록은 없었다.
+- 원시 평가 파일의 해시·모델 lock·진영/반복 번호를 재검사했다. 중간 262,144 step에서
+  C1 0승/180경기, flat 0승/180경기, 최종 1,048,576 step에서도 각각 0승/180경기였다.
+  planner는 0승/60경기였다. 합계 **780경기 전패, 무승부 0경기**다.
+- 각 모델·진영의 30회 평가에서 초기 관측 해시는 한 종류뿐이었다. 반복된 초기
+  상태에서 얻은 결과이므로 서로 다른 30개 맵의 일반화 성능으로 해석할 수 없다.
+  승률 차이와 bootstrap 구간이 `[0,0]`이어도 두 정책의 동등성이나 불확실성 부재를
+  입증하는 것은 아니다.
+- 모든 run에서 정책의 학습 대상 tensor 10개가 초기값과 달라졌고 encoder는 동결된
+  상태였다. 학습 미실행은 아니다. 마지막 2,048 step의 greedy 기록에서는 C1 seed 33이
+  수정 방향 8을 10,240개 행 중 10,150회, flat seed 33은 방향 5를 9,980회 선택했다.
+  이는 학습 구간에서 확인한 행동 편중이며 전체 평가 궤적이나 전패의 단일 원인으로
+  확정하지 않는다.
+- 자동 선택 모델은 `c1_s11`이다. 최종 arm 평균 동률이면 C1, arm 내 seed별 동률이면
+  먼저 등록한 seed를 선택하는 규칙에 따른 결과다. 성능 우위로 선정된 모델이 아니다.
+  `submission/v8/37907297bcf0234e823b12bfdb95433b0490e7e7f2672b119c9929b98cd1e493/`
+  에 두 제출 파일을 생성했고, 제공 loader의 격리 CPU 로드·입력 형식·행동 범위·배치
+  순서/분할·실제 수집 관측 8개 배치의 행동 일치 검사를 통과했다.
+- 제공 안내는 보상이 대회 점수와 무관하다고 설명하지만, 설치된 로컬 `run_match()`는
+  누적 reward로 승자를 정한다. 과거 terminal reward 기반 `info['winner']`와도 다르다.
+  공식 서버 승패·자원 조건 검증, confirmation·held-out test와 외부 제출은 수행하지 않았다.
+
+**현재 결론:** v8은 원본 환경을 유지하는 학습·관전 없는 백그라운드 실행·제출 파일 생성
+경로를 완성했지만, 실험한 정책은 고정 상대를 이기지 못했다. 제출 형식 통과를 전략적
+성능 검증으로 보지 않는다. 다음 개선은 평가 초기 상태의 반복과 승패 기준을 먼저
+분리해 확인하고, 식별 정보가 없는 입력에서 planner를 대체한 baseline의 강도 및
+greedy 행동 편중을 분석하는 데서 시작해야 한다. 게임·obs 생성 코드는 임의 수정하지 않는다.
+
 ## 세대 전체에서 얻은 핵심 결론
 
 1. **v1→v2:** 긴 게임에서는 rollout과 episode의 수명을 분리해야 terminal 보상을
@@ -356,15 +449,21 @@ PPO의 확률 계산을 일치시키고, 탐색 하한과 B 진영·실패 seed 
 6. **v6→v7:** v6에서 탐색률이 증가하고 초기 단계 승급과 롤백이 작동해도 최종 target
    성능은 5/10에 머물렀다. 탐색량이나 안전장치의 동작을 전략 개선으로 간주할 수
    없어, v7에서는 고정 예산의 구조 대조와 planner 없는 제어 슬롯을 별도로 비교했다.
-7. **현재:** v7 본실험 23개를 완주했지만 실제 FlyWire와 재배선은 모두 dev 50%로
+7. **v7:** v7 본실험 23개를 완주했지만 실제 FlyWire와 재배선은 모두 dev 50%로
    경기 기록까지 같았다. MLP 대조군보다 높은 승률이나 실행 완료만으로 실제 배선의
    이득을 주장할 수 없으며, 행동 변화·시드 변동 분석과 전뇌 대조군·최종 test가 남았다.
+8. **v8:** 제출 인터페이스에 맞는 형식과 강한 행동 정책은 별개다. 입력에서 사라진
+   agent ID·reset 계약을 임의로 가정할 수 없고, planner를 제거하면 과거 checkpoint의
+   강도를 잃을 수 있다. 실제 11채널 수신·checkpoint 갱신·실험 완주가 확인돼도
+   780경기 전패와 초기 상태 반복을 성능 향상의 증거로 바꿀 수 없다.
 
 또한 v4/v5 checkpoint는 Python evaluator가 planner와 residual head를 함께 실행한다.
 v6는 planner 실행 코드까지 포함하는 제출 export를 구현했지만 공식 제출 계약과의
 호환성은 아직 검증하지 않았다. 순수 stateless Torch actor만 허용한다면 별도 증류가
 필요하다는 제약은 남아 있다.
 v7 역시 공식 제출 계약과 자원·의존성 검증이 남아 `export_v7.py`가 차단된 상태다.
+v8은 두 입력 stateless 인터페이스와 제공 loader 검증을 통과했지만 성능 및 공식 서버
+검증을 통과한 것은 아니다. v6·v7을 현재 인터페이스로 그대로 제출할 수 있다는 뜻도 아니다.
 
 ## 구현 및 근거 위치
 
@@ -379,3 +478,26 @@ v7 역시 공식 제출 계약과 자원·의존성 검증이 남아 `export_v7.
 | v7-1 | `blackout_rl/v7_1/`, `blackout_rl/v7_training.py`, `configs/v7/main_study/v7_1_*.yaml`, `reports/v7/main_study_preregistration.md` | `logs/v7/v7_1_*_main_2m_v1/<seed>/`의 `status.json`, `training.jsonl`, `eval_dev_target_*.json`; 집계: `logs/v7/main_study/accelerated/summary.json` |
 | v7-2 | `blackout_rl/v7_2/`, `configs/v7/main_study/v7_2_readout_ppo.yaml`, `reports/v7/teammate_v2_recovery.md` | `logs/v7/v7_2_*_teammate_v2_main_2m_v1/<seed>/`의 `status.json`, `training.jsonl`, `eval_dev_target_*.json`; 개입 검증: `reports/v7/unity_causality_teammate_v2.json` |
 | v7 공통 실행 | `scripts/connectome_main.py`, `scripts/accelerated_connectome.py`, `scripts/evaluate_v7.py`, `reports/v7/acceleration_and_resume.md` | `logs/v7/main_study/accelerated/status.json`, `summary.json`; 등록·재개 근거: `reports/v7/main_study_registration.json`, `acceleration_registration.json`, `acceleration_resume_points.json` |
+| v8 초기 연구 경로(철회) | `blackout_rl/v8/`, `docs/v8/environment_restoration.md` | `logs/v8/accelerated_pilot_v1/summary.json`, `reports/v8/environment_restoration/`, `build/retired_v8_environment_2026-09-29/` |
+| v8 원본 환경·제출 | `blackout_rl/v8/competition/`, `configs/v8/competition/study.json`, `contracts/v8/submission_contract.json`, `docs/v8/competition.md` | `logs/v8/provided_competition_v1/{status,summary,submission_verification}.json`, `reports/v8/competition/registration.json`, `reports/v8/background_window_fix/` |
+| v6·v7 관전 | `watch_best_models.sh`, `tools/watch_best_models.py` | v6 latest(1,159,168 step), v7-1 A3 seed 11 평가 당시 불변 checkpoint(2,000,000 step); `--check`로 실행 전 검사 |
+
+## 선정 모델 관전과 로컬 산출물
+
+관전 대상으로 v6 최종 모델과 v7-1 A3(FlyWire) seed 11을 선택했다. v4·v5도 과거 target
+5/10이며 v7 A2/A3·시드들도 동률이므로 절대적인 상위 두 모델이라는 인증은 아니다.
+v6는 개선 기반, v7-1 A3는 다중 시드 비교 후보라는 기준과 동률 내 명시적 선택이다.
+
+```bash
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/watch_best_models.sh
+```
+
+두 모델이 원본 게임 창에서 정상 속도로 두 경기를 치르며 두 번째 경기는 진영을 바꾼다.
+Ctrl+C로 종료하며 학습이나 가중치 변경은 하지 않는다. `--check`는 모델·원본 게임만
+검사하고 창을 열지 않으며, `--games 1 --speed 2`처럼 경기 수·배속을 지정할 수 있다.
+제공 API를 그대로 사용하므로 과거 seed 보정 환경의 평가를 재현한 공식 성적이 아니다.
+
+`logs/`, `reports/`, `submission/`, checkpoint·빌드·대용량 데이터는 로컬에 보존하고
+Git에서는 제외한다. 이 문서의 해당 근거 링크와 관전 실행에 필요한 모델·그래프·Unity
+빌드는 현재 작업 공간에 있으며 새 clone에는 자동 포함되지 않는다. 재사용할 Phase 3
+정책 소스는 `templates/phase3_submission/`에 분리했다.

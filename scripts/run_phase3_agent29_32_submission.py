@@ -30,7 +30,7 @@ from blackout_rl.submission_validation import (  # noqa: E402
 )
 from eval.evaluator import summarize_episodes  # noqa: E402
 from scripts.run_phase3_agent21_24_self_play import _jobs, _run_jobs  # noqa: E402
-from submission.policy import load_policy as load_standalone_policy  # noqa: E402
+from templates.phase3_submission.policy import load_policy as load_standalone_policy  # noqa: E402
 
 
 ARCHITECTURE_ARMS = {
@@ -172,7 +172,7 @@ def main() -> None:
         device: _device_smoke(lightweight_checkpoint, device, args.runs)
         for device in devices
     }
-    clean_room = clean_room_load(ROOT / "submission/policy.py", lightweight_checkpoint)
+    clean_room = clean_room_load(ROOT / "templates/phase3_submission/policy.py", lightweight_checkpoint)
 
     incumbent = ROOT / "checkpoints/win_70_vs_scripted.pt"
     strength_candidate = ROOT / "checkpoints/phase3_selfplay_gen_08.pt"
@@ -218,7 +218,7 @@ def main() -> None:
 
     incumbent_clean_room = {"passed": False, "error": None}
     try:
-        incumbent_clean_room = clean_room_load(ROOT / "submission/policy.py", incumbent)
+        incumbent_clean_room = clean_room_load(ROOT / "templates/phase3_submission/policy.py", incumbent)
     except Exception as error:
         incumbent_clean_room["error"] = f"{type(error).__name__}: {error}"
     incumbent_dev = json.loads(

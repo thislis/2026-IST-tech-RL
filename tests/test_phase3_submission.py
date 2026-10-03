@@ -9,7 +9,7 @@ from blackout_rl.submission_validation import (
     PromotionEvidence, assert_deterministic_inference, benchmark_inference, clean_room_load,
     promote_final_model, select_lightweight_candidate,
 )
-from submission.policy import load_policy
+from templates.phase3_submission.policy import load_policy
 
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -26,7 +26,7 @@ class SubmissionTests(unittest.TestCase):
         with self.assertRaisesRegex(TypeError,"float32"): model(torch.zeros(5,96,dtype=torch.float64),inputs[1])
 
     def test_clean_room_has_only_policy_and_checkpoint_artifacts(self) -> None:
-        result=clean_room_load(ROOT/"submission/policy.py",CHECKPOINT)
+        result=clean_room_load(ROOT/"templates/phase3_submission/policy.py",CHECKPOINT)
         self.assertTrue(result["passed"]); self.assertEqual(result["files"],["checkpoint.pt","policy.py"])
 
     def test_latency_and_lightweight_selection_preserve_performance(self) -> None:
