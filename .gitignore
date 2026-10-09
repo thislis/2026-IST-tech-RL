@@ -32,6 +32,11 @@ data/connectomes/
 # other local files
 /plans
 /scripts
+# V9's two reproducible CLI entrypoints are source, not local experiment output.
+!/scripts/
+/scripts/*
+!/scripts/run_v9_fast.sh
+!/scripts/v9_experiments.py
 /submissions
 /reports
 

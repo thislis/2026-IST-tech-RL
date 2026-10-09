@@ -1,11 +1,12 @@
-# MAPPO 및 connectome v1–v8 발전 과정
+# MAPPO·connectome·Attention v1–v9 발전 과정
 
-> 2026-09-30 갱신: 원본 게임·제공 API를 사용하는 v8 `provided_competition_v1`이
-> 학습 6개, 총 6,291,456 step과 dev 780경기를 완료했다. C1-obs9·flat9·planner
-> 기준선 모두 제공 로컬 runner 기준 승률 0%였다. 제출 파일 생성·loader 검증은
-> 통과했지만 성능 개선은 확인되지 않았다. 이전 수정 게임 실험과 현재 결과를 구분한다.
-> 실행 근거: [`v8 최종 집계`](logs/v8/provided_competition_v1/summary.json),
-> 실행·제출 계약: [`v8 안내`](docs/v8/competition.md). 로그·reports·체크포인트·submission은
+> 2026-10-09 갱신: 원본 환경을 유지한 v9 `attention_original_v1`이 10월 8일
+> 23:45 KST에 종료됐다. 예비·본·추가 확인 학습 총 12,515,327 step과 중간·기준선·
+> 최종 평가 4,016경기를 완료했다. 선택 모델 B_s22의 최종 승률은 58/240=24.17%로,
+> 학습 전 Attention 기준선 60/240=25%를 넘지 못했다. 제출 형식 검증은 통과했지만
+> 학습에 따른 성능 개선·전략적 협동·공식 서버 성능은 입증하지 못했다.
+> 실행 근거: [`v9 최종 집계`](logs/v9/attention_original_v1/summary.json),
+> 실행·제출 계약: [`v9 안내`](docs/v9.md). 로그·reports·체크포인트·submission은
 > 로컬 산출물로 보존하며 Git 추적 대상에서 제외한다.
 
 ## 목표와 공통 평가 기준
@@ -31,13 +32,20 @@ v8의 최종 실행 경로는 제공 `run_match()`의 경기 전체 누적 rewar
 원본 게임·obs 생성 경로를 변경하지 않는 조건에서 30회 × 양 진영을 평가했으며,
 실제 map seed 적용이 검증되지 않아 30개의 서로 다른 맵을 평가했다고 표현하지 않는다.
 
+v9도 원본 게임·obs와 제공 runner의 승패 기준을 유지한다. collector/rush/raider/target
+4종 상대별 30회 × 양 진영, run당 240경기를 평가하고 3개 학습 시드의 평균으로
+설정을 선택한다. 추가 학습 시드 44/55와 별도 action RNG의 최종 test는 선택에
+사용하지 않는다. 이는 새로운 맵을 보장하는 held-out map 평가가 아니며, 학습 전
+Attention 정책 및 기존 v8 제출물과의 기준선 비교를 함께 기록한다.
+
 핵심 발전 흐름은 다음과 같다.
 
 > 직접 PPO(v1) → 에피소드 수집 정상화(v2) → planner 모방(v3) → planner 보존형
 > residual(v4) → planner-conditioned 안전 탐색과 롤백(v5) → 팀 단위 행동 선택과
 > 탐색 확률 보장·실패 seed 재표집(v6) → 고정 예산의 connectome residual 대조 실험과
 > 전뇌 특징 기반 PPO 직접 제어(v7) → 명시적 개입 gate와 동일 용량 대조군,
-> 원본 환경·두 입력 제출 인터페이스에 맞춘 관측 기반 정책(v8)
+> 원본 환경·두 입력 제출 인터페이스에 맞춘 관측 기반 정책(v8) → CNN 없는 소형
+> Attention·완료 경기 기반 bounded reward·상대 pool과 전략 출력 대조(v9)
 
 ## 한눈에 보는 결과
 
@@ -52,6 +60,7 @@ v8의 최종 실행 경로는 제공 `run_match()`의 경기 전체 누적 rewar
 | v7-1 | 실제 FlyWire 부분회로, 재배선, MLP, 파라미터 수 대응 MLP 비교 | 동일 planner·encoder·학습 예산에서 residual 구조의 영향을 분리 | 4모델 × 5시드 × 200만 step 완료; dev 승률 A0 15.33%, A1 21.67%, A2/A3 각 50% | 실제 배선과 재배선의 경기 기록이 같아 배선 고유의 이득이나 planner 대비 개선을 입증하지 못함 |
 | v7-2 | 고정 MaleCNS 전뇌 특징 + PPO 출력층, 한 유닛 직접 제어 | 제어 슬롯의 planner 우회 없이 감각→전뇌→행동 경로를 실행 | 3시드 × 200만 step 완료; dev 32승 148패, 승률 17.78% | 전뇌 재배선·CNN/GRU 대조군과 최종 test가 없으며 전뇌 배선의 우월성을 판정할 수 없음 |
 | v8 | C1 개입 gate / flat 대조군, 원본 환경용 stateless C1-obs9·flat9와 두 파일 export | agent ID·reset callback 없는 제출 계약에 맞추고 원본 게임·obs 생성 경로 보존 | 최종 경로 6개 × 1,048,576 step 완료; 중간·최종 및 planner 평가 총 780경기 전패 | 초기 관측 반복, greedy 행동 편중, planner 제거 후 약한 baseline, 로컬/공식 승패 계약 차이 검증 필요 |
+| v9 | 소형 Attention-MAPPO, bounded reward, 과거 상대 pool·전략 mixture 대조 | encoder 전체 학습, 완료 경기 검증, 확률적 행동과 제출 경로 일치, 학습 전 기준선 추가 | 본 실험 9개·추가 확인 2개 및 pilot 총 12,515,327 step; 선택 B_s22 최종 58/240=24.17%, 미학습 기준선 60/240=25% | 자기 유닛 식별 제약, 높은 행동 entropy, 희소한 학습 신호와 상대별 step 불균형, 전략 개선 미입증 |
 
 ## v1 — 직접 MAPPO fine-tuning
 
@@ -433,6 +442,109 @@ PPO의 확률 계산을 일치시키고, 탐색 하한과 B 진영·실패 seed 
 분리해 확인하고, 식별 정보가 없는 입력에서 planner를 대체한 baseline의 강도 및
 greedy 행동 편중을 분석하는 데서 시작해야 한다. 게임·obs 생성 코드는 임의 수정하지 않는다.
 
+## v9 — 소형 Attention 정책과 완료 경기 기반 보상·상대 다양성 대조
+
+### v8 문제를 해결하기 위한 구현
+
+- v1~v8 로그·코드 감사와 관련 연구를 바탕으로 `plans/v9_plan.md`를 작성하고,
+  새 구현을 `blackout_v9/`에 분리했다. 원본 Unity·제공 API·obs 생성 및 전처리와
+  v1~v8 코드는 유지한다. 게임 내부의 타이머 문제를 수정하지 않고 경기마다 원본
+  환경을 새로 실행하며, 정상 종료되지 않은 경기는 학습에 반영하지 않는다.
+- CNN과 고정 encoder를 소형 Attention으로 교체했다. 96×96×11 graphic 전체를
+  4×4 patch 576개로 펼치고 유닛 entity 10개·상황 token 1개를 합친다. width 64,
+  heads 4, latent 32개, latent self-attention 2층, FFN 128을 사용한다. 이는 속도를
+  고려한 초기 설계값이며 모델 크기별 대조로 최적성을 검증한 값은 아니다.
+- 제출 정책은 전체 123,765개 파라미터로, v8 제출 정책 249,891개보다 약 50.5%
+  작다. 다만 v8의 학습 대상은 20,297개였고 v9는 encoder까지 학습하므로 가중치 수
+  감소를 학습 연산·메모리의 같은 비율 감소로 해석하지 않는다. A/B는 하나의 expert를
+  활성화하고 C는 5개를 사용하되, 동일한 제출 모듈 구조를 유지한다.
+- 기존 두 입력·두 파일 계약을 따르는 stateless V9-S를 구현했다. 학습·평가·제출은
+  같은 9-action categorical sampling을 사용하며 agent 이름·batch row 번호를 자기
+  ID로 주입하지 않는다. 동일 클래스·동일 관측의 팀원은 같은 행동 분포를 공유한다.
+  self-ID를 요구하는 V9-I, 시간 memory, 유닛별 역할 할당은 구현된 것으로 보지 않는다.
+- 학습 보상은 제공 runner의 팀별 누적 raw reward 차이의 최종 부호 ±1/0과 점수차
+  기반 potential shaping이다. 원본 reward는 수정하지 않으며 gamma=1에서 완료 경기
+  return의 절댓값을 1.25 이하로 제한한다. 22,000-step·wall/heartbeat watchdog으로
+  무효 경기를 폐기하고 완료 episode 안에서 GAE를 계산한다. GAE lambda는 .9975다.
+- 팀 advantage를 사용하는 agent별 PPO ratio/clip, PopArt critic, PPO epochs 2,
+  minibatch 128 scene, actor/critic LR 1e-4/3e-4, clip .15, entropy .01을 사용한다.
+  A는 고정 상대 혼합, B는 과거 모델 pool·PFSP 추가, C는 B에 5-expert mixture와
+  관측 기반 보조 loss를 추가한다. expert 개수가 실제 전략 분화의 증거는 아니다.
+- 공통 장면의 forward 내 계산 재사용, graphic의 lossless 저장, CPU actor·MPS learner,
+  최대 8개 수집 worker 자동 조정을 연결했다. 평가 worker는 4개이며 API 통신이나
+  obs를 패치하지 않는다. 원본 앱에 `-batchmode`를 전달해 graphic 렌더링은 유지하고
+  창을 숨긴다. `run_v9_fast.sh` 한 줄로 분리된 백그라운드 실행·상태·중지·재개를 제공한다.
+- 환경 lifecycle 20경기와 기능 pilot 후 A/B/C × seed 11/22/33을 각각 목표
+  1,048,576 step까지 새로 학습했다. 완료 경기 wave 단위로 예산을 마감해 실제 step은
+  목표를 초과할 수 있다. 설정 선택 후 seed 44/55를 추가 학습하고 선택 모델·미학습
+  기준선에 별도 action RNG 최종 테스트를 수행한다. 최종 테스트로 모델을 다시 고르지 않는다.
+
+### 결과와 현재 문제
+
+- **2026-10-04 11:21부터 2026-10-08 23:45 KST까지 약 108시간 25분** 실행했다.
+  최종 상태는 `complete`, 활성 supervisor는 없다. 본 실험 10,085,650 step,
+  추가 확인 2,277,514 step, pilot 152,163 step으로 총 **12,515,327 step**이다.
+  학습 838경기에서 무효 에피소드는 0건이었다. lifecycle 20경기는 이 학습량과 별도다.
+- 기준선·중간·최종·추가 확인·최종 test를 합쳐 평가 보고서 41개, **4,016경기**를
+  완료했고 평가 무효 기록은 0건이었다. 아래 본 실험 dev는 run당 240경기이며
+  모든 seed의 평가량이 같아 합산 승률과 seed 평균이 같다.
+
+| 설정 | 시드별 승수 / 240경기 (11, 22, 33 순) | 합산 승·무·패 | dev 평균 승률 |
+| --- | --- | --- | --- |
+| A 기본 Attention + 고정 상대 혼합 | 4, 1, 60 | 65승 0무 655패 | 9.03% |
+| B 과거 모델 pool·PFSP 추가 | 23, 55, 20 | 98승 0무 622패 | 13.61% |
+| C 전략 mixture·보조학습 추가 | 32, 47, 15 | 94승 1무 625패 | 13.06% |
+
+- 설정 평균으로 B를 선택하고 B 내부 dev 최고인 **B_s22**를 제출 후보로 고정했다.
+  A_s33은 단일 run dev 60승으로 B_s22의 55승보다 높지만, 등록 규칙은 전체 run 중
+  최고 하나가 아니라 설정 평균을 먼저 비교한다. B의 추가 확인은 seed 44에서
+  61/240=25.42%, seed 55에서 6/240=2.50%로 시드 변동이 컸다. 확인 결과로
+  제출 후보를 바꾸지 않았으며 B가 다른 설정보다 확실히 우월하다고 단정하지 않는다.
+
+| 비교 대상 | 평가 구분 | 승·무·패 | 승률 |
+| --- | --- | --- | --- |
+| 선택 B_s22 | 별도 action RNG 최종 test | 58승 0무 182패 | 24.17% |
+| 미학습 Attention 기준선 | 같은 최종 test 조건 | 60승 0무 180패 | 25.00% |
+| 기존 v8 제출 모델 | dev 기준선 평가 | 0승 0무 240패 | 0.00% |
+
+- B_s22 최종 test는 collector 0/60, rush 0/60, raider 58/60, target 0/60이었다.
+  미학습 Attention도 raider 60/60, 나머지 세 상대는 0/60이었다. v8보다 높은 수치를
+  Attention 학습의 효과로 귀속할 수 없으며 `local_runner_improved=false`다.
+  상대 종류가 적고 승리가 약탈형에 집중돼 올킬·입구 봉쇄·탈취·협동 습득은 입증되지 않았다.
+- B_s22의 마지막 PPO 구간 행동 entropy는 약 2.181로 9-action 균등 분포의 최대값
+  log(9)≈2.197에 가깝다. encoder gradient와 가중치 변화는 확인돼 학습 미실행은
+  아니지만, 뚜렷한 행동 선호를 배우지 못했다. 이 평균만으로 모든 상태에서 완전히
+  무작위였다고 단정하거나 Attention 용량 부족을 원인으로 확정하지 않는다.
+- B_s22는 1,137,886 step을 학습했지만 완료 경기는 76개, 수집→PPO 갱신 주기는
+  14회였다(PPO 내부 미니배치 업데이트는 별도). 이 중 50경기가 21,004 step으로
+  종료됐다. terminal 보상의 직접 GAE 계수는 1,000 step 전에 약 .082, 5,000 step
+  전에 약 3.7e-6이다. 가치함수를 통한 전달 가능성은 있으나 희소한 승패·점수 변화가
+  초기 행동에 충분한 학습 신호를 주었는지는 검증되지 않았다. 이 run의 실제 return은
+  부동소수점 오차 범위에서 [-1,1]로, 관측된 실패를 보상 폭증 때문이라고 보지는 않는다.
+- 같은 run에서 target 19경기는 전패했고 해당 경험은 22,510 step으로 전체의 약 2%,
+  history 22경기는 462,088 step으로 약 41%였다. 경기 수로 상대를 섞어도 빠르게
+  패배하는 강한 상대의 step 비중은 작아진다. 이는 로그로 확인한 데이터 불균형이며
+  전패의 독립적인 인과 효과를 검증한 대조 실험은 없다.
+- 자기 유닛 ID가 없는 제출 actor와 달리 scripted 상대는 환경이 넘긴 `unit_번호`로
+  자기 위치를 식별하고 길찾기한다. 같은 클래스의 아군 위치별 제어·역할 분담에는
+  이 정보 차이가 제약이다. 관측을 임의 확장하거나 Attention만으로 없는 식별 정보를
+  복원할 수 있다고 가정하지 않는다. pilot의 이동·획득·배달 발생 gate 또한 미학습
+  기준선 대비 개선을 요구하지 않아, 기능 정상화와 실제 학습 성공을 구별하기에 부족했다.
+- 평가 초기 관측 해시는 진영별 한 종류였다. 별도 action RNG 반복을 새로운 맵
+  일반화 검증으로 해석하지 않는다. 로컬 누적 reward 승패와 공식 게임 승패의 일치,
+  self-ID 계약, 전략적 협동·공식 서버 성능은 검증되지 않았다.
+- `submission/v9/4b6e8bae8713413fb65a557883ab1b1b9353f02273d4854b174654e6556cf18c/`
+  에 `policy.py`와 `checkpoint.pt`를 생성했다. 제공 loader의 격리 CPU 로드,
+  B=0/1/3/5/10 입력, 출력·분포 일치 검증을 통과했고 저장 파일 해시도 일치했다.
+  `format_ready=true`지만 `official_server_certified=false`, 외부 제출은 하지 않았다.
+
+**현재 결론:** v9는 원본 환경·제출 계약을 유지한 Attention 전체 학습, 보상 상한,
+완료 경기 검증과 최종 기준선 비교를 완주했다. 그러나 선택 모델이 미학습 정책보다
+좋지 않아 학습에 따른 성능 향상은 확인되지 않았다. 다음 개선은 허용 관측의 자기
+식별 가능성, 긴 경기의 보상 전달과 상대별 실제 학습량, 미학습 기준선 대비 개선을
+요구하는 pilot을 먼저 검증해야 한다. 모델 확대나 추가 학습 시간만으로 해결된다고
+가정하지 않으며 원본 게임·obs 생성 코드는 계속 보존한다.
+
 ## 세대 전체에서 얻은 핵심 결론
 
 1. **v1→v2:** 긴 게임에서는 rollout과 episode의 수명을 분리해야 terminal 보상을
@@ -456,6 +568,10 @@ greedy 행동 편중을 분석하는 데서 시작해야 한다. 게임·obs 생
    agent ID·reset 계약을 임의로 가정할 수 없고, planner를 제거하면 과거 checkpoint의
    강도를 잃을 수 있다. 실제 11채널 수신·checkpoint 갱신·실험 완주가 확인돼도
    780경기 전패와 초기 상태 반복을 성능 향상의 증거로 바꿀 수 없다.
+9. **v9:** 작은 Attention·전체 encoder 학습·bounded reward·완전 경기 수집이 정상
+   동작해도 정책 개선은 별도로 확인해야 한다. 최종 24.17%는 미학습 기준선 25%보다
+   높지 않았다. 기능 gate와 성능 gate를 분리하고, 자기 식별 제약·희소 보상 전달·
+   상대별 step 불균형을 검증해야 한다. 모델 경량화와 학습 성공은 같은 주장이 아니다.
 
 또한 v4/v5 checkpoint는 Python evaluator가 planner와 residual head를 함께 실행한다.
 v6는 planner 실행 코드까지 포함하는 제출 export를 구현했지만 공식 제출 계약과의
@@ -464,6 +580,8 @@ v6는 planner 실행 코드까지 포함하는 제출 export를 구현했지만 
 v7 역시 공식 제출 계약과 자원·의존성 검증이 남아 `export_v7.py`가 차단된 상태다.
 v8은 두 입력 stateless 인터페이스와 제공 loader 검증을 통과했지만 성능 및 공식 서버
 검증을 통과한 것은 아니다. v6·v7을 현재 인터페이스로 그대로 제출할 수 있다는 뜻도 아니다.
+v9 역시 두 파일 제출 검증과 최종 test를 완료했지만 미학습 기준선 대비 개선은 없었으며,
+형식 준비 완료를 공식 서버 검증이나 경쟁력 있는 제출물이라는 인증으로 해석하지 않는다.
 
 ## 구현 및 근거 위치
 
@@ -480,6 +598,7 @@ v8은 두 입력 stateless 인터페이스와 제공 loader 검증을 통과했�
 | v7 공통 실행 | `scripts/connectome_main.py`, `scripts/accelerated_connectome.py`, `scripts/evaluate_v7.py`, `reports/v7/acceleration_and_resume.md` | `logs/v7/main_study/accelerated/status.json`, `summary.json`; 등록·재개 근거: `reports/v7/main_study_registration.json`, `acceleration_registration.json`, `acceleration_resume_points.json` |
 | v8 초기 연구 경로(철회) | `blackout_rl/v8/`, `docs/v8/environment_restoration.md` | `logs/v8/accelerated_pilot_v1/summary.json`, `reports/v8/environment_restoration/`, `build/retired_v8_environment_2026-09-29/` |
 | v8 원본 환경·제출 | `blackout_rl/v8/competition/`, `configs/v8/competition/study.json`, `contracts/v8/submission_contract.json`, `docs/v8/competition.md` | `logs/v8/provided_competition_v1/{status,summary,submission_verification}.json`, `reports/v8/competition/registration.json`, `reports/v8/background_window_fix/` |
+| v9 Attention·원본 환경·제출 | `blackout_v9/`, `configs/v9/default.json`, `contracts/v9/original.json`, `plans/v9_plan.md`, `docs/v9.md`, `run_v9_fast.sh` | `logs/v9/attention_original_v1/{status,summary,registration,selection}.json` 및 `runs/`, `confirmation/`, `frozen_test/`, `frozen_baseline_test/`; 구현 검증: `tests/v9/test_v9.py`, `reports/v9/implementation_validation.json` |
 | v6·v7 관전 | `watch_best_models.sh`, `tools/watch_best_models.py` | v6 latest(1,159,168 step), v7-1 A3 seed 11 평가 당시 불변 checkpoint(2,000,000 step); `--check`로 실행 전 검사 |
 
 ## 선정 모델 관전과 로컬 산출물
