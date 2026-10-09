@@ -1,1 +1,0 @@
-v7/v7_fly_connectome_implementation_experiment_plan.md

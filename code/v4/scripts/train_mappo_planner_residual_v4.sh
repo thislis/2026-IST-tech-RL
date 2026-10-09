@@ -1,1 +1,31 @@
-../../../scripts/train_mappo_planner_residual_v4.sh
+#!/bin/zsh
+set -euo pipefail
+
+project_root="${0:A:h}"
+while [[ ! -f "$project_root/code/shared/project_paths.py" ]]; do
+  [[ "$project_root" != / ]] || { print -u2 "Project root not found"; exit 1; }
+  project_root="${project_root:h}"
+done
+cd "$project_root"
+
+exec .venv/bin/python code/v4/scripts/train_mappo_planner_residual_v4.py \
+  --initial-checkpoint artifacts/checkpoints/pre_v1/win_70_vs_scripted.pt \
+  --opponent-checkpoint artifacts/checkpoints/pre_v1/win_70_vs_scripted.pt \
+  --target-checkpoint artifacts/checkpoints/mappo_win_85_vs_win70.pt \
+  --planner-residual \
+  --initial-stage-min-win-rate 0.60 \
+  --max-env-steps 3000000 \
+  --rollout-steps 2048 \
+  --eval-every 50000 \
+  --save-every 25000 \
+  --teacher-replay-capacity 100000 \
+  --teacher-minibatches 8 \
+  --teacher-minibatch-size 512 \
+  --learning-rate 0.00005 \
+  --entropy-coef 0.001 \
+  --score-delta-weight 1.0 \
+  --unity-shaping-weight 0.25 \
+  --time-scale 50 \
+  --eval-time-scale 100 \
+  --device auto \
+  "$@"

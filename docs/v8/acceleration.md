@@ -11,7 +11,7 @@
 사용자가 다음 한 줄을 실행하면 분리된 백그라운드 관리자가 시작된다.
 
 ```bash
-bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/run_v8_fast.sh
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v8/scripts/run_v8_fast.sh
 ```
 
 터미널을 닫아도 계속 실행하며 `caffeinate`로 유휴 절전을 막는다. 별도의 `&`나
@@ -92,9 +92,9 @@ watchdog가 실패로 기록한다. 중단 요청 후 유예 시간은 5분이�
 ## 상태·중단·재개
 
 ```bash
-bash scripts/run_v8_fast.sh --status  # 상태와 run별 step
-bash scripts/run_v8_fast.sh --stop    # 완료된 PPO update에서 저장 후 중단 요청
-bash scripts/run_v8_fast.sh --check   # 파일/환경 검사만; Unity를 시작하지 않음
+bash code/v8/scripts/run_v8_fast.sh --status  # 상태와 run별 step
+bash code/v8/scripts/run_v8_fast.sh --stop    # 완료된 PPO update에서 저장 후 중단 요청
+bash code/v8/scripts/run_v8_fast.sh --check   # 파일/환경 검사만; Unity를 시작하지 않음
 ```
 
 위 상대 경로 명령은 프로젝트 루트에서 실행한다. 중단 후에는 처음의 한 줄을 다시 실행한다.
@@ -110,13 +110,13 @@ bash scripts/run_v8_fast.sh --check   # 파일/환경 검사만; Unity를 시작
 
 ## 근거와 등록
 
-- [설정·소스 등록](../../reports/v8/acceleration/registration.json)
-- [전체 회귀 검사](../../reports/v8/acceleration/regression_tests.txt)
-- [오프라인 성능·동등성 결과](../../reports/v8/acceleration/offline_benchmark.json)
-- [실행 전 검사](../../reports/v8/acceleration/preflight.txt)
-- [준비 상태 기록](../../reports/v8/acceleration/preparation.json)
-- [가속 전 소스 목록](../../reports/v8/acceleration/base_sources.json)과
-  [가속 전 소스 보관본](../../reports/v8/acceleration/pre_acceleration_sources.zip)
+- [설정·소스 등록](../../logs/v8/reports/acceleration/registration.json)
+- [전체 회귀 검사](../../logs/v8/reports/acceleration/regression_tests.txt)
+- [오프라인 성능·동등성 결과](../../logs/v8/reports/acceleration/offline_benchmark.json)
+- [실행 전 검사](../../logs/v8/reports/acceleration/preflight.txt)
+- [준비 상태 기록](../../logs/v8/reports/acceleration/preparation.json)
+- [가속 전 소스 목록](../../logs/v8/reports/acceleration/base_sources.json)과
+  [가속 전 소스 보관본](../../logs/v8/reports/acceleration/pre_acceleration_sources.zip)
 
 과거 `engineering_validation.json`과 smoke checkpoint는 그 당시 소스의 검증 기록이다.
 새 소스 해시로 덮어쓰거나 새 실행의 검증 결과로 가장하지 않는다. 이번 연구는 별도 등록과

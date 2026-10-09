@@ -1,4 +1,7 @@
 """Explicit bounded original-Unity connection diagnostic, never a training run."""
+
+from project_paths import project_root, project_path
+
 import time
 import numpy as np
 import torch
@@ -58,13 +61,13 @@ def main():
     from .runtime import run_tasks
     cfg = config(); cfg = dict(cfg, workers=1, episode_wall_seconds=90, stall_seconds=45)
     verify_original()
-    directory = ROOT / "reports/v9/live_smoke" / str(time.time_ns())
+    directory = project_path(Path("reports/v9/live_smoke") / str(time.time_ns()), root=ROOT)
     task = {"id": "original-rendered-32-steps", "kind": "smoke", "config": cfg,
             "action_seed": 9009, "diagnostic_steps": 32}
     results = run_tasks([task], directory, cfg)
     report = {"results": results, "original_after": verify_original(),
               "passed": all(r["valid"] for r in results), "training_started": False}
-    atomic_json(ROOT / "reports/v9/live_smoke.json", report)
+    atomic_json(project_path('logs/v9/reports/live_smoke.json', root=ROOT), report)
     print(__import__("json").dumps(report, indent=2))
     if not report["passed"]: raise SystemExit(1)
 

@@ -25,13 +25,13 @@ v1 계열 `run_base_r12_bc.py`, v3/v5/v6의 학습 CLI, v7의 `launch_v7_backgro
 실험 완료 후 관리자 파일을 고치면 전체 source fingerprint가 달라진다. 기존 등록이나 checkpoint
 해시를 새 값으로 덮어쓰지 않고, **완료된 실험의 집계에만 적용되는 별도 수정 기록**을 추가했다.
 
-- 변경 허용 파일은 `scripts/v8_experiments.py` 하나이며 수정 전후 SHA256을 고정했다.
+- 변경 허용 파일은 `code/v8/scripts/v8_experiments.py` 하나이며 수정 전후 SHA256을 고정했다.
 - 원래 등록 파일, 모델·PPO·planner·환경·보상·통계 코드, 설정, 체크포인트와 경기 결과를 유지했다.
 - 원래 입력 파일 해시와 전체 소스 목록을 확인한다. 다른 파일의 변경은 거부한다.
 - 학습/평가 84개 작업이 모두 완료된 경우에만 이 수정 경로를 허용한다. 새 실험 실행에는 사용할 수 없다.
 - 집계 시 평가 policy lock의 내용 해시, 등록 소스, 경기별 lock 및 map/side 전체 coverage도 검사한다.
 - 요약에는 원래 실험 등록 해시와 집계 관리자·수정 기록 해시를 별도로 남긴다.
-- 원래 관리자, 등록, 오류 상태, console log는 `reports/v8/acceleration/import_fix/`에 보관했다.
+- 원래 관리자, 등록, 오류 상태, console log는 `logs/v8/reports/acceleration/import_fix`에 보관했다.
 
 이는 계획서의 원본 보존, 불변 checkpoint, 완료된 평가 전체 집계, 학습 정책·실행 계약 유지에
 따른 사후 처리 수정이다. 새로운 성능 실험이나 held-out test를 추가하지 않았다.
@@ -40,7 +40,7 @@ v7의 `frozen_pilot_runtime.py`처럼 과거 결과가 생성된 소스와 현�
 ## 동일한 실행 명령
 
 ```bash
-bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/run_v8_fast.sh
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v8/scripts/run_v8_fast.sh
 ```
 
 백그라운드 실행·중복 방지·상태 확인 인터페이스는 유지한다. 이 파일럿은 이미 완료됐으므로
@@ -56,7 +56,7 @@ bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/run_v8_fast.sh
 - `--aggregate-only`로 기존 780경기의 최종 집계 완료. 학습/평가 worker를 생성하지 않는다.
 
 [최종 요약](../../logs/v8/accelerated_pilot_v1/summary.json),
-[수정 등록](../../reports/v8/acceleration/import_fix/repair.json),
-[수정 전 재현](../../reports/v8/acceleration/import_fix/reproduction_before.txt),
-[회귀 검사](../../reports/v8/acceleration/import_fix/regression_tests.txt),
-[복구 검증](../../reports/v8/acceleration/import_fix/verification.json).
+[수정 등록](../../logs/v8/reports/acceleration/import_fix/repair.json),
+[수정 전 재현](../../logs/v8/reports/acceleration/import_fix/reproduction_before.txt),
+[회귀 검사](../../logs/v8/reports/acceleration/import_fix/regression_tests.txt),
+[복구 검증](../../logs/v8/reports/acceleration/import_fix/verification.json).

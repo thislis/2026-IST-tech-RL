@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 """Public entry point for fail-closed planner-residual MAPPO v4."""
 
+# Locate shared modules from the physical versioned layout.
+from pathlib import Path as _LayoutPath
+import sys as _layout_sys
+_layout_root = next(p for p in _LayoutPath(__file__).resolve().parents
+                    if (p / "code/shared/project_paths.py").is_file())
+_layout_sys.path.insert(0, str(_layout_root / "code/shared"))
+from project_paths import activate as _activate_layout
+_activate_layout()
+
+
 from train_mappo_teacher_curriculum_v3 import main
 
 

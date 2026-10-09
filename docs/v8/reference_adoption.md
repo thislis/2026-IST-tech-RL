@@ -1,7 +1,7 @@
 # v8 참고자료 적용 기록
 
-2026-09-27. 구현 기준은 로컬 `plans/v8_implementation_plan_with_references.md`와
-`plans/v8_research_requests_2026-09-27/internal_result.md`, 동반 `internal_analysis/`이다.
+2026-09-27. 구현 기준은 로컬 `docs/v8/plans/v8_implementation_plan_with_references.md`와
+`docs/v8/plans/v8_research_requests_2026-09-27/internal_result.md`, 동반 `internal_analysis/`이다.
 구현 시작 HEAD는 `ee5d0a9e33a7c7ab7e860eaab48bf80b231ae927`이다.
 
 `v8_external_research.md`, `v8_external_research.json`, 구판 `v8_implementation_plan.md`,
@@ -30,4 +30,4 @@ v8 Python 구현은 이 저장소의 기존 모델/planner와 새 구현을 사�
 구현하거나 검증했다고 표시하지 않는다.
 
 설치 버전·원본 소스 검증·입력 자료 해시는
-[adoption_manifest.json](../../reports/v8/adoption_manifest.json)에 기록한다.
+[adoption_manifest.json](../../logs/v8/reports/adoption_manifest.json)에 기록한다.

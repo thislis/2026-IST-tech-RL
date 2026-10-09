@@ -1,13 +1,15 @@
 # v9 실행 및 구현 안내
 
-v9는 원본 `builds/BlackOut.app`, 제공 `blackout_env`, 관측 생성·전처리, 게임 reward를 수정하지 않는다. 새 코드는 `blackout_v9/`에 있으며 v1~v8 모델·실행 코드는 보존한다. 구현 기준은 [v9 계획](../plans/v9_plan.md)이다.
+v9는 원본 `artifacts/builds/BlackOut.app`, 제공 `blackout_env`, 관측 생성·전처리, 게임 reward를 수정하지 않는다. 새 코드는 `code/v9/blackout_v9/`에 있으며 v1~v8 모델·실행 코드는 보존한다. 구현 기준은 [v9 계획](plans/v9_plan.md)이다.
 
 ## 실행
+
+2026-10-09 재배치 후에는 새 실험 이름으로 실행한다. 기존 완료 실험은 `--status`로 조회하며, 이전 소스 해시 등록에 현재 소스를 이어 붙이지 않는다.
 
 어느 디렉터리에서든 다음 한 줄을 실행한다. `&`나 `nohup`을 붙일 필요가 없다.
 
 ```bash
-bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/run_v9_fast.sh
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v9/run_v9_fast.sh --name attention_relocated_v1
 ```
 
 사전 검사 뒤 background supervisor의 PID·로그 경로를 출력하고 셸로 돌아온다. 터미널을 닫아도 실행되며, Unity는 `-batchmode`와 `no_graphics=False`로 렌더링을 유지하고 창은 숨긴다. macOS idle sleep은 `caffeinate`로 방지한다. 로그아웃·재부팅 후 자동 재시작은 설정하지 않는다.
@@ -56,7 +58,7 @@ bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/run_v9_fast.sh
 최종 `summary.json`에 선택 모델과 비교 결과가 기록되고 다음 두 파일이 생성된다.
 
 ```text
-submission/v9/<checkpoint_sha256>/
+artifacts/submission/v9<checkpoint_sha256>/
   policy.py
   checkpoint.pt
 ```
@@ -79,4 +81,4 @@ submission/v9/<checkpoint_sha256>/
 .venv/bin/python -m blackout_v9.smoke
 ```
 
-검증 자료는 `reports/v9/`에 저장하고 Git에는 올리지 않는다. 모델·설정·launcher·테스트·CLI 두 개만 소스로 추적한다.
+검증 자료는 `logs/v9/reports`에 저장하고 Git에는 올리지 않는다. 모델·설정·launcher·테스트·CLI 두 개만 소스로 추적한다.

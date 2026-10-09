@@ -1,4 +1,7 @@
 """Measured CPU/MPS choices; all probes use disposable models, never a live learner."""
+
+from project_paths import project_root, project_path
+
 import copy
 import time
 import numpy as np
@@ -8,7 +11,7 @@ from .policy import MyPolicy
 
 
 def fixture():
-    paths = sorted((ROOT / "logs/v8/provided_competition_v1").glob("**/policy_inputs.pt"))
+    paths = sorted((project_path('logs/v8/provided_competition_v1', root=ROOT)).glob("**/policy_inputs.pt"))
     if paths:
         row = torch.load(paths[0], map_location="cpu", weights_only=True)[0]
         return row["vector"].float(), row["graphic"].float()

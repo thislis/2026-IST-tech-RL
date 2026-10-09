@@ -1,4 +1,7 @@
 """Frozen opponents. Only their public observations and action outputs are used."""
+
+from project_paths import project_root, project_path
+
 from collections import deque
 import numpy as np
 import torch
@@ -105,7 +108,7 @@ class HistoricalOpponent:
             team = int(names[0].split("_")[1]) // 5
             if self.kind == "target":
                 from blackout_rl.policy import DeterministicCheckpointPolicy
-                self.policy = DeterministicCheckpointPolicy(ROOT / "checkpoints/win_70_vs_scripted.pt", team=team)
+                self.policy = DeterministicCheckpointPolicy(project_path('artifacts/checkpoints/win_70_vs_scripted.pt', root=ROOT), team=team)
             else:
                 from blackout_rl.frozen_opponent import FrozenScriptedOpponent
                 self.policy = FrozenScriptedOpponent(team)

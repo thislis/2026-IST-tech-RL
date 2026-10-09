@@ -1,1 +1,0 @@
-../../../watch_best_models.sh

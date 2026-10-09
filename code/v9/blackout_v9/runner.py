@@ -1,4 +1,7 @@
 """Detached v9 supervisor. Starting this CLI does not require shell '&' or nohup."""
+
+from project_paths import project_root, project_path
+
 import argparse
 import fcntl
 import os
@@ -18,7 +21,7 @@ from .runtime import child_environment, clean_orphans, process_birth
 def directory_for(cfg, name=None):
     name = cfg["experiment"] if name is None else name
     if not re.fullmatch(r"[A-Za-z0-9_-]+", name): raise ValueError("invalid experiment name")
-    return ROOT / "logs/v9" / name
+    return project_path(Path("logs/v9") / name, root=ROOT)
 
 
 def is_active(directory):
@@ -33,8 +36,11 @@ def is_active(directory):
 def status(directory):
     directory = Path(directory)
     path = directory / "status.json"
+    record = read_json(path) if path.exists() else {"state": "not_started"}
+    if record.get("submission"):
+        record["submission"] = str(project_path(record["submission"], root=ROOT))
     return {"active": is_active(directory), "directory": str(directory),
-            "status": read_json(path) if path.exists() else {"state": "not_started"},
+            "status": record,
             "runs": {str(p.parent.relative_to(directory)): read_json(p)
                      for p in directory.glob("**/progress.json")}}
 
@@ -61,7 +67,7 @@ def check(cfg):
               "workers_initial": cfg["workers"], "workers_cap": cfg["worker_cap"],
               "mps_available_in_this_process": torch.backends.mps.is_available(),
               "contract_limitations": ["self ID absent", "official scoring unverified", "seed application unverified"]}
-    atomic_json(ROOT / "reports/v9/preflight.json", report)
+    atomic_json(project_path('logs/v9/validation/current_layout/preflight.json', root=ROOT), report)
     return report
 
 
@@ -94,7 +100,7 @@ def supervise(args, cfg, directory):
         total = 0
         for line in result.stdout.splitlines():
             parts = line.split(None, 1)
-            if len(parts) == 2 and ("blackout_v9" in parts[1] or "v9_experiments.py" in parts[1] or str(ROOT / "builds/BlackOut.app") in parts[1]):
+            if len(parts) == 2 and ("blackout_v9" in parts[1] or "v9_experiments.py" in parts[1] or str(project_path('artifacts/builds/BlackOut.app', root=ROOT)) in parts[1]):
                 total += int(parts[0])*1024
         peak_rss = max(peak_rss, total/1024**3)
         return total/1024**3
@@ -162,12 +168,12 @@ def main():
     if args.benchmark:
         from .benchmark import benchmark_inference
         report = benchmark_inference()
-        atomic_json(ROOT / "reports/v9/inference_benchmark.json", report)
+        atomic_json(project_path('logs/v9/reports/inference_benchmark.json', root=ROOT), report)
         print(__import__("json").dumps(report, ensure_ascii=False, indent=2)); return
     if args.supervisor_fd is not None:
         supervise(args, cfg, directory); return
     directory.mkdir(parents=True, exist_ok=True)
-    with (directory / "experiment.lock").open("a") as lock, (ROOT / "logs/v9/machine.lock").open("a") as machine:
+    with (directory / "experiment.lock").open("a") as lock, (project_path('logs/v9/machine.lock', root=ROOT)).open("a") as machine:
         try: fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError: print("v9 is already running; use --status"); return
         try: fcntl.flock(machine, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -181,7 +187,7 @@ def main():
         prepare_registration(directory, cfg)
         (directory / "stop.request").unlink(missing_ok=True)
         token = uuid.uuid4().hex
-        command = [sys.executable, "-u", str(ROOT / "scripts/v9_experiments.py"), "--config", str(args.config.resolve()),
+        command = [sys.executable, "-u", str(project_path('code/v9/scripts/v9_experiments.py', root=ROOT)), "--config", str(args.config.resolve()),
                    "--name", directory.name, "--supervisor-fd", str(lock.fileno()), "--machine-fd", str(machine.fileno()),
                    "--start-token", token]
         with (directory / "console.log").open("ab", buffering=0) as log:
@@ -193,7 +199,7 @@ def main():
             if ready.exists() and read_json(ready).get("token") == token: break
             time.sleep(.1)
         else: raise RuntimeError("background startup pending; inspect --status before retry")
-        print(f"v9 started in background (PID {process.pid}).\nLogs: {directory}\nStatus: bash {ROOT / 'run_v9_fast.sh'} --status")
+        print(f"v9 started in background (PID {process.pid}).\nLogs: {directory}\nStatus: bash {project_path('code/v9/run_v9_fast.sh', root=ROOT)} --status")
 
 
 if __name__ == "__main__":

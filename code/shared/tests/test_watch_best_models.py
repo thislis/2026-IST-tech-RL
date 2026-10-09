@@ -1,4 +1,7 @@
 """Viewer checks load real policies but never start a game window or Unity."""
+
+from project_paths import project_root, project_path
+
 import contextlib
 import io
 import unittest
@@ -19,7 +22,7 @@ class ViewerTests(unittest.TestCase):
         sentinel=object()
         with patch.object(blackout_env,'BlackOutEnv',return_value=sentinel) as constructor:
             self.assertIs(viewer.visible_env(1.),sentinel)
-            constructor.assert_called_once_with(env_path=str(viewer.ROOT/'builds/BlackOut.app'),no_graphics=False,time_scale=1.)
+            constructor.assert_called_once_with(env_path=str(project_path('artifacts/builds/BlackOut.app', root=viewer.ROOT)),no_graphics=False,time_scale=1.)
 
     def test_both_pinned_models_act_and_swap_sides_without_training(self):
         games=[]

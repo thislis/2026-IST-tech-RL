@@ -1,1 +1,0 @@
-../../code/v8/tests/v8/__init__.py

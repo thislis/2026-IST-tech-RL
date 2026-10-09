@@ -21,8 +21,8 @@ is installed into this repository's `.venv` from the second path.
 | Unity changeset | `1c7db571dde0` |
 | Unity ML-Agents package | `com.unity.ml-agents 4.0.2` |
 | Player target | macOS Universal (`x86_64`, `arm64`) |
-| App bundle | `builds/BlackOut.app` |
-| Executable | `builds/BlackOut.app/Contents/MacOS/RLGame2026` |
+| App bundle | `artifacts/builds/BlackOut.app` |
+| Executable | `artifacts/builds/BlackOut.app/Contents/MacOS/RLGame2026` |
 | Executable SHA-256 | `49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69` |
 
 `builds/` and the locally installed `.unity/` Editor are reproducible local
@@ -47,7 +47,7 @@ bundle name, identifies the player used by the experiment log.
 | protobuf | `3.20.3` |
 | grpcio | `1.51.3` |
 
-The complete transitive runtime set is pinned in `requirements.lock`. Install
+The complete transitive runtime set is pinned in `code/shared/requirements.lock`. Install
 `mlagents-envs` and `blackout-env` separately as described at the top of that
 file because their declared PettingZoo constraints conflict. `grpcio 1.51.3`
 is used because the upstream `1.48.2` pin does not provide a usable Apple
@@ -98,12 +98,12 @@ From this repository root:
 
 ```bash
 uv venv .venv --python 3.10.12
-uv pip install --python .venv/bin/python -r requirements.lock
+uv pip install --python .venv/bin/python -r code/shared/requirements.lock
 uv pip install --python .venv/bin/python 'mlagents-envs==1.1.0' --no-deps
 uv pip install --python .venv/bin/python ../blackout-env --no-deps
 
-.venv/bin/python scripts/run_random_match.py \
-  --build builds/BlackOut.app \
+.venv/bin/python code/shared/scripts/run_random_match.py \
+  --build artifacts/builds/BlackOut.app \
   --seed 20260805 \
   --policy-seed 20260805 \
   --time-scale 50 \

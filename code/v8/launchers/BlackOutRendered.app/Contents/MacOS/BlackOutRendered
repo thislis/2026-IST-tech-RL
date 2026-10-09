@@ -1,0 +1,17 @@
+#!/bin/bash
+# Launcher container for ML-Agents' macOS path resolver, not a modified game.
+set -euo pipefail
+V8_LAUNCH_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+while [[ ! -f "$V8_LAUNCH_ROOT/code/shared/project_paths.py" ]]; do
+    [[ "$V8_LAUNCH_ROOT" != / ]] || { echo "Project root not found" >&2; exit 1; }
+    V8_LAUNCH_ROOT="$(dirname -- "$V8_LAUNCH_ROOT")"
+done
+for V8_LAUNCH_ARG in "$@"; do
+    case "$V8_LAUNCH_ARG" in
+        -nographics|-no-graphics|-force-gfx-null)
+            echo 'v8 requires graphics rendering for the supplied graphic observation' >&2
+            exit 64
+            ;;
+    esac
+done
+exec "$V8_LAUNCH_ROOT/artifacts/builds/BlackOut.app/Contents/MacOS/RLGame2026" -batchmode "$@"

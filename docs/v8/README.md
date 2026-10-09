@@ -8,11 +8,11 @@
 기존 학습 실행기는 현재 비활성화되어 있다. [최신 복구 상태](environment_restoration.md)를 참조한다.
 아래 내용은 철회 전 구현과 검증의 역사 기록이다.
 
-v8-C1과 같은 용량의 flat41 대조군을 `blackout_rl/v8/`에 구현했다. 단일 policy factory를
+v8-C1과 같은 용량의 flat41 대조군을 `code/v8/blackout_rl/v8`에 구현했다. 단일 policy factory를
 학습·평가·연구 export가 사용한다. 원본 v7 소스·체크포인트·등록 fingerprint를 수정하지
 않고, 별도 Unity 연구용 빌드에서 engine outcome, reward ledger, timer 수명을 검증한다.
 
-구현 기준: `plans/v8_implementation_plan_with_references.md`.
+구현 기준: `docs/v8/plans/v8_implementation_plan_with_references.md`.
 현재 검증 결과와 남은 실험은 [implementation_status.md](implementation_status.md),
 웹 자료 확인 범위는 [reference_adoption.md](reference_adoption.md)를 참조한다.
 
@@ -46,13 +46,13 @@ v8-C1과 같은 용량의 flat41 대조군을 `blackout_rl/v8/`에 구현했다.
 별도 `build/v8_unity`에 복사한다. 기존 출력이 있으면 덮어쓰지 않는다.
 
 ```bash
-.venv/bin/python scripts/prepare_v8_unity.py
+.venv/bin/python code/v8/scripts/prepare_v8_unity.py
 V8_BUILD_OUTPUT="$PWD/builds/BlackOut-v8.app" \
   .unity/6000.3.8f1/Unity.app/Contents/MacOS/Unity -batchmode -quit \
   -projectPath "$PWD/build/v8_unity" -executeMethod V8Build.Build \
   -logFile "$PWD/reports/v8/unity_build.log"
-.venv/bin/python scripts/register_v8_build.py --log reports/v8/unity_build.log
-.venv/bin/python scripts/register_v8_provenance.py
+.venv/bin/python code/v8/scripts/register_v8_build.py --log logs/v8/reports/unity_build.log
+.venv/bin/python code/v8/scripts/register_v8_provenance.py
 ```
 
 현재 workspace에는 검증된 빌드와 준비된 프로젝트가 이미 있다. 위 prepare를 반복할 필요는 없다.
@@ -63,14 +63,14 @@ V8_BUILD_OUTPUT="$PWD/builds/BlackOut-v8.app" \
 ## 계약 검사와 짧은 통합 실행
 
 ```bash
-.venv/bin/python scripts/validate_v8_timer.py
-.venv/bin/python scripts/validate_v8_contracts.py
-.venv/bin/python scripts/validate_v8_contracts.py --live \
-  --output reports/v8/live_contract_validation.json
-.venv/bin/python -m unittest discover -s tests -v
-.venv/bin/python scripts/train_v8.py --config configs/v8/experiments/c1_smoke.yaml \
+.venv/bin/python code/v8/scripts/validate_v8_timer.py
+.venv/bin/python code/v8/scripts/validate_v8_contracts.py
+.venv/bin/python code/v8/scripts/validate_v8_contracts.py --live \
+  --output logs/v8/reports/live_contract_validation.json
+.venv/bin/python code/run.py -m unittest discover -s tests -v
+.venv/bin/python code/v8/scripts/train_v8.py --config code/v8/configs/experiments/c1_smoke.yaml \
   --run-dir logs/v8/c1_smoke_NEW
-.venv/bin/python scripts/train_v8.py --config configs/v8/experiments/flat_smoke.yaml \
+.venv/bin/python code/v8/scripts/train_v8.py --config code/v8/configs/experiments/flat_smoke.yaml \
   --run-dir logs/v8/flat_smoke_NEW
 ```
 
@@ -85,13 +85,13 @@ V8_BUILD_OUTPUT="$PWD/builds/BlackOut-v8.app" \
 ## 평가·연구 export
 
 ```bash
-.venv/bin/python scripts/evaluate_v8.py --config configs/v8/experiments/c1_smoke.yaml \
+.venv/bin/python code/v8/scripts/evaluate_v8.py --config code/v8/configs/experiments/c1_smoke.yaml \
   --checkpoint-store logs/v8/c1_smoke_v2/checkpoints --max-maps 1 \
   --output logs/v8/c1_dev_smoke_NEW
-.venv/bin/python scripts/verify_v8_export.py \
+.venv/bin/python code/v8/scripts/verify_v8_export.py \
   --checkpoint-store logs/v8/c1_smoke_v2/checkpoints \
   --trace logs/v8/c1_smoke_v2/windows.jsonl \
-  --bundle build/v8_research_export_NEW --output reports/v8/export_parity_NEW.json
+  --bundle build/v8_research_export_NEW --output logs/v8/reports/export_parity_NEW.json
 ```
 
 평가는 모든 셀의 시작·성공·실패를 기록하고 실패한 셀을 빼고 승률을 계산하지 않는다.
@@ -111,7 +111,7 @@ paired run으로 취급하지 않는다. 누락·NaN 셀은 거부하며 crossed
 
 ## 정규 파일럿과 후속 범위
 
-`configs/v8/experiments/{c1,flat}.yaml`은 각 1,048,576 step, 기존 200k/600k 상대 schedule,
+`code/v8/configs/experiments{c1,flat}.yaml`은 각 1,048,576 step, 기존 200k/600k 상대 schedule,
 train/dev 분리를 유지한다. seed11이 기본이며 독립 seed22/33은 config의 seed와 experiment ID,
 run 경로를 별도로 고정해야 한다. 가속 실행기는 이를 `accelerated_pilot/` 설정과 별도 등록으로 준비했다.
 3 seeds×2 arms의 전체 파일럿은 과거 기술 검증과 별도다.

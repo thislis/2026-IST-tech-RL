@@ -3,6 +3,16 @@
 Only the fixed W @ spikes calculation is offloaded. No dense whole-brain matrix,
 graph pruning, stochastic approximation, or GPU-generated noise is introduced.
 """
+
+# Locate shared modules from the physical versioned layout.
+from pathlib import Path as _LayoutPath
+import sys as _layout_sys
+_layout_root = next(p for p in _LayoutPath(__file__).resolve().parents
+                    if (p / "code/shared/project_paths.py").is_file())
+_layout_sys.path.insert(0, str(_layout_root / "code/shared"))
+from project_paths import activate as _activate_layout
+_activate_layout()
+
 import numpy as np
 import torch
 

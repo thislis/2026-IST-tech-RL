@@ -10,7 +10,7 @@
 
 - 게임 소스: `../blackout`, commit `d2220a7d01be88d413f551efd529f4758833be8b`.
 - 제공 API 소스: `../blackout-env`, commit `6ba7d9993cf1bdefe1ed480c8efbcabcb923f539`.
-- 사용 가능한 게임: 원래 `builds/BlackOut.app`. 실행 파일 SHA-256은 `versions.md`에 기록된
+- 사용 가능한 게임: 원래 `artifacts/builds/BlackOut.app`. 실행 파일 SHA-256은 `versions.md`에 기록된
   `49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69`와 일치한다.
 - 두 제공 저장소는 모두 clean이며, 설치된 `blackout_env`의 소스 파일 13개는 제공 저장소와 일치한다.
 - 제공 `BlackOutEnv` 자체를 반환하는 진입점만 남겼다. reset/step, obs·reward·info 반환값을
@@ -39,7 +39,7 @@
 기존 셸 파일 이름은 유지했다.
 
 ```bash
-bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/run_v8_fast.sh --check
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v8/scripts/run_v8_fast.sh --check
 ```
 
 이 명령은 원본 파일·설치 API·import 경로만 검사하고 Unity를 실행하지 않는다.
@@ -54,11 +54,11 @@ bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/run_v8_fast.sh --
 
 ## 검증 자료
 
-- [복구 manifest](../../reports/v8/environment_restoration/restoration.json): 원본 저장소·API·app 파일 해시,
+- [복구 manifest](../../logs/v8/reports/environment_restoration/restoration.json): 원본 저장소·API·app 파일 해시,
   모델 보존 해시 및 격리 경로.
-- [복구 전 소스 보관본](../../reports/v8/environment_restoration/before_rollback.zip).
-- [원본 경로 검사](../../reports/v8/environment_restoration/preflight.txt).
-- [복구 전용 검사](../../reports/v8/environment_restoration/restoration_tests.txt).
-- [전체 회귀 검사](../../reports/v8/environment_restoration/regression_tests.txt).
+- [복구 전 소스 보관본](../../logs/v8/reports/environment_restoration/before_rollback.zip).
+- [원본 경로 검사](../../logs/v8/reports/environment_restoration/preflight.txt).
+- [복구 전용 검사](../../logs/v8/reports/environment_restoration/restoration_tests.txt).
+- [전체 회귀 검사](../../logs/v8/reports/environment_restoration/regression_tests.txt).
 
 복구 검사는 파일 비교와 mock 환경 반환값 검증으로 수행한다. 실제 Unity나 학습·평가는 실행하지 않았다.

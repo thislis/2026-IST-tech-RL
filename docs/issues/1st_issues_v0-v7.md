@@ -18,7 +18,7 @@
 | 프로젝트 HEAD | `1968ed24b091dd978085c4a7a508b3d32c057a0a` |
 | Unity 원본 | `../blackout`, HEAD `d2220a7d01be88d413f551efd529f4758833be8b`, 작업 트리 clean |
 | Python API 원본 | `../blackout-env`, HEAD `6ba7d9993cf1bdefe1ed480c8efbcabcb923f539`, 작업 트리 clean |
-| 실제 로컬 실행 파일 | `builds/BlackOut.app/Contents/MacOS/RLGame2026` |
+| 실제 로컬 실행 파일 | `artifacts/builds/BlackOut.app/Contents/MacOS/RLGame2026` |
 | 실행 파일 SHA-256 재계산 | `49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69` — 기존 실험 기준과 일치 |
 | 확인 방법 | 정적 코드 검사, 기존 실행 JSON 재집계, 관련 테스트 62개, 소규모 합성 예시 |
 | 이번에 하지 않은 검증 | 새 Unity 연속 경기 실행, Linux/Xvfb 재현, Windows 비교, 공식 최신 규정 조회 |
@@ -33,13 +33,13 @@
 
 | ID | 점검 항목 / 전달받은 답변 | 우리 프로젝트 판정과 근거 | 대응 / 우선순위 |
 | --- | --- | --- | --- |
-| Q01 | 이미지 1번은 창고, 2·3번도 창고이며 차이가 없고 그래픽을 수정했다고 함 | **번호 대응·수정 반영 미검증.** 번호가 붙은 원본 이미지가 없어 실제 타일 대응은 확인 불가. 코드의 semantic ID `1=wall`, `2=ally_storage`, `3=enemy_storage`는 질문의 이미지 번호와 전혀 다른 체계다. [관측 명세](../reports/prep04_observation_contract.md) | 이미지 번호와 채널 ID 혼동 금지. UI 텍스처 수정은 별도 빌드/이미지 대조 필요. P2 |
-| Q02 | 매크로는 처음에는 불허, 이후 모델에 길찾기 로직을 넣는 방식은 허용 | **우리에게 직접 관련.** scripted planner와 planner override/residual을 사용한다. 모델 내부 로직 허용 답변은 참고할 수 있으나 state/reset·의존성·입출력 계약까지 해결하지 않는다. [추론 정책](../blackout_rl/policy.py), [제출 체크리스트](../reports/prep13_evaluation_contract_checklist.md) | 전체 planner 실행을 포함하는 최종 제출물의 호환성 검증. P0 |
+| Q01 | 이미지 1번은 창고, 2·3번도 창고이며 차이가 없고 그래픽을 수정했다고 함 | **번호 대응·수정 반영 미검증.** 번호가 붙은 원본 이미지가 없어 실제 타일 대응은 확인 불가. 코드의 semantic ID `1=wall`, `2=ally_storage`, `3=enemy_storage`는 질문의 이미지 번호와 전혀 다른 체계다. [관측 명세](../pre_v1/reports/prep04_observation_contract.md) | 이미지 번호와 채널 ID 혼동 금지. UI 텍스처 수정은 별도 빌드/이미지 대조 필요. P2 |
+| Q02 | 매크로는 처음에는 불허, 이후 모델에 길찾기 로직을 넣는 방식은 허용 | **우리에게 직접 관련.** scripted planner와 planner override/residual을 사용한다. 모델 내부 로직 허용 답변은 참고할 수 있으나 state/reset·의존성·입출력 계약까지 해결하지 않는다. [추론 정책](../blackout_rl/policy.py), [제출 체크리스트](../pre_v1/reports/prep13_evaluation_contract_checklist.md) | 전체 planner 실행을 포함하는 최종 제출물의 호환성 검증. P0 |
 | Q03 | 맵은 고정, 아이템 위치는 바뀌며 창고 위치 등 구조는 고정 | **기본 지형·후보 좌표 고정, 활성 창고는 변동.** 현재 생성기는 scene 후보를 seed RNG로 선택한다. “모든 semantic 채널이 고정”이라는 해석은 맞지 않는다. [게임 명세](../game_spec.md), 아래 §4.2 | 고정 지형과 episode별 활성 영역을 분리. P1 |
 | Q04 | 길찾기가 경로를 제공하고 모델이 액션을 내는 방식은 모델 내부에 포함하면 허용 | **현재 구조와 관련.** 내부 planner가 관측으로 경로/행동을 만들고 residual이 최종 `(dx,dy)`를 결정한다. v7-2의 제어 슬롯은 직접 행동을 낸다. [v6 정책](../blackout_rl/mappo_v6.py), [v7-2 정책](../blackout_rl/v7_2/policy.py) | 허용 답변과 실제 제출 loader 호환성을 별도로 확인. P0 |
-| Q05 | 매크로와 모델을 대결시켜 학습해도 되는지는 별도 명확한 답변 없음 | **실제로 수행 중인 방식.** scripted/weak/target 혼합, teacher BC/DAgger를 사용한다. 기존 답변만으로 학습 상대·teacher 사용까지 공식 확정할 수 없다. [학습 상대 구성](../blackout_rl/v7_training.py), [v3 계획](../reports/mappo_teacher_curriculum_v3_plan.md) | 학습 시 scripted 상대·teacher와 제출 시 로직의 허용 범위를 구분해 질의. P1 |
-| Q06 | 모델 추론 시간 제한은 미정, 추후 정한다고 함 | **공식 한도 미확인.** 로컬 속도 자료는 있지만 실제 전체 정책의 공식 하드웨어 p95/p99 지연 보장이 아니다. 특히 전뇌·planner 비용을 포함해야 한다. [제출 체크리스트](../reports/prep13_evaluation_contract_checklist.md), [가속 보고서](../reports/v7/acceleration_and_resume.md) | 팀/step 한도, 경기 wall-clock, 메모리·스레드·패키지 조건 확인 후 측정. P0 |
-| Q07 | 배속 이상 의심, 외부 TestSuite에서는 약 140 step/s 보고 | **우리도 처리량 제한을 경험했으나 배속 미동작으로 확정 불가.** 초기 macOS random benchmark는 time scale 50에서 52.278 env step/s, 순차 2환경 합산은 49.736. v7 가속은 통신/전뇌 연산 병목을 개선했다. [초기 benchmark](../reports/prep11_throughput_benchmark.md), [v7 가속](../reports/v7/acceleration_and_resume.md) | 외부 140과 서로 다른 장비·정책·측정 단위를 직접 비교하지 않는다. time scale과 env/agent step/s 분리. P2 |
+| Q05 | 매크로와 모델을 대결시켜 학습해도 되는지는 별도 명확한 답변 없음 | **실제로 수행 중인 방식.** scripted/weak/target 혼합, teacher BC/DAgger를 사용한다. 기존 답변만으로 학습 상대·teacher 사용까지 공식 확정할 수 없다. [학습 상대 구성](../blackout_rl/v7_training.py), [v3 계획](../v3/reports/mappo_teacher_curriculum_v3_plan.md) | 학습 시 scripted 상대·teacher와 제출 시 로직의 허용 범위를 구분해 질의. P1 |
+| Q06 | 모델 추론 시간 제한은 미정, 추후 정한다고 함 | **공식 한도 미확인.** 로컬 속도 자료는 있지만 실제 전체 정책의 공식 하드웨어 p95/p99 지연 보장이 아니다. 특히 전뇌·planner 비용을 포함해야 한다. [제출 체크리스트](../pre_v1/reports/prep13_evaluation_contract_checklist.md), [가속 보고서](../v7/reports/acceleration_and_resume.md) | 팀/step 한도, 경기 wall-clock, 메모리·스레드·패키지 조건 확인 후 측정. P0 |
+| Q07 | 배속 이상 의심, 외부 TestSuite에서는 약 140 step/s 보고 | **우리도 처리량 제한을 경험했으나 배속 미동작으로 확정 불가.** 초기 macOS random benchmark는 time scale 50에서 52.278 env step/s, 순차 2환경 합산은 49.736. v7 가속은 통신/전뇌 연산 병목을 개선했다. [초기 benchmark](../pre_v1/reports/prep11_throughput_benchmark.md), [v7 가속](../v7/reports/acceleration_and_resume.md) | 외부 140과 서로 다른 장비·정책·측정 단위를 직접 비교하지 않는다. time scale과 env/agent step/s 분리. P2 |
 | Q08 | 타일 24×24에 내부 움직임을 표현하려고 graphic을 96×96으로 제공 | **정상 계약 확인.** 타일당 4×4 픽셀, 최종 HWC `(96,96,11)`; CNN에는 CHW로 변환. 위치의 세부 표현이지 방향 벡터 채널이 따로 생긴 것은 아니다. [semantic decoder](../blackout_rl/semantic_map.py), [관측 로그](../logs/prep04_07_contract.json) | 크기 버그로 취급하지 않는다. 24×24 축소 시 세부 위치 손실 고려. P2 |
 | Q09 | 매치마다 다른 seed를 설정할 예정 | **seed별 변화 지원, 초기 wrapper 버그는 보정됨.** upstream reset은 seed 전달 순서와 캐시 문제를 갖고 있어 `ContractBlackOutEnv`가 handshake/seed flush/cache clear를 수행한다. 학습 seed 재표집과 평가 paired seed 재사용은 의도된 실험 설계다. [adapter](../blackout_rl/env.py), [seed 검증](../logs/prep04_07_contract.json) | 모든 실행 경로에서 adapter 유지. “재현용 고정 seed”를 “대회 seed 고정”으로 해석 금지. P1 |
 | Q10 | 창고 위치는 고정이고 아이템만 이동 | **후보 위치 고정까지만 일치.** 현재 빌드는 후보 중 일부만 활성화한다. 위치가 새 임의 좌표로 이동하는 것은 아니다. §4.2 | 초기 관측에서 활성 창고를 읽고 episode 간 캐시를 갱신. P1 |
@@ -104,8 +104,8 @@ old Tick 반환 true → RemoveAt(0)
 ### 4.4 수량·정체성·클래스의 관측 공백
 
 - **배터리 수량:** ground item 수량과 holding stack 수량이 직접 제공되지 않는다. UI를 읽을 수 있다는 답변과 semantic graphic 계약이 일치하지 않는다. 점수 변화는 적재 이후의 정보라서 모든 배터리의 사전 수량을 복원하지 못한다.
-- **자기 유닛 ID:** raw 45-vector의 `unitIndex`는 wrapper routing에 쓰고 모델용 96-vector에서 제거한다. 초기 같은 팀 5명의 관측이 동일했다는 실측이 있다. 내부 canonical batching/slot 입력은 보정이나 공식 loader의 순서 계약은 별도다. [PREP-06](../reports/prep06_agent_identity_order.md)
-- **상대 클래스:** 각 agent vector에는 self class만 있고 전체 10명의 class 배열은 없다. 아군 5개의 관측을 합치면 아군 class를 얻을 수 있지만, 상대 관측을 actor에 넘겨 상대 self class를 직접 읽는 것은 현재 팀 입력 계약과 다르다. 기존 위험 지도는 적 위치 중심의 근사다. [team state](../blackout_rl/team_state.py), [위험 지도](../reports/base_s12_danger_map.md)
+- **자기 유닛 ID:** raw 45-vector의 `unitIndex`는 wrapper routing에 쓰고 모델용 96-vector에서 제거한다. 초기 같은 팀 5명의 관측이 동일했다는 실측이 있다. 내부 canonical batching/slot 입력은 보정이나 공식 loader의 순서 계약은 별도다. [PREP-06](../pre_v1/reports/prep06_agent_identity_order.md)
+- **상대 클래스:** 각 agent vector에는 self class만 있고 전체 10명의 class 배열은 없다. 아군 5개의 관측을 합치면 아군 class를 얻을 수 있지만, 상대 관측을 actor에 넘겨 상대 self class를 직접 읽는 것은 현재 팀 입력 계약과 다르다. 기존 위험 지도는 적 위치 중심의 근사다. [team state](../blackout_rl/team_state.py), [위험 지도](../pre_v1/reports/base_s12_danger_map.md)
 - **관측에 없는 지형 속성:** semantic wall 채널은 `BlockAll`을 표시하고 성소/적 본진 제한을 모두 별도 채널로 표시하지 않는다. planner의 고정 성소·진영 지식은 현재 맵에 의존하므로 새 맵에 대한 일반화로 해석하면 안 된다.
 
 ## 5. 추가 발견: 평가·보상·제출·운영
@@ -159,9 +159,9 @@ old Tick 반환 true → RemoveAt(0)
 
 ### A06 — agent 순서·state/reset·모델 내부 로직을 제출 계약이 모두 보장하지 않음 (P0, 미해결)
 
-[upstream loader](../../blackout-env/blackout_env/model/loader.py)는 입력 dict 순서대로 batch를 만들고, [기존 체크리스트](../reports/prep13_evaluation_contract_checklist.md)는 stateless 인터페이스와 episode reset hook 부재를 기록한다. 우리 planner와 v7-2는 내부 이력 또는 명시적 episode/step ID를 사용한다. 단순히 모델 안에 planner를 넣는 것만으로 이 차이가 사라지지 않는다.
+[upstream loader](../../blackout-env/blackout_env/model/loader.py)는 입력 dict 순서대로 batch를 만들고, [기존 체크리스트](../pre_v1/reports/prep13_evaluation_contract_checklist.md)는 stateless 인터페이스와 episode reset hook 부재를 기록한다. 우리 planner와 v7-2는 내부 이력 또는 명시적 episode/step ID를 사용한다. 단순히 모델 안에 planner를 넣는 것만으로 이 차이가 사라지지 않는다.
 
-[export_v7.py](../scripts/export_v7.py)는 아직 export를 명시적으로 차단한다. v6는 격리된 두 파일 export 검사가 있으나 목표 gate를 통과하지 못해 최종 `submission/v6/` 산출물이 없다. 공식 loader에서 연속 여러 경기, 순서 변경, state reset, 허용 의존성·메모리·지연을 확인해야 제출 준비 완료로 표시할 수 있다.
+[export_v7.py](../scripts/export_v7.py)는 아직 export를 명시적으로 차단한다. v6는 격리된 두 파일 export 검사가 있으나 목표 gate를 통과하지 못해 최종 `artifacts/submission/v6` 산출물이 없다. 공식 loader에서 연속 여러 경기, 순서 변경, state reset, 허용 의존성·메모리·지연을 확인해야 제출 준비 완료로 표시할 수 있다.
 
 ### A07 — headless 실행이 관측을 무효화할 수 있음 (P1, 프로젝트 보정 있음)
 
@@ -171,14 +171,14 @@ old Tick 반환 true → RemoveAt(0)
 
 - [README 상단](../README.md): 파일럿 완료 및 본실험 9월 21일 중단 상태.
 - [history](../history.md), [최종 관리자 상태](../logs/v7/main_study/accelerated/status.json): 9월 22일 본실험 23개와 평가 완료.
-- [초기 제출 체크리스트](../reports/prep13_evaluation_contract_checklist.md): stateful 모델을 사용하지 않는다는 당시 결정. 현재 planner/v7-2에는 그대로 적용되지 않는다.
+- [초기 제출 체크리스트](../pre_v1/reports/prep13_evaluation_contract_checklist.md): stateful 모델을 사용하지 않는다는 당시 결정. 현재 planner/v7-2에는 그대로 적용되지 않는다.
 - [history의 v6 crop 설명](../history.md)은 기존 IPPO crop을 변경하지 않았다고 쓰지만, 현재 [GlobalLocalMapEncoder](../blackout_rl/ippo_model.py)는 `1 - 2*y`로 이미 top-down 변환한다. 과거 실행 버전과 현재 코드 상태를 분리해 기술해야 한다.
 
 이번에는 요청된 이슈 문서만 작성한다. README/과거 보고서 수정 시 역사적 실행 사실을 현재 구현으로 덮어쓰지 말고 갱신일·적용 버전을 명시해야 한다.
 
 ### A09 — 기본 특수 아이템 정책을 끈 근거의 일반화 범위가 좁음 (P2, 추가 검증 대상)
 
-[BASE-S15 ablation](../reports/base_s15_special_item_ablation.md)은 random 상대 10경기에서 두 정책 모두 10승, 특수 아이템 사용 시 점수 차 -1.7·경기 길이 +74.1 step을 기록해 기본 기능을 껐다. 구현 고장이라는 증거는 없다. 다만 이 실험만으로 강한 target 상대에서도 특수 아이템이 불필요하다고 일반화할 수 없다. 평가 점수 기록을 먼저 정상화한 뒤 target 상대에서 별도 비교할 항목이다.
+[BASE-S15 ablation](../pre_v1/reports/base_s15_special_item_ablation.md)은 random 상대 10경기에서 두 정책 모두 10승, 특수 아이템 사용 시 점수 차 -1.7·경기 길이 +74.1 step을 기록해 기본 기능을 껐다. 구현 고장이라는 증거는 없다. 다만 이 실험만으로 강한 target 상대에서도 특수 아이템이 불필요하다고 일반화할 수 없다. 평가 점수 기록을 먼저 정상화한 뒤 target 상대에서 별도 비교할 항목이다.
 
 ### A10 — 재개·지표·환경 버전 비교 시 혼동 위험 (P2, 계약상 한계)
 
@@ -195,15 +195,15 @@ old Tick 반환 true → RemoveAt(0)
 | 세대 | 확인된 이상 / 실패 | 현재 대응·남은 문제 | 근거 |
 | --- | --- | --- | --- |
 | 기반 작업(편의상 v0) | seed가 반환 episode에 적용되지 않음, reset 간 map/routing cache 잔존, self-ID 누락, terminal 점수 reset | seed/cache/canonical batching/score tracker 보정. 배터리 수량, 제출 metadata 계약은 남음 | [versions](../versions.md), [계약 검증](../logs/prep04_07_contract.json) |
-| v1 | 512-step rollout마다 경기 초기화; 2,000,384 step에도 완료 학습 경기 0, target 0/10 | v2 persistent collector로 수명 분리. 현재 버그로 재분류하지 않음 | [v1 summary](../logs/mappo_vs_win70/run_summary.json), [v2 변경 분석](../reports/mappo_vs_win70_v2_plan_changes.md) |
+| v1 | 512-step rollout마다 경기 초기화; 2,000,384 step에도 완료 학습 경기 0, target 0/10 | v2 persistent collector로 수명 분리. 현재 버그로 재분류하지 않음 | [v1 summary](../logs/mappo_vs_win70/run_summary.json), [v2 변경 분석](../v2/reports/mappo_vs_win70_v2_plan_changes.md) |
 | v2 | 2,000,896 step, 학습 1,643전 전패, target 0/10. 강한 win70의 성능이 neural core 대신 planner override에서 나옴 | checkpoint weight만 이전해 원래 정책 성능을 재현할 수 없었음 | [v2 summary](../logs/mappo_vs_win70_v2/run_summary.json), [추론 정책](../blackout_rl/policy.py) |
-| v3 | 3,000,320 step, target 0/10. NoOp label 41.4%, guard 93% 이상; BC 정확도와 실전 성적 괴리; 실패 단계 강제 승급 | 단일-step imitation 누적오차와 회귀. v4 planner 보존·fail-closed로 전환 | [v3 summary](../logs/mappo_teacher_curriculum_v3/run_summary.json), [계획/분석](../reports/mappo_teacher_curriculum_v3_plan.md) |
-| v4 | 100,352 step에서 중단. scripted 8/10·target 5/10 유지. warm-up은 KEEP BC이고 PPO 꺼짐 | 개선 신호 없는 보존 학습과 baseline보다 높은 초기 gate가 병목. v5에서 수정 | [v4 summary](../logs/mappo_planner_residual_v4/run_summary.json), [v4 분석](../reports/mappo_planner_residual_v4_plan_changes.md) |
-| v5 | 317,440 step, target 5/10, rollback 1회. PPO override 약 0.184%/agent action; 표집 후 1명 선택과 학습 확률 정합성 문제 | v6 team 41-way 분포·탐색 하한으로 대응. 기존 성능 회복이 개선을 뜻하지 않음 | [v5 summary](../logs/mappo_planner_residual_v5/run_summary.json), [v6 변경](../reports/mappo_planner_residual_v6_plan_changes.md) |
+| v3 | 3,000,320 step, target 0/10. NoOp label 41.4%, guard 93% 이상; BC 정확도와 실전 성적 괴리; 실패 단계 강제 승급 | 단일-step imitation 누적오차와 회귀. v4 planner 보존·fail-closed로 전환 | [v3 summary](../logs/mappo_teacher_curriculum_v3/run_summary.json), [계획/분석](../v3/reports/mappo_teacher_curriculum_v3_plan.md) |
+| v4 | 100,352 step에서 중단. scripted 8/10·target 5/10 유지. warm-up은 KEEP BC이고 PPO 꺼짐 | 개선 신호 없는 보존 학습과 baseline보다 높은 초기 gate가 병목. v5에서 수정 | [v4 summary](../logs/mappo_planner_residual_v4/run_summary.json), [v4 분석](../v4/reports/mappo_planner_residual_v4_plan_changes.md) |
+| v5 | 317,440 step, target 5/10, rollback 1회. PPO override 약 0.184%/agent action; 표집 후 1명 선택과 학습 확률 정합성 문제 | v6 team 41-way 분포·탐색 하한으로 대응. 기존 성능 회복이 개선을 뜻하지 않음 | [v5 summary](../logs/mappo_planner_residual_v5/run_summary.json), [v6 변경](../v6/reports/mappo_planner_residual_v6_plan_changes.md) |
 | v6 | 1,159,168 step, target 5/10. 탐색 증가에도 target-best는 step 0, regression rollback 2회, full_win70 gate 실패 | 탐색 빈도 부족만으로 설명 불가. 수정 행동의 장기 기여·학습/argmax 차이 분석 필요. 최종 test/목표 제출물 없음 | [v6 summary](../logs/mappo_planner_residual_v6/run_summary.json), [최종 dev](../logs/mappo_planner_residual_v6/target_eval_step_1159168.json) |
 | v7-1 | A2/A3 각 5시드, 총 10개의 `episodes` 배열이 **모두 동일**. 각각 dev 50%; A0 15.33%, A1 21.67% | 실제 배선 고유 이득 미입증. KEEP 고정/행동 일치 가능성은 가설이며 행동 궤적 확인 전 확정 불가. 점수 동일성 해석에는 A01 결함도 반영 | [본실험 summary](../logs/v7/main_study/accelerated/summary.json), [학습 구현](../blackout_rl/v7_1/model.py) |
-| v7-2 파일럿 | 전뇌 담당 슬롯까지 scripted 경로 계산, `(1,20)`에서 `PathNotFound`; 34,123 step에서 실패, 저장은 32,768 | active slots 분리와 도달 불가 처리로 보정. teammate-v2는 별도 실험 ID로 보존 | [복구 보고서](../reports/v7/teammate_v2_recovery.md), [teammate 코드](../blackout_rl/v7_2/teammates.py) |
-| v7-2 본실험 | 3시드 × 200만 step 완료, 32승/180경기=17.78%. 1유닛 전뇌+4유닛 scripted | 5유닛 전뇌 성과가 아님. 전뇌 재배선/CNN·GRU 대조군, F2, 최종 test 미실행 | [본실험 범위](../reports/v7/main_study_preregistration.md), [본실험 summary](../logs/v7/main_study/accelerated/summary.json) |
+| v7-2 파일럿 | 전뇌 담당 슬롯까지 scripted 경로 계산, `(1,20)`에서 `PathNotFound`; 34,123 step에서 실패, 저장은 32,768 | active slots 분리와 도달 불가 처리로 보정. teammate-v2는 별도 실험 ID로 보존 | [복구 보고서](../v7/reports/teammate_v2_recovery.md), [teammate 코드](../blackout_rl/v7_2/teammates.py) |
+| v7-2 본실험 | 3시드 × 200만 step 완료, 32승/180경기=17.78%. 1유닛 전뇌+4유닛 scripted | 5유닛 전뇌 성과가 아님. 전뇌 재배선/CNN·GRU 대조군, F2, 최종 test 미실행 | [본실험 범위](../v7/reports/main_study_preregistration.md), [본실험 summary](../logs/v7/main_study/accelerated/summary.json) |
 
 ### v7 결과를 해석할 때 특히 남는 질문
 
@@ -242,7 +242,7 @@ old Tick 반환 true → RemoveAt(0)
 프로젝트 루트에서:
 
 ```bash
-.venv/bin/python -m unittest \
+.venv/bin/python code/run.py -m unittest \
   tests.test_env tests.test_contract tests.test_mappo_v6 \
   tests.v7.test_contracts tests.v7.test_teammates tests.v7.test_main_study
 ```
