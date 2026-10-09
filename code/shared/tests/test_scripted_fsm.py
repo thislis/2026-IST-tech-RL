@@ -1,0 +1,1 @@
+../../../tests/test_scripted_fsm.py

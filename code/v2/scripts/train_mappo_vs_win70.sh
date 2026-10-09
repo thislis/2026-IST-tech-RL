@@ -1,0 +1,1 @@
+../../../scripts/train_mappo_vs_win70.sh

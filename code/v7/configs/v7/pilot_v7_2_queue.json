@@ -1,0 +1,21 @@
+{
+  "log_dir": "logs/v7/pilot_v7_2_queue",
+  "jobs": [
+    {
+      "config": "configs/v7/v7_2_fixed.yaml",
+      "seed": 11
+    },
+    {
+      "config": "configs/v7/v7_2_readout_ppo.yaml",
+      "seed": 11
+    },
+    {
+      "config": "configs/v7/v7_2_readout_ppo.yaml",
+      "seed": 22
+    },
+    {
+      "config": "configs/v7/v7_2_readout_ppo.yaml",
+      "seed": 33
+    }
+  ]
+}

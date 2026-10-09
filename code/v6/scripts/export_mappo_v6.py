@@ -1,0 +1,1 @@
+../../../scripts/export_mappo_v6.py

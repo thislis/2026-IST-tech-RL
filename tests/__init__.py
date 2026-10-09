@@ -1,1 +1,1 @@
-"""BlackOut experiment contract tests."""
+../code/shared/tests/__init__.py

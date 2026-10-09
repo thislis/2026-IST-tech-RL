@@ -1,0 +1,1 @@
+../../../scripts/verify_base_s11_s12.py

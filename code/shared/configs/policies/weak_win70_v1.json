@@ -1,0 +1,9 @@
+{
+  "policy_id": "weak-win70-v1",
+  "kind": "deterministic-role-fsm",
+  "roles": ["worker", "worker", "worker", "guard", "guard"],
+  "guard_chase_radius_cells": 12,
+  "absorption_strategy": true,
+  "danger_map": true,
+  "special_items": false
+}

@@ -1,0 +1,1 @@
+../../../scripts/_v8_cli.py

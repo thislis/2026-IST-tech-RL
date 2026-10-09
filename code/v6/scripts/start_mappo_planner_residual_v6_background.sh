@@ -1,0 +1,1 @@
+../../../scripts/start_mappo_planner_residual_v6_background.sh

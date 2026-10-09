@@ -1,0 +1,1 @@
+../../../scripts/register_v8_build.py

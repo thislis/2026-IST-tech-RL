@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blackout.local/schemas/episode_v1.schema.json",
+  "title": "BlackOut evaluation episode v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "episode_id",
+    "pair_id",
+    "pair_index",
+    "seed",
+    "policy_seeds",
+    "side_assignment",
+    "model",
+    "opponent",
+    "environment",
+    "episode_length",
+    "score",
+    "winner",
+    "model_result",
+    "rewards",
+    "termination"
+  ],
+  "properties": {
+    "schema_version": {"const": "blackout.episode.v1"},
+    "episode_id": {"type": "string"},
+    "pair_id": {"type": "string"},
+    "pair_index": {"type": "integer", "minimum": 0},
+    "seed": {"type": "integer", "minimum": 0},
+    "policy_seeds": {
+      "type": "object",
+      "required": ["model", "opponent"],
+      "properties": {
+        "model": {"type": "integer", "minimum": 0},
+        "opponent": {"type": "integer", "minimum": 0}
+      }
+    },
+    "side_assignment": {
+      "type": "object",
+      "required": ["model_team", "model_side", "opponent_team", "opponent_side"],
+      "properties": {
+        "model_team": {"enum": [0, 1]},
+        "model_side": {"enum": ["A", "B"]},
+        "opponent_team": {"enum": [0, 1]},
+        "opponent_side": {"enum": ["A", "B"]}
+      }
+    },
+    "model": {"$ref": "#/$defs/policyArtifact"},
+    "opponent": {"$ref": "#/$defs/policyArtifact"},
+    "environment": {
+      "type": "object",
+      "required": ["executable_sha256", "game_commit", "python_api_commit", "adapter"],
+      "properties": {
+        "executable_sha256": {"$ref": "#/$defs/sha256"},
+        "game_commit": {"type": "string", "minLength": 40, "maxLength": 40},
+        "python_api_commit": {"type": "string", "minLength": 40, "maxLength": 40},
+        "adapter": {"type": "string"}
+      }
+    },
+    "episode_length": {
+      "type": "object",
+      "required": ["steps", "wall_seconds", "started_at_utc", "finished_at_utc"],
+      "properties": {
+        "steps": {"type": "integer", "minimum": 1},
+        "wall_seconds": {"type": "number", "minimum": 0},
+        "started_at_utc": {"type": "string"},
+        "finished_at_utc": {"type": "string"}
+      }
+    },
+    "score": {
+      "type": "object",
+      "required": ["team_a", "team_b", "model", "opponent", "model_minus_opponent", "source"],
+      "properties": {
+        "team_a": {"type": "integer", "minimum": 0},
+        "team_b": {"type": "integer", "minimum": 0},
+        "model": {"type": "integer", "minimum": 0},
+        "opponent": {"type": "integer", "minimum": 0},
+        "model_minus_opponent": {"type": "integer"},
+        "source": {"type": "string"}
+      }
+    },
+    "winner": {
+      "type": "object",
+      "required": ["team", "side", "source"],
+      "properties": {
+        "team": {"enum": [-1, 0, 1]},
+        "side": {"enum": ["draw", "A", "B"]},
+        "source": {"const": "terminal_info.winner"}
+      }
+    },
+    "model_result": {"enum": ["win", "draw", "loss"]},
+    "rewards": {
+      "type": "object",
+      "required": [
+        "winner_source",
+        "unity_shaping_used_for_winner",
+        "python_score_delta_cumulative",
+        "python_terminal_bonus"
+      ],
+      "properties": {
+        "winner_source": {"const": "terminal_info.winner"},
+        "unity_shaping_used_for_winner": {"const": false}
+      }
+    },
+    "termination": {
+      "type": "object",
+      "required": ["all_agents_terminated", "truncated", "score_is_preterminal"],
+      "properties": {
+        "all_agents_terminated": {"const": true},
+        "truncated": {"const": false},
+        "score_is_preterminal": {"type": "boolean"}
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "policyArtifact": {
+      "type": "object",
+      "required": ["policy_id", "kind", "checkpoint_path", "checkpoint_sha256"],
+      "properties": {
+        "policy_id": {"type": "string"},
+        "kind": {"type": "string"},
+        "checkpoint_path": {"type": "string"},
+        "checkpoint_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

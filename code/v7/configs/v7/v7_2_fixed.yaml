@@ -1,0 +1,99 @@
+schema_version: blackout.v7.experiment.v1
+experiment_id: v7_2_malecns_fixed_S0_one_unit_fly64_proxy_v1_repeat1_plasticity_off_teammate_v2
+base_commit: 2842fb17aeb6923f55c391d04de182df758f02e3
+mode: whole_connectome_direct
+data:
+  dataset: male_cns
+  version: v1.0
+  graph_artifact: data/connectomes/malecns_v1/whole_brain.npz
+  graph_sha256: 67b09890fbec4040d3e88593c2472a79533b4938daf33a1fd1fda4172d03f8c5
+  annotation_sha256: 2177e246113e4cfbf1e7772ec37c6da1955ff22e8063d0b1f833101f99a9a3b2
+  graph_metadata_sha256: 96e544b0c3f185114647d65f2e62f8761baed0c6c166a65c0429bb8731a8f2f2
+  source_manifest: data/connectomes/malecns_v1/source_manifest.json
+model: {}
+controller:
+  training_mode: F0_fixed
+  action_schema: noop_plus_8_directions
+  action_repeat: 1
+  controlled_slots:
+  - 0
+  plasticity_enabled: false
+  planner_fallback_for_controlled_slots: false
+  remaining_team_policy: fixed_scripted_active_slots_v2
+  intervention: normal
+  fixed_decoder:
+    dt: 0.02
+    turn_gain: 40.0
+    turn_limit: 2.0
+    movement_threshold: 0.02
+sensory:
+  mode: S0_semantic_retina
+  sensor_interval_game_steps: 5
+environment:
+  build: builds/BlackOut.app
+  executable: builds/BlackOut.app/Contents/MacOS/RLGame2026
+  executable_sha256: 49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69
+  time_scale: 50.0
+  max_episode_steps: 22000
+training:
+  protocol: fixed_comparison_schedule_v1
+  reward: inherited_v6_score_delta_terminal
+  gamma: 0.9995
+  gae_lambda: 0.99
+  learning_rate: 0.0001
+  exploration: 0.0
+  failure_seed_priority: false
+  max_environment_steps: 22000
+  rollout_steps: 256
+  save_every: 2048
+  independent_training_seeds:
+  - 11
+  - 22
+  - 33
+  opponent_checkpoint: checkpoints/win_70_vs_scripted.pt
+  opponent_checkpoint_sha256: c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9
+  opponent_schedule:
+  - until: 200000
+    probabilities:
+    - 0.65
+    - 0.25
+    - 0.1
+  - until: 600000
+    probabilities:
+    - 0.2
+    - 0.3
+    - 0.5
+  - until: 2000001
+    probabilities:
+    - 0.1
+    - 0.0
+    - 0.9
+  ppo:
+    update_epochs: 4
+    minibatch_size: 128
+    clip_coef: 0.2
+    value_clip_coef: 0.2
+    value_loss_coef: 0.5
+    entropy_coef: 0.003
+    max_grad_norm: 0.5
+    target_kl: 0.02
+evaluation:
+  split_manifest: configs/v7/splits.json
+  split_sha256: f3d937321baed856dae11e0da9970fa4193ace2178e1ade250819ad84332e92c
+  paired_sides: true
+  terminal_winner_only: true
+  final_test_after_model_lock: true
+runtime:
+  torch_threads: 2
+brain:
+  dynamics_id: fly64_proxy_v1
+  dt: 0.02
+  tau: 0.1
+  recurrent_gain: 1.5
+  tonic: 0.18
+  noise_hz: 1.2
+  noise_amplitude: 0.22
+  threshold: 1.0
+  sensory_gain: 0.8
+  sensory_ema: 0.5
+  window_ticks: 13

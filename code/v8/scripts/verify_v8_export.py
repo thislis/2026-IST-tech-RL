@@ -1,0 +1,1 @@
+../../../scripts/verify_v8_export.py

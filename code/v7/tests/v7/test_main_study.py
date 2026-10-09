@@ -1,0 +1,1 @@
+../../../../tests/v7/test_main_study.py

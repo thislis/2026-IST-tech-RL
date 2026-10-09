@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://blackout.local/schemas/experiment_registry_v1.schema.json",
+  "title": "BlackOut experiment registry JSONL entry v1",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "registered_at_utc",
+    "run_id",
+    "checkpoint_path",
+    "checkpoint_sha256",
+    "config_sha256",
+    "config",
+    "seed",
+    "git_sha",
+    "opponent_id",
+    "global_step"
+  ],
+  "properties": {
+    "schema_version": {"const": "blackout.experiment_entry.v1"},
+    "registered_at_utc": {"type": "string"},
+    "run_id": {"type": "string", "minLength": 1},
+    "checkpoint_path": {"type": "string", "minLength": 1},
+    "checkpoint_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "config_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "config": {"type": "object"},
+    "seed": {"type": "integer", "minimum": 0},
+    "git_sha": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "opponent_id": {"type": "string", "minLength": 1},
+    "global_step": {"type": "integer", "minimum": 0}
+  },
+  "additionalProperties": false
+}

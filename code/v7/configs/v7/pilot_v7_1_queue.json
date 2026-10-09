@@ -1,0 +1,41 @@
+{
+  "log_dir": "logs/v7/pilot_v7_1_queue",
+  "jobs": [
+    {
+      "config": "configs/v7/v7_1_flywire.yaml",
+      "seed": 11
+    },
+    {
+      "config": "configs/v7/v7_1_mlp_control.yaml",
+      "seed": 11
+    },
+    {
+      "config": "configs/v7/v7_1_rewired.yaml",
+      "seed": 11
+    },
+    {
+      "config": "configs/v7/v7_1_flywire.yaml",
+      "seed": 22
+    },
+    {
+      "config": "configs/v7/v7_1_mlp_control.yaml",
+      "seed": 22
+    },
+    {
+      "config": "configs/v7/v7_1_rewired.yaml",
+      "seed": 22
+    },
+    {
+      "config": "configs/v7/v7_1_flywire.yaml",
+      "seed": 33
+    },
+    {
+      "config": "configs/v7/v7_1_mlp_control.yaml",
+      "seed": 33
+    },
+    {
+      "config": "configs/v7/v7_1_rewired.yaml",
+      "seed": 33
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+../../../scripts/start_pilot_evaluation.sh

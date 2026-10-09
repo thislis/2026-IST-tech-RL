@@ -1,0 +1,23 @@
+{
+  "scope": "provided_environment_unchanged_offline_model_development",
+  "actor_inputs": [
+    "own_team_legal_vector",
+    "legal_semantic_map",
+    "derived_planner_context"
+  ],
+  "critic_inputs": [
+    "all_ten_training_observations"
+  ],
+  "diagnostic_only": [
+    "provided_API_info_and_reward_without_modification"
+  ],
+  "unavailable": [
+    "battery_stack_quantity",
+    "opponent_class_at_actor_inference",
+    "custom_engine_outcome_channel",
+    "custom_physical_tick_channel",
+    "score_fixture_commands"
+  ],
+  "c2": false,
+  "c3": false
+}

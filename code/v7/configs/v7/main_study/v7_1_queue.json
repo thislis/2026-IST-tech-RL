@@ -1,0 +1,85 @@
+{
+  "log_dir": "logs/v7/main_study/v7_1_queue",
+  "jobs": [
+    {
+      "config": "configs/v7/main_study/v7_1_mlp_control.yaml",
+      "seed": 11
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_matched_mlp.yaml",
+      "seed": 11
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_rewired.yaml",
+      "seed": 11
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_flywire.yaml",
+      "seed": 11
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_mlp_control.yaml",
+      "seed": 22
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_matched_mlp.yaml",
+      "seed": 22
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_rewired.yaml",
+      "seed": 22
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_flywire.yaml",
+      "seed": 22
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_mlp_control.yaml",
+      "seed": 33
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_matched_mlp.yaml",
+      "seed": 33
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_rewired.yaml",
+      "seed": 33
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_flywire.yaml",
+      "seed": 33
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_mlp_control.yaml",
+      "seed": 44
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_matched_mlp.yaml",
+      "seed": 44
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_rewired.yaml",
+      "seed": 44
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_flywire.yaml",
+      "seed": 44
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_mlp_control.yaml",
+      "seed": 55
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_matched_mlp.yaml",
+      "seed": 55
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_rewired.yaml",
+      "seed": 55
+    },
+    {
+      "config": "configs/v7/main_study/v7_1_flywire.yaml",
+      "seed": 55
+    }
+  ]
+}

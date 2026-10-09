@@ -1,0 +1,1 @@
+../../../scripts/evaluate_rush_vs_scripted.py

@@ -1,0 +1,11 @@
+# Install after requirements.lock using uv pip install --python .venv/bin/python -r requirements-v7.lock
+# v7 data preprocessing and CPU sparse whole-brain propagation.
+pyarrow==19.0.1
+pandas==2.2.3
+scipy==1.13.1
+openpyxl==3.1.5
+et-xmlfile==2.0.0
+python-dateutil==2.9.0.post0
+pytz==2026.3.post1
+six==1.17.0
+tzdata==2026.4

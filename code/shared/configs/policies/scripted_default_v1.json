@@ -1,0 +1,9 @@
+{
+  "policy_id": "scripted-default-v1",
+  "kind": "deterministic-role-fsm",
+  "roles": ["worker", "worker", "worker", "guard", "carrier"],
+  "absorption_strategy": true,
+  "danger_map": true,
+  "special_items": false,
+  "selection_reason": "BASE-S15 paired ablation did not improve win rate or mean score difference"
+}
