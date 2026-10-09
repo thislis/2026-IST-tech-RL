@@ -1,9 +1,9 @@
 # PREP-14 random-vs-random paired-seed 평가
 
 실제 평가 원본은
-[`logs/prep14_random_paired_5seeds.json`](../logs/prep14_random_paired_5seeds.json)이다.
+[`logs/prep14_random_paired_5seeds.json`](../../../logs/pre_v1/prep14_random_paired_5seeds.json)이다.
 PREP-08 evaluator에 물리 A/B side 통계와 attribution audit를 추가했고,
-[`eval/paired_series.py`](../eval/paired_series.py)는 seed pair를 독립 Unity process에서
+[`code/shared/eval/paired_series.py`](../../../code/shared/eval/paired_series.py)는 seed pair를 독립 Unity process에서
 병렬 실행할 수 있게 확장했다.
 
 ## 평가 조건

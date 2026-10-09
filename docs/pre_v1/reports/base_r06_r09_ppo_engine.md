@@ -7,10 +7,10 @@ diagnostics까지 하나의 time-major rollout schema로 연결했다.
 
 | ID | 구현 | 완료 근거 |
 | --- | --- | --- |
-| BASE-R06 | [`ParallelRolloutCollector`](../blackout_rl/rollout.py)가 학습 팀의 canonical observation을 batch하고 stochastic action·log-prob·local value를 계산한 뒤 상대 policy action과 합쳐 parallel step 실행 | agent별 vector, graphic, slot, action index, log-prob, value, reward와 mask shape 검증 |
-| BASE-R07 | [`EpisodicRolloutBuffer`](../blackout_rl/rollout.py)와 `generalized_advantage_estimate()` | 여러 episode를 한 rollout에 저장하고 termination/truncation 및 episode-start 경계를 보존 |
-| BASE-R08 | [`ppo_update()`](../blackout_rl/ppo.py)의 clipped policy objective, clipped value loss, entropy bonus, minibatch epoch, gradient clipping | 실제 backward/optimizer step 후 parameter 변화와 finite loss 검증 |
-| BASE-R09 | `PPODiagnostics`와 [`PPODiagnosticLogger`](../blackout_rl/ppo.py) | KL, clip fraction, entropy, explained variance, gradient norm을 strict JSONL로 round-trip 검증 |
+| BASE-R06 | [`ParallelRolloutCollector`](../../../code/shared/blackout_rl/rollout.py)가 학습 팀의 canonical observation을 batch하고 stochastic action·log-prob·local value를 계산한 뒤 상대 policy action과 합쳐 parallel step 실행 | agent별 vector, graphic, slot, action index, log-prob, value, reward와 mask shape 검증 |
+| BASE-R07 | [`EpisodicRolloutBuffer`](../../../code/shared/blackout_rl/rollout.py)와 `generalized_advantage_estimate()` | 여러 episode를 한 rollout에 저장하고 termination/truncation 및 episode-start 경계를 보존 |
+| BASE-R08 | [`ppo_update()`](../../../code/shared/blackout_rl/ppo.py)의 clipped policy objective, clipped value loss, entropy bonus, minibatch epoch, gradient clipping | 실제 backward/optimizer step 후 parameter 변화와 finite loss 검증 |
+| BASE-R09 | `PPODiagnostics`와 [`PPODiagnosticLogger`](../../../code/shared/blackout_rl/ppo.py) | KL, clip fraction, entropy, explained variance, gradient norm을 strict JSONL로 round-trip 검증 |
 
 ## Rollout tensor 계약
 
@@ -76,8 +76,10 @@ PettingZoo parallel environment를 사용한다. 실제 observation parser와 IP
 - clipped PPO update, parameter 변화, gradient clipping 및 전체 diagnostics
 - diagnostics strict JSONL round-trip
 
+테스트 수와 결과는 당시 기록이다. 아래 현재 경로의 discovery 명령은 공통 테스트만 수집하며, 전체 버전 검사는 [루트 README](../../../README.md)의 순회 명령을 사용한다.
+
 ```text
-python -m unittest discover -s tests -v
+.venv/bin/python code/run.py -m unittest discover -s code/shared/tests -v
 Ran 89 tests
 OK
 ```

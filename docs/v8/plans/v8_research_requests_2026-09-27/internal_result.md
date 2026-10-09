@@ -27,15 +27,15 @@
 | minimal_repros | [실행 코드](../../../../code/v8/research/v8_research_requests_2026-09-27/internal_analysis/minimal_repros.py), [결과](../../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/minimal_repros.json), [stdout](../../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/minimal_repros_output.txt), [회귀 테스트 원문](../../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/regression_tests.txt) |
 | v8_decision_inputs | 마지막 D01–D08 결정표와 [JSON](../../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/v8_decision_inputs.json), 진단 후보 3개, 외부 확인 요청·계측·완료 조건 |
 
-프로젝트 루트에서 아래 명령으로 재집계할 수 있다. 첫 세 명령은 로컬 원본을 읽고 `internal_analysis/`의 분석 산출물만 갱신한다. 최소 재현의 SGD는 합성 모델에 대한 메모리 내 1회 update이며 학습 checkpoint를 쓰지 않는다.
+다음은 현재 위치로 옮겨 쓴 과거 재집계 절차다. **현재 분석 스크립트의 `OUT`은 여전히 스크립트가 있는 디렉터리를 가리키며, `verify_delivery.py`의 `REPORT`도 이전 배치를 전제로 한다. 실행 전에 입력·출력·문서 경로를 아래 분리된 위치로 연결해야 하므로 이 명령들을 곧바로 재실행하지 않는다.** 아래 discovery 명령은 현재 공통 테스트만 실행하며, 전체 버전 검사는 [루트 README](../../../../README.md)의 순회 명령을 따른다. 과거 테스트 수치는 당시 실행 기록이다. 분석 코드는 `code/v8/research/v8_research_requests_2026-09-27/internal_analysis/`, 생성 데이터는 `logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/`, 문서 색인은 이 문서 옆 `internal_analysis/run_inventory.md`에 있다. 경로를 연결한 뒤에는 첫 세 명령이 로컬 원본을 읽고 분석 산출물을 갱신한다. 최소 재현의 SGD는 합성 모델에 대한 메모리 내 1회 update이며 학습 checkpoint를 쓰지 않는다.
 
 ```bash
-.venv/bin/python v8_research_requests_2026-09-27/internal_analysis/analyze.py
-.venv/bin/python v8_research_requests_2026-09-27/internal_analysis/supplement.py
-.venv/bin/python v8_research_requests_2026-09-27/internal_analysis/finalize_analysis.py
-.venv/bin/python v8_research_requests_2026-09-27/internal_analysis/minimal_repros.py
-.venv/bin/python code/run.py -m unittest discover -s tests -v
-.venv/bin/python v8_research_requests_2026-09-27/internal_analysis/verify_delivery.py
+.venv/bin/python code/v8/research/v8_research_requests_2026-09-27/internal_analysis/analyze.py
+.venv/bin/python code/v8/research/v8_research_requests_2026-09-27/internal_analysis/supplement.py
+.venv/bin/python code/v8/research/v8_research_requests_2026-09-27/internal_analysis/finalize_analysis.py
+.venv/bin/python code/v8/research/v8_research_requests_2026-09-27/internal_analysis/minimal_repros.py
+.venv/bin/python code/run.py -m unittest discover -s code/shared/tests -v
+.venv/bin/python code/v8/research/v8_research_requests_2026-09-27/internal_analysis/verify_delivery.py
 ```
 
 입력 hash: [주 분석](../../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/input_hashes.json), [추가 분석](../../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/supplement_input_hashes.json), [통계·소스·원자료](../../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/finalize_input_hashes.json). 실행 환경: Python **3.10.12**, NumPy **1.23.5**, PyTorch **2.13.0**. [실행 metadata](../../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/audit_execution.json)에 명령·branch·HEAD가 있다. hash는 SHA256이며 표시용 축약값의 전체 값은 JSON에 보존했다.
@@ -54,7 +54,7 @@
 
 요청서의 `main@e6e98a63e9f401f6bf03e463a720c03878d1beb7` object는 현재 저장소에 없다. 따라서 그 snapshot과의 정확한 commit diff는 확인하지 못했다. 대신 **23개 checkpoint의 기록된 source fingerprint와 현재 해당 파일의 hash가 모두 일치**하는 것을 확인했다. 소스 hash 일치는 실행 산출물과 현재 분석 코드의 연결 증거이며, Unity 바이너리가 인접 소스에서 빌드되었다는 독립 증명은 아니다.
 
-조사 시작 시 미커밋 변경은 사용자의 `.gitignore` 한 파일이었다. 이번 요청 디렉터리를 ignore하는 변경이며 그대로 보존했다. 기존 `issues/1st_issues_v0-v7.md`는 수정하지 않았다. 예전 README의 중단 시점 설명과 현재 완료된 manager 상태는 다르므로, 상태 판정에는 문서보다 실제 manager/result/checkpoint를 우선했다.
+조사 시작 시 미커밋 변경은 사용자의 `.gitignore` 한 파일이었다. 이번 요청 디렉터리를 ignore하는 변경이며 그대로 보존했다. 기존 `docs/issues/1st_issues_v0-v7.md`는 수정하지 않았다. 예전 README의 중단 시점 설명과 현재 완료된 manager 상태는 다르므로, 상태 판정에는 문서보다 실제 manager/result/checkpoint를 우선했다.
 
 ### 확보 범위와 일치 검사
 

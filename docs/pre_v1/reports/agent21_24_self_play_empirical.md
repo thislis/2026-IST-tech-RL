@@ -56,5 +56,5 @@ self-play has been audited after saturation, but population/PSRO expansion is
 not justified by this evidence.
 
 Full evidence, raw episodes, checkpoint hashes, and decisions are in
-[`logs/phase3_agent21_24_self_play.json`](../logs/phase3_agent21_24_self_play.json).
+[`logs/phase3_agent21_24_self_play.json`](../../../logs/pre_v1/phase3_agent21_24_self_play.json).
 

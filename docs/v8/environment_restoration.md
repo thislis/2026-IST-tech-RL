@@ -1,5 +1,7 @@
 # 제공 게임·환경 복구 — 2026-09-29
 
+> 현재 위치 안내(2026-10-09): 아래 실행·검증 결과는 당시 기록이다. 재배치 후 경로와 기존 v8 등록의 실행 제약은 [현재 상태 조회 안내](competition.md#실행)를 따른다.
+
 후속 상태: [제출 계약에 맞는 별도 학습·평가 경로](competition.md)를 구현했다.
 아래 실행 불가 표시는 원복 직후의 과거 상태이며, Unity 패치 철회는 계속 유지된다.
 
@@ -10,14 +12,14 @@
 
 - 게임 소스: `../blackout`, commit `d2220a7d01be88d413f551efd529f4758833be8b`.
 - 제공 API 소스: `../blackout-env`, commit `6ba7d9993cf1bdefe1ed480c8efbcabcb923f539`.
-- 사용 가능한 게임: 원래 `artifacts/builds/BlackOut.app`. 실행 파일 SHA-256은 `versions.md`에 기록된
+- 사용 가능한 게임: 원래 `artifacts/builds/BlackOut.app`. 실행 파일 SHA-256은 `docs/common/versions.md`에 기록된
   `49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69`와 일치한다.
 - 두 제공 저장소는 모두 clean이며, 설치된 `blackout_env`의 소스 파일 13개는 제공 저장소와 일치한다.
 - 제공 `BlackOutEnv` 자체를 반환하는 진입점만 남겼다. reset/step, obs·reward·info 반환값을
   가공하거나 cache를 지우거나 숨겨진 step을 삽입하지 않는다. UnityEnvironment 교체,
   별도 side-channel, 전송 구현 monkey patch도 사용하지 않는다.
 - 수정된 `BlackOut-v8*.app` 4개, Unity 복사 프로젝트, C# 패치, 진단 실행물 및 수정 환경의
-  연구 export는 `build/retired_v8_environment_2026-09-29/`로 옮겼다. 활성 `builds/`에는 원본 게임만 남는다.
+  연구 export는 `artifacts/build/retired_v8_environment_2026-09-29/`로 옮겼다. 활성 `artifacts/builds/`에는 원본 게임만 남는다.
 - 빌드 패치·timer fixture·native overlay 설치·점수 주입·연구 worker 시작 경로를 비활성화했다.
   `prepare_v8_unity.py`를 실행해도 연구용 패치를 다시 생성하지 않는다.
 

@@ -1,7 +1,7 @@
 # PREP-11 처리량 benchmark
 
-측정 원본은 [`logs/prep11_benchmark.json`](../logs/prep11_benchmark.json), 재실행 코드는
-[`scripts/benchmark_env.py`](../scripts/benchmark_env.py)이다. 측정한 executable SHA-256은
+측정 원본은 [`logs/prep11_benchmark.json`](../../../logs/pre_v1/prep11_benchmark.json), 재실행 코드는
+[`code/shared/scripts/benchmark_env.py`](../../../code/shared/scripts/benchmark_env.py)이다. 측정한 executable SHA-256은
 PREP-01의 `49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69`와 일치한다.
 
 ## 조건

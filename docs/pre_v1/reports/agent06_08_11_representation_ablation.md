@@ -10,7 +10,7 @@ auxiliary loss 네 종류를 비교했다. 실험은 완료했지만 어느 후�
 - AGENT-08: `global_local_v1` 구현과 held-out 비교 완료, 승격하지 않음
 - AGENT-11: 네 auxiliary target을 각각 독립 평가, 선택 결과는 빈 집합
 
-전체 결과는 [`phase3_representation_ablation.json`](../logs/phase3_representation_ablation.json),
+전체 결과는 [`phase3_representation_ablation.json`](../../../logs/pre_v1/phase3_representation_ablation.json),
 arm별 학습 및 episode 증거는 `logs/phase3_repr_*.json`과
 `logs/phase3_repr_*_dev.json`에 저장했다.
 

@@ -1,7 +1,7 @@
 # PREP-12 첫 actor/critic 인터페이스
 
-구현은 [`blackout_rl/model_contract.py`](../blackout_rl/model_contract.py), checkpoint 명세는
-[`schemas/checkpoint_v1.schema.json`](../schemas/checkpoint_v1.schema.json)에 고정했다.
+구현은 [`code/shared/blackout_rl/model_contract.py`](../../../code/shared/blackout_rl/model_contract.py), checkpoint 명세는
+[`code/shared/schemas/checkpoint_v1.schema.json`](../../../code/shared/schemas/checkpoint_v1.schema.json)에 고정했다.
 
 ## Tensor 계약
 

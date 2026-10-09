@@ -4,7 +4,7 @@
 
 | 경로 | 내용 | Git 공유 |
 |---|---|---|
-| `code/v1/` ~ `code/v9/` | 버전별 구현·스크립트·설정·테스트 | 예 |
+| `code/v2/` ~ `code/v9/` | 버전별 구현·스크립트·설정·테스트 | 예 |
 | `code/shared/` | 여러 버전이 사용하는 Python 모듈·도구·의존성 목록 | 예 |
 | `code/pre_v1/` | 초기 구현·실험 코드 | 예 |
 | `docs/` | 버전별 계획·분석·직접 작성한 보고서 | 예 |
@@ -12,6 +12,8 @@
 | `logs/<버전>/` | 실행 로그·자동 생성 보고서·실험 등록 기록 | 아니요 |
 | `artifacts/` | 가중치·데이터·원본 게임 빌드·제출 산출물·과거 소스 보관본 | 아니요 |
 | `.venv/`, `.unity/` | 로컬 실행 환경 | 아니요 |
+
+v1 당시 구현은 후속 구현으로 발전했으며, 현재 별도 `code/v1/` 디렉터리는 없습니다. 공통 구현은 `code/shared/`에서 확인합니다. 이슈 문서는 `docs/issues/`, 초기 보고서는 `docs/pre_v1/reports/`에 있습니다.
 
 [실험 이력](docs/common/history.md) · [v9 안내](docs/v9/README.md) · [v9 계획](docs/v9/plans/v9_plan.md) · [제출 규격](docs/common/blackout_last_4_pages.md) · [재배치 안내](docs/common/project_layout.md)
 
@@ -32,8 +34,16 @@ bash code/v9/run_v9_fast.sh --name attention_relocated_v1
 # v6와 v7-1 모델 관전 (게임 창 표시)
 bash code/shared/watch_best_models.sh
 
-# 버전별 패키지 경로를 설정한 뒤 회귀 테스트 실행
+# v9 회귀 테스트: 버전별 패키지 경로를 자동 설정
 .venv/bin/python code/run.py -m unittest tests.v9.test_v9
+```
+
+전체 버전의 테스트는 프로젝트 루트에서 아래처럼 각 테스트 디렉터리를 순회합니다. `discover -s code/shared/tests`만 실행하면 공통 테스트만 수집됩니다.
+
+```bash
+for test_dir in code/*/tests; do
+  .venv/bin/python code/run.py -m unittest discover -s "$test_dir" -v || break
+done
 ```
 
 실행기는 필요한 Python 검색 경로를 자동으로 설정합니다. `python -m ...`을 직접 실행할 때는 `code/run.py -m ...`을 사용합니다. 개별 `code/<버전>/scripts/*.py`도 직접 실행할 수 있습니다.

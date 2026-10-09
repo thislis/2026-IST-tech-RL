@@ -447,7 +447,7 @@ greedy 행동 편중을 분석하는 데서 시작해야 한다. 게임·obs 생
 ### v8 문제를 해결하기 위한 구현
 
 - v1~v8 로그·코드 감사와 관련 연구를 바탕으로 `docs/v9/plans/v9_plan.md`를 작성하고,
-  새 구현을 `blackout_v9/`에 분리했다. 원본 Unity·제공 API·obs 생성 및 전처리와
+  새 구현을 `code/v9/blackout_v9/`에 분리했다. 원본 Unity·제공 API·obs 생성 및 전처리와
   v1~v8 코드는 유지한다. 게임 내부의 타이머 문제를 수정하지 않고 경기마다 원본
   환경을 새로 실행하며, 정상 종료되지 않은 경기는 학습에 반영하지 않는다.
 - CNN과 고정 encoder를 소형 Attention으로 교체했다. 96×96×11 graphic 전체를
@@ -596,10 +596,10 @@ v9 역시 두 파일 제출 검증과 최종 test를 완료했지만 미학습 �
 | v7-1 | `code/v7/blackout_rl/v7_1`, `code/v7/blackout_rl/v7_training.py`, `code/v7/configs/main_study/v7_1_*.yaml`, `docs/v7/reports/main_study_preregistration.md` | `logs/v7/v7_1_*_main_2m_v1/<seed>/`의 `status.json`, `training.jsonl`, `eval_dev_target_*.json`; 집계: `logs/v7/main_study/accelerated/summary.json` |
 | v7-2 | `code/v7/blackout_rl/v7_2`, `code/v7/configs/main_study/v7_2_readout_ppo.yaml`, `docs/v7/reports/teammate_v2_recovery.md` | `logs/v7/v7_2_*_teammate_v2_main_2m_v1/<seed>/`의 `status.json`, `training.jsonl`, `eval_dev_target_*.json`; 개입 검증: `logs/v7/reports/unity_causality_teammate_v2.json` |
 | v7 공통 실행 | `code/v7/scripts/connectome_main.py`, `code/v7/scripts/accelerated_connectome.py`, `code/v7/scripts/evaluate_v7.py`, `docs/v7/reports/acceleration_and_resume.md` | `logs/v7/main_study/accelerated/status.json`, `summary.json`; 등록·재개 근거: `logs/v7/reports/main_study_registration.json`, `acceleration_registration.json`, `acceleration_resume_points.json` |
-| v8 초기 연구 경로(철회) | `code/v8/blackout_rl/v8`, `docs/v8/environment_restoration.md` | `logs/v8/accelerated_pilot_v1/summary.json`, `logs/v8/reports/environment_restoration`, `build/retired_v8_environment_2026-09-29/` |
+| v8 초기 연구 경로(철회) | `code/v8/blackout_rl/v8`, `docs/v8/environment_restoration.md` | `logs/v8/accelerated_pilot_v1/summary.json`, `logs/v8/reports/environment_restoration`, `artifacts/build/retired_v8_environment_2026-09-29/` |
 | v8 원본 환경·제출 | `code/v8/blackout_rl/v8/competition`, `code/v8/configs/competition/study.json`, `code/v8/contracts/submission_contract.json`, `docs/v8/competition.md` | `logs/v8/provided_competition_v1/{status,summary,submission_verification}.json`, `logs/v8/reports/competition/registration.json`, `logs/v8/reports/background_window_fix` |
-| v9 Attention·원본 환경·제출 | `blackout_v9/`, `code/v9/configs/default.json`, `code/v9/contracts/original.json`, `docs/v9/plans/v9_plan.md`, `docs/v9.md`, `code/v9/run_v9_fast.sh` | `logs/v9/attention_original_v1/{status,summary,registration,selection}.json` 및 `runs/`, `confirmation/`, `frozen_test/`, `frozen_baseline_test/`; 구현 검증: `code/v9/tests/v9/test_v9.py`, `logs/v9/reports/implementation_validation.json` |
-| v6·v7 관전 | `code/shared/watch_best_models.sh`, `tools/watch_best_models.py` | v6 latest(1,159,168 step), v7-1 A3 seed 11 평가 당시 불변 checkpoint(2,000,000 step); `--check`로 실행 전 검사 |
+| v9 Attention·원본 환경·제출 | `code/v9/blackout_v9/`, `code/v9/configs/default.json`, `code/v9/contracts/original.json`, `docs/v9/plans/v9_plan.md`, `docs/v9.md`, `code/v9/run_v9_fast.sh` | `logs/v9/attention_original_v1/{status,summary,registration,selection}.json` 및 `runs/`, `confirmation/`, `frozen_test/`, `frozen_baseline_test/`; 구현 검증: `code/v9/tests/v9/test_v9.py`, `logs/v9/reports/implementation_validation.json` |
+| v6·v7 관전 | `code/shared/watch_best_models.sh`, `code/shared/tools/watch_best_models.py` | v6 latest(1,159,168 step), v7-1 A3 seed 11 평가 당시 불변 checkpoint(2,000,000 step); `--check`로 실행 전 검사 |
 
 ## 선정 모델 관전과 로컬 산출물
 
@@ -616,7 +616,7 @@ Ctrl+C로 종료하며 학습이나 가중치 변경은 하지 않는다. `--che
 검사하고 창을 열지 않으며, `--games 1 --speed 2`처럼 경기 수·배속을 지정할 수 있다.
 제공 API를 그대로 사용하므로 과거 seed 보정 환경의 평가를 재현한 공식 성적이 아니다.
 
-`logs/`, `reports/`, `submission/`, checkpoint·빌드·대용량 데이터는 로컬에 보존하고
+`logs/`(자동 생성 보고서 포함), `artifacts/submission/`, checkpoint·빌드·대용량 데이터는 로컬에 보존하고
 Git에서는 제외한다. 이 문서의 해당 근거 링크와 관전 실행에 필요한 모델·그래프·Unity
 빌드는 현재 작업 공간에 있으며 새 clone에는 자동 포함되지 않는다. 재사용할 Phase 3
 정책 소스는 `templates/phase3_submission/`에 분리했다.

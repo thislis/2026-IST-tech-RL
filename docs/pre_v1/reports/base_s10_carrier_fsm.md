@@ -1,6 +1,6 @@
 # BASE-S10 전달자 FSM
 
-구현은 [`blackout_rl/scripted_fsm.py`](../blackout_rl/scripted_fsm.py)의 `CarrierPhase`에 있다.
+구현은 [`code/shared/blackout_rl/scripted_fsm.py`](../../../code/shared/blackout_rl/scripted_fsm.py)의 `CarrierPhase`에 있다.
 
 ## 상태 전환
 
@@ -23,5 +23,5 @@ SEEK_SHRINE → TRANSFORM → SEEK_FAR_BATTERY → PICKUP → DELIVER → RETARG
 Carrier로 유지됐다. NoOp 상대가 접근하지 않는 실환경 검증과 별개로 회피 상태 및 안전
 목표 선택은 적 인접 위치를 주입한 단위 테스트로 검증했다.
 
-- 실행 결과: [`logs/base_s08_s10_role_fsm.json`](../logs/base_s08_s10_role_fsm.json)
-- trajectory: [`logs/base_s08_s10_role_fsm_trajectory.jsonl`](../logs/base_s08_s10_role_fsm_trajectory.jsonl)
+- 실행 결과: [`logs/base_s08_s10_role_fsm.json`](../../../logs/pre_v1/base_s08_s10_role_fsm.json)
+- trajectory: [`logs/base_s08_s10_role_fsm_trajectory.jsonl`](../../../logs/pre_v1/base_s08_s10_role_fsm_trajectory.jsonl)

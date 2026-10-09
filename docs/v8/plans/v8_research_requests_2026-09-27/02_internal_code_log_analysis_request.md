@@ -20,7 +20,7 @@
 
 연결: F30–F31, F33 / 외부 E07
 
-찾을 자료: `history.md`, `issues/1st_issues_v0-v7.md`, `versions.md`, requirements lock, code/v7/configs/main_study, logs/v7/reports*registration*, logs, checkpoints, Unity build와 인접 upstream 소스.
+찾을 자료: `docs/common/history.md`, `docs/issues/1st_issues_v0-v7.md`, `docs/common/versions.md`, requirements lock, code/v7/configs/main_study, logs/v7/reports*registration*, logs, checkpoints, Unity build와 인접 upstream 소스.
 
 특히 확보할 것은 v6의 run_summary/training/training_episodes/target_eval/confirmation/rollback 기록, v7의 `logs/v7/main_study/accelerated/summary.json`이 가리키는 23개 result와 각 run의 training/episodes/diagnostics/resolved_config/experiment_manifest/status/runtime/lineage, 초기·중간·최종 checkpoint, graph NPZ+JSON·source manifest, frozen opponent/encoder checkpoint입니다. 중간 checkpoint가 없으면 없다고 적어주세요.
 

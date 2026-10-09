@@ -21,18 +21,18 @@
 
 | 범위 | 이번에 실제 수행한 확인 |
 |---|---|
-| `logs/`, `reports/` | 3,984개 파일, 68,428,610,345 bytes(약 63.7 GiB)를 목록화 |
+| `logs/`(버전별 `reports/` 포함) | 3,984개 파일, 68,428,610,345 bytes(약 63.7 GiB)를 목록화 |
 | JSON | 2,292개 파싱, 파싱 오류 0개 |
 | JSONL | 381개, 19,230,152개 행 전체를 순차 스캔. 349개 파일은 모든 행 파싱; 대용량 보관 로그 32개는 4,096행 간격 및 마지막 행을 파싱. 파싱한 행 총 6,446,598개에서 오류 0개 |
 | 최종 v8 학습 | 6개 run의 `exposure.jsonl` **6,291,456행 전부** 재집계. `training.jsonl` 3,072개 update, 종료 기록, 제출 검증 자료 대조 |
 | v7 본실험 | 최종 manager가 참조하는 23개 run의 **1,380경기** 재집계. progress 중복 파일은 경기 수에 추가하지 않음 |
 | v8 두 계열 | 원본 환경 `provided_competition_v1`과 철회된 수정 환경 `accelerated_pilot_v1`의 평가 schema를 구분하여 각각 집계 |
-| 코드·설정 | `blackout_rl/`, `scripts/`, `tools/`, `eval/`, `tests/`, `configs/`의 코드·설정 275개를 내용/해시/관련 기능으로 색인. 정책·collector·보상·GAE·평가기·제출·실행기 핵심 경로를 직접 검토 |
+| 코드·설정 | 현재 `code/shared/`와 `code/v2/` ~ `code/v9/`에 나뉘어 있는 코드·설정 275개를 내용/해시/관련 기능으로 색인. 정책·collector·보상·GAE·평가기·제출·실행기 핵심 경로를 직접 검토 |
 | 원본 소스 | `../blackout`과 `../blackout-env`의 종료·보상·전투·이동·관측·loader·runner 확인. 두 저장소 모두 기존 commit, clean 상태 확인 |
 | 기록된 관측 | v8 `policy_inputs.pt` 6개에 저장된 48개 배치를 로드해 팀 내 관측 동일성 확인 |
 | 하드웨어 | 현재 CPU·RAM·PyTorch·실제 MPS 가용성·디스크 여유를 읽기 전용 확인 |
 
-세부 집계는 [감사 자료](../reports/v9/local_audit_2026-10-04.json)에 저장했다. 이 파일은 기존 `reports/` 정책대로 Git 추적 대상이 아니다. **대용량 보관 로그 모든 행의 의미나 모든 checkpoint tensor를 수작업으로 검증했다는 뜻은 아니다.** 기존의 전뇌·그래프 가중치 감사는 [내부 분석 결과](v8_research_requests_2026-09-27/internal_result.md) 및 동봉 JSON을 재확인했다. 텍스트의 `NaN`, `watchdog` 출현에는 테스트 이름·설명도 포함되므로 출현 횟수를 실제 장애 건수로 해석하지 않았다.
+세부 집계는 [감사 자료](../../../logs/v9/reports/local_audit_2026-10-04.json)에 저장했다. 이 파일은 현재 `logs/` 제외 정책에 따라 Git 추적 대상이 아니다. **대용량 보관 로그 모든 행의 의미나 모든 checkpoint tensor를 수작업으로 검증했다는 뜻은 아니다.** 기존의 전뇌·그래프 가중치 감사는 [내부 분석 결과](../../v8/plans/v8_research_requests_2026-09-27/internal_result.md) 및 동봉 JSON을 재확인했다. 텍스트의 `NaN`, `watchdog` 출현에는 테스트 이름·설명도 포함되므로 출현 횟수를 실제 장애 건수로 해석하지 않았다.
 
 ### 2.2 증거 분류
 
@@ -47,17 +47,17 @@
 
 | 버전 | 확인된 결과 | 문제와 v9에서의 대응 |
 |---|---|---|
-| **v1** | 2,000,384 env step, 학습 중 완료 경기 0개, 최종 target 0/10 | rollout 경계마다 reset하여 terminal 신호를 학습하지 못했다. 새 collector는 rollout과 episode 생명주기를 분리하고 자연 종료 수를 필수 지표로 둔다. [로그](../logs/mappo_vs_win70/run_summary.json), [이력](../history.md) |
-| **v2** | 2,000,896 step, 학습 1,643경기 전패, target 0/10 | 수집은 정상화했으나 강한 상대 checkpoint의 성능은 neural actor만이 아니라 planner override에서 나왔다. 동일 checkpoint를 불러도 실행 정책이 같지 않았다. v9는 모델 hash뿐 아니라 실제 action 경로·decoder·상대 구현 hash를 고정한다. [로그](../logs/mappo_vs_win70_v2/run_summary.json), [정책](../blackout_rl/policy.py) |
-| **v3** | 3,000,320 step, target 0/10, 마지막 관측 기반 점수차 −94.1 | BC/DAgger의 단일 step 정확도가 closed-loop 성능을 보장하지 않았다. replay guard label의 NoOp가 93~95%였고 이동 label 정확도는 매우 낮았다. 실패한 curriculum을 강제 승격한 것도 문제였다. v9는 행동·역할별 label 분포, 성공 궤적, 관측 충돌, teacher 없이 수행하는 과제를 검증한다. [로그](../logs/mappo_teacher_curriculum_v3/run_summary.json), [replay 감사](v8_research_requests_2026-09-27/internal_analysis/v3_replay_audit.json) |
-| **v4** | 100,352 step, scripted 8/10·target 5/10, 첫 단계 중단 | KEEP warm-up BC와 꺼진 PPO 때문에 개선 신호가 없었다. v9는 첫 실제 update의 actor gradient·parameter delta·행동 변화를 함께 검사한다. [로그](../logs/mappo_planner_residual_v4/run_summary.json) |
-| **v5** | 317,440 step, target 5/10, rollback 1회 | PPO override 평균 0.184%로 사실상 planner를 유지했다. 선택되지 않는 residual을 더 오래 학습하는 구조를 반복하지 않는다. [로그](../logs/mappo_planner_residual_v5/run_summary.json), [curriculum](../blackout_rl/mappo_curriculum_v5.py) |
-| **v6** | 1,159,168 step, target 5/10, rollback 2회, best step=0 | 41-way 팀 residual은 한 번에 한 유닛의 한 frame만 수정한다. 탐색 증가가 성능 증가로 이어지지 않았다. 여러 유닛의 지속적 전투·방어·약탈 역할 전환에 제약이 있다. v9는 5개 행동을 모두 학습 가능한 정책과 원래 행동의 실제 효과를 계측한다. [로그](../logs/mappo_planner_residual_v6/run_summary.json), [행동 적용](../blackout_rl/mappo_v6.py) |
-| **v7-1 A0/A1** | 각 5 seeds×2M; target 46/300, 65/300 | 학습 중 개입이 많아도 planner를 망가뜨릴 수 있다. 학습량·네트워크 용량만으로 개선을 판단할 수 없다. 중간 평가·가중치 부족으로 회귀 시점을 좁히기 어렵다. [manager](../logs/v7/main_study/accelerated/summary.json) |
-| **v7-1 A2/A3** | 각 150/300. 10개 run의 60조건 경기 배열 동일 | 이전 수치 감사에서 최종 correction logit 상한이 전부 KEEP보다 낮았다. 배선·가중치는 달라도 greedy 실행에서 실제 개입이 0이었다. FlyWire 구조의 성능 이득을 입증하지 못했다. v9는 학습 분포와 제출 행동의 일치가 선행 조건이다. [상한·가중치 감사](v8_research_requests_2026-09-27/internal_analysis/behavior_audit.json) |
-| **v7-2 F1** | 3 seeds×2M, 32/180; 한 유닛만 직접 제어 | 감각→전뇌→readout의 계산은 실행됐지만 작은 동일 조건 대조군이 없었다. 평균 entropy 약 2.19≈log(9), KL 약 1.8×10⁻⁸로 변화가 매우 작았고 일부 seed는 argmax가 편중됐다. 4 scripted teammate와 전뇌 비용도 분리 평가해야 한다. [훈련 감사](v8_research_requests_2026-09-27/internal_analysis/training_summary.json) |
-| **v8 철회 계열** | 수정 환경 6×1,048,576 step. 최종 C1 26/180, flat 25/180, planner 30/60 | 사용자 요구와 다른 게임/환경 수정 경로가 포함되어 최종 경로에서 철회됐다. 이 수치·추가 엔진 outcome을 원본 환경 성능·관측으로 재사용하지 않는다. [별도 summary](../logs/v8/accelerated_pilot_v1/summary.json) |
-| **v8 현재 제출 계열** | 원본 환경 6×1,048,576 step; 중간·최종·planner 합계 780경기 전패 | 제출 shape는 맞췄지만 자기 ID 없는 행별 정책, 평균 slot embedding·아군 centroid crop으로 바꾼 frozen encoder, full planner 제거, raw reward 평균 학습이 결합됐다. 초기 관측도 반복됐다. 제출 호환성과 실력은 별개다. [summary](../logs/v8/provided_competition_v1/summary.json), [실제 정책](../blackout_rl/v8/competition/policy.py) |
+| **v1** | 2,000,384 env step, 학습 중 완료 경기 0개, 최종 target 0/10 | rollout 경계마다 reset하여 terminal 신호를 학습하지 못했다. 새 collector는 rollout과 episode 생명주기를 분리하고 자연 종료 수를 필수 지표로 둔다. [로그](../../../logs/v1/mappo_vs_win70/run_summary.json), [이력](../../common/history.md) |
+| **v2** | 2,000,896 step, 학습 1,643경기 전패, target 0/10 | 수집은 정상화했으나 강한 상대 checkpoint의 성능은 neural actor만이 아니라 planner override에서 나왔다. 동일 checkpoint를 불러도 실행 정책이 같지 않았다. v9는 모델 hash뿐 아니라 실제 action 경로·decoder·상대 구현 hash를 고정한다. [로그](../../../logs/v2/mappo_vs_win70_v2/run_summary.json), [정책](../../../code/shared/blackout_rl/policy.py) |
+| **v3** | 3,000,320 step, target 0/10, 마지막 관측 기반 점수차 −94.1 | BC/DAgger의 단일 step 정확도가 closed-loop 성능을 보장하지 않았다. replay guard label의 NoOp가 93~95%였고 이동 label 정확도는 매우 낮았다. 실패한 curriculum을 강제 승격한 것도 문제였다. v9는 행동·역할별 label 분포, 성공 궤적, 관측 충돌, teacher 없이 수행하는 과제를 검증한다. [로그](../../../logs/v3/mappo_teacher_curriculum_v3/run_summary.json), [replay 감사](../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/v3_replay_audit.json) |
+| **v4** | 100,352 step, scripted 8/10·target 5/10, 첫 단계 중단 | KEEP warm-up BC와 꺼진 PPO 때문에 개선 신호가 없었다. v9는 첫 실제 update의 actor gradient·parameter delta·행동 변화를 함께 검사한다. [로그](../../../logs/v4/mappo_planner_residual_v4/run_summary.json) |
+| **v5** | 317,440 step, target 5/10, rollback 1회 | PPO override 평균 0.184%로 사실상 planner를 유지했다. 선택되지 않는 residual을 더 오래 학습하는 구조를 반복하지 않는다. [로그](../../../logs/v5/mappo_planner_residual_v5/run_summary.json), [curriculum](../../../code/v5/blackout_rl/mappo_curriculum_v5.py) |
+| **v6** | 1,159,168 step, target 5/10, rollback 2회, best step=0 | 41-way 팀 residual은 한 번에 한 유닛의 한 frame만 수정한다. 탐색 증가가 성능 증가로 이어지지 않았다. 여러 유닛의 지속적 전투·방어·약탈 역할 전환에 제약이 있다. v9는 5개 행동을 모두 학습 가능한 정책과 원래 행동의 실제 효과를 계측한다. [로그](../../../logs/v6/mappo_planner_residual_v6/run_summary.json), [행동 적용](../../../code/v6/blackout_rl/mappo_v6.py) |
+| **v7-1 A0/A1** | 각 5 seeds×2M; target 46/300, 65/300 | 학습 중 개입이 많아도 planner를 망가뜨릴 수 있다. 학습량·네트워크 용량만으로 개선을 판단할 수 없다. 중간 평가·가중치 부족으로 회귀 시점을 좁히기 어렵다. [manager](../../../logs/v7/main_study/accelerated/summary.json) |
+| **v7-1 A2/A3** | 각 150/300. 10개 run의 60조건 경기 배열 동일 | 이전 수치 감사에서 최종 correction logit 상한이 전부 KEEP보다 낮았다. 배선·가중치는 달라도 greedy 실행에서 실제 개입이 0이었다. FlyWire 구조의 성능 이득을 입증하지 못했다. v9는 학습 분포와 제출 행동의 일치가 선행 조건이다. [상한·가중치 감사](../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/behavior_audit.json) |
+| **v7-2 F1** | 3 seeds×2M, 32/180; 한 유닛만 직접 제어 | 감각→전뇌→readout의 계산은 실행됐지만 작은 동일 조건 대조군이 없었다. 평균 entropy 약 2.19≈log(9), KL 약 1.8×10⁻⁸로 변화가 매우 작았고 일부 seed는 argmax가 편중됐다. 4 scripted teammate와 전뇌 비용도 분리 평가해야 한다. [훈련 감사](../../../logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/training_summary.json) |
+| **v8 철회 계열** | 수정 환경 6×1,048,576 step. 최종 C1 26/180, flat 25/180, planner 30/60 | 사용자 요구와 다른 게임/환경 수정 경로가 포함되어 최종 경로에서 철회됐다. 이 수치·추가 엔진 outcome을 원본 환경 성능·관측으로 재사용하지 않는다. [별도 summary](../../../logs/v8/accelerated_pilot_v1/summary.json) |
+| **v8 현재 제출 계열** | 원본 환경 6×1,048,576 step; 중간·최종·planner 합계 780경기 전패 | 제출 shape는 맞췄지만 자기 ID 없는 행별 정책, 평균 slot embedding·아군 centroid crop으로 바꾼 frozen encoder, full planner 제거, raw reward 평균 학습이 결합됐다. 초기 관측도 반복됐다. 제출 호환성과 실력은 별개다. [summary](../../../logs/v8/provided_competition_v1/summary.json), [실제 정책](../../../code/v8/blackout_rl/v8/competition/policy.py) |
 
 ### 3.1 이번에 추가로 정량 확인한 v8 문제
 
@@ -103,7 +103,7 @@
 | C19 / P2 | 환경·통신과 모델 비용 혼동 | v7 인코더는 CPU 1.73ms, MPS 3.89ms였음. 통신 변경으로 크게 가속한 이력 | 구성 요소별 p50/p95/p99 및 end-to-end 측정; 원본 API transport 변경은 재도입하지 않음 |
 | C20 / P2 | 운영·배포 결함 | `blackout_rl` import 실패, executable bit 누락, 백그라운드 manager와 Unity GUI의 혼동 | 독립 import 검사, 실행 권한, detached session 및 실제 창 없음 검사 |
 
-관련 기존 문서: [1차 이슈](../issues/1st_issues_v0-v7.md), [내부 원인 분석](v8_research_requests_2026-09-27/internal_result.md), [game spec](../game_spec.md). 과거 문서가 권고한 Unity 수정이나 `ContractBlackOutEnv` 사용은 **현재 사용자의 원본 보존 요구보다 우선하지 않는다**.
+관련 기존 문서: [1차 이슈](../../issues/1st_issues_v0-v7.md), [내부 원인 분석](../../v8/plans/v8_research_requests_2026-09-27/internal_result.md), [game spec](../../common/game_spec.md). 과거 문서가 권고한 Unity 수정이나 `ContractBlackOutEnv` 사용은 **현재 사용자의 원본 보존 요구보다 우선하지 않는다**.
 
 ## 5. 피드백을 현재 게임 규칙에 맞게 해석
 
@@ -119,8 +119,8 @@
 
 ### 5.2 올킬·입구 막기·약탈의 실제 의미
 
-- **올킬:** 현재 [MatchManager](../../blackout/Assets/Project/Runtime/Scripts/MatchManager.cs)는 100점/시간만 종료 조건으로 쓰고 사망 즉시 Collector로 부활시킨다. 따라서 “5명이 동시에 죽어 경기 종료”가 아니라 **짧은 시간 동안 서로 다른 적 5명을 처치/귀환시켜 수집을 방해하는 전술**로 정의한다. 숨은 kill ID가 없으므로 관측 기반 탐지에는 추정 표시를 붙인다.
-- **입구 막기:** [UnitMovementSystem](../../blackout/Assets/Project/Runtime/Scripts/Object/UnitMovementSystem.cs)는 지형 충돌을, [UnitInteractionSystem](../../blackout/Assets/Project/Runtime/Scripts/Object/UnitInteractionSystem.cs)는 유닛 overlap 전투를 처리한다. 유닛을 벽처럼 취급하는 물리적 body blocking은 확인되지 않았다. 목표는 **Hunter 접촉 위협·진로 차단을 통한 통과 억제**다. 아군 Collector를 입구에 세워두기만 하면 물리적으로 막힌다는 전제로 보상하지 않는다.
+- **올킬:** 현재 [MatchManager](../../../../blackout/Assets/Project/Runtime/Scripts/MatchManager.cs)는 100점/시간만 종료 조건으로 쓰고 사망 즉시 Collector로 부활시킨다. 따라서 “5명이 동시에 죽어 경기 종료”가 아니라 **짧은 시간 동안 서로 다른 적 5명을 처치/귀환시켜 수집을 방해하는 전술**로 정의한다. 숨은 kill ID가 없으므로 관측 기반 탐지에는 추정 표시를 붙인다.
+- **입구 막기:** [UnitMovementSystem](../../../../blackout/Assets/Project/Runtime/Scripts/Object/UnitMovementSystem.cs)는 지형 충돌을, [UnitInteractionSystem](../../../../blackout/Assets/Project/Runtime/Scripts/Object/UnitInteractionSystem.cs)는 유닛 overlap 전투를 처리한다. 유닛을 벽처럼 취급하는 물리적 body blocking은 확인되지 않았다. 목표는 **Hunter 접촉 위협·진로 차단을 통한 통과 억제**다. 아군 Collector를 입구에 세워두기만 하면 물리적으로 막힌다는 전제로 보상하지 않는다.
 - **배터리 약탈:** 적 공개 창고의 배터리를 가져오면 원래 팀 점수가 줄고, 자기 창고 적재 시 자기 점수가 오른다. 보호 본진에는 적이 들어갈 수 없다. 20초 흡수는 추가 득점이 아니라 약탈 불가능한 확정이다. stack 수량을 graphic 면적으로 추정하지 않는다.
 - **다양한 전략:** 특정 전술을 모든 경기에서 강제하지 않는다. 점수·남은 시간·운반 상태·적 배치에 따라 수집, 교전, 수비, 약탈, 호위가 승리에 기여하는지를 평가한다.
 
@@ -177,7 +177,7 @@ v9의 속도 개선 근거는 작은 token/latent 수, 팀 공통 입력 재사�
 
 ### 7.2 self-ID 문제는 모델 구조보다 먼저 해결해야 함
 
-[제출 문서](../blackout_last_4_pages.md)의 계약은 다음뿐이다.
+[제출 문서](../../common/blackout_last_4_pages.md)의 계약은 다음뿐이다.
 
 ```python
 class MyPolicy(nn.Module):
@@ -445,7 +445,7 @@ V9-I를 사용할 수 있게 되면 V9-S와 별도 contract ID로 등록하고 �
 | MPS 권고 작업 메모리 | API 반환 40,200,896,512 bytes, 약 37.44 GiB. 전체 RAM과 별도인 독립 VRAM이 아님 |
 | 디스크 여유 | 조사 시 약 144.9 GiB. 학습 시작 때 재측정 |
 
-과거 [v7 가속 보고서](../reports/v7/acceleration_and_resume.md)에는 인코더 B=5 CPU 1.73ms/MPS 3.89ms, 전뇌 CSR CPU 19.10ms/MPS 5.15ms가 기록되어 있다. 따라서 작은 Attention 추론의 MPS 사용은 실측으로 결정한다. 같은 보고서의 12-worker 327.68 step/s는 짧은 수집 benchmark이며 **현재 금지된 API/통신 overlay가 포함되어** v9 기대치로 그대로 쓰지 않는다.
+과거 [v7 가속 보고서](../../v7/reports/acceleration_and_resume.md)에는 인코더 B=5 CPU 1.73ms/MPS 3.89ms, 전뇌 CSR CPU 19.10ms/MPS 5.15ms가 기록되어 있다. 따라서 작은 Attention 추론의 MPS 사용은 실측으로 결정한다. 같은 보고서의 12-worker 327.68 step/s는 짧은 수집 benchmark이며 **현재 금지된 API/통신 overlay가 포함되어** v9 기대치로 그대로 쓰지 않는다.
 
 원본 최종 v8 수집의 6개 run은 각 약 37.3~37.5 step/s였다. 동시 실행이면 단순 합 약 224 step/s이지만, 이것도 모든 실행 구간이 완전히 겹쳤다는 보장이나 v9의 실제 처리량은 아니다. v9는 완전 episode commit·학습 가능한 encoder 때문에 연산 구성이 달라진다.
 
@@ -510,11 +510,13 @@ background supervisor
 
 ### 13.1 실행 방식
 
+현재 진입점은 `code/v9/run_v9_fast.sh`이며 `code/v9/scripts/run_v9_fast.sh`로 연결된다. 재배치 후 학습은 새 실험 이름으로 등록한다. 같은 이름을 상태 조회·중단·재개 명령에도 사용하며, 기존 `attention_original_v1`은 원래 소스 해시와 결과를 유지한다.
+
 새 `code/v9/scripts/run_v9_fast.sh`는 프로젝트 위치를 계산하고 `.venv/bin/python`의 새 v9 entrypoint를 실행한다. 내부 supervisor가 `Popen(start_new_session=True, stdin=DEVNULL, stdout=log, stderr=log)`로 분리된다. shell의 `&`에만 의존하지 않는다. 작업 디렉터리와 package import root는 절대 경로로 고정한다.
 
 원본 binary는 v8에서 검증한 방식과 같은 **exec-only launcher**로 `-batchmode`를 전달하고 `no_graphics=False`를 유지한다. `-nographics`, `-force-gfx-null`은 금지한다. 원본 app bundle·렌더러·게임 C#을 수정하지 않는다. v9 전용 launcher를 사용해 과거 v8 실행물의 hash를 바꾸지 않는다.
 
-Unity 공식 문서는 `-batchmode`와 `-nographics`를 별도 옵션으로 설명한다. 실제 graphic 유지·창 없음은 현재 Mac에서 확인해야 한다. [Unity Player arguments](https://docs.unity3d.com/6000.0/Documentation/Manual/PlayerCommandLineArguments.html), [기존 로컬 검증](../reports/v8/background_window_fix/live_rendered_check.json)
+Unity 공식 문서는 `-batchmode`와 `-nographics`를 별도 옵션으로 설명한다. 실제 graphic 유지·창 없음은 현재 Mac에서 확인해야 한다. [Unity Player arguments](https://docs.unity3d.com/6000.0/Documentation/Manual/PlayerCommandLineArguments.html), [기존 로컬 검증](../../../logs/v8/reports/background_window_fix/live_rendered_check.json)
 
 ### 13.2 운영 기능과 완료 검사
 
@@ -532,14 +534,14 @@ Unity 공식 문서는 `-batchmode`와 `-nographics`를 별도 옵션으로 설�
 구현 완료 후 제공할 명령 형태는 아래와 같다. **현재 문서 작성으로 이 스크립트가 구현·준비됐다는 뜻은 아니다.** 기존 v8 명령은 변경하지 않는다.
 
 ```bash
-bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v9/scripts/run_v9_fast.sh
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v9/run_v9_fast.sh --name attention_relocated_v1
 ```
 
 같은 명령 뒤에 `--check`, `--status`, `--stop`, `--resume`를 붙인다. 학습을 실제 시작할지는 이후 사용자의 실행 요청에 따른다.
 
 ## 14. 두 파일 제출물과 실제 loader 검증
 
-최종 포맷은 [blackout_last_4_pages.md](../blackout_last_4_pages.md)를 따른다.
+최종 포맷은 [blackout_last_4_pages.md](../../common/blackout_last_4_pages.md)를 따른다.
 
 ```text
 artifacts/submission/v9<checkpoint_sha256>/
@@ -576,7 +578,7 @@ loaded = load_checkpoint(
 
 ## 15. 구현 파일·순서·검증 산출물
 
-기존 v8 fingerprint가 `blackout_rl` 소스 범위를 넓게 포함하므로 새 코드는 **별도 top-level `blackout_v9/`**에 둔다. 과거 실험 source를 수정해 resume 검사를 통과시키지 않는다. 재사용이 필요하면 API가 순수한 utility인지 확인하고 hash를 고정한다.
+기존 v8 fingerprint가 `blackout_rl` 소스 범위를 넓게 포함하므로 새 코드는 **별도 패키지 `code/v9/blackout_v9/`**에 둔다. 과거 실험 source를 수정해 resume 검사를 통과시키지 않는다. 재사용이 필요하면 API가 순수한 utility인지 확인하고 hash를 고정한다.
 
 | 순서 | 새 파일/산출물 제안 | 완료 조건 |
 |---|---|---|
@@ -588,7 +590,7 @@ loaded = load_checkpoint(
 | 5 | `code/v9/blackout_v9/evaluation.py`, `statistics.py` | metric provenance, initial hash, 독립 표본/CI, frozen test |
 | 6 | `code/v9/blackout_v9/runtime.py`, `benchmark.py`, `telemetry.py` | 원본 API 무수정, binary buffer, CPU/MPS/worker sweep, end-to-end 보고 |
 | 7 | `code/v9/blackout_v9/runner.py`, `code/v9/scripts/run_v9_fast.sh`, v9 launcher | 실제 detached 실행, 창 없음/graphic 있음, stop/resume/중복 실행 검사 |
-| 8 | `code/shared/tests/v9`, `logs/v9/reports`, `docs/v9.md` | 아래 critical 검증 및 사용자가 실행할 한 줄 명령 안내 |
+| 8 | `code/v9/tests/v9`, `logs/v9/reports`, `docs/v9/README.md` | 아래 critical 검증 및 사용자가 실행할 한 줄 명령 안내 |
 
 필수 회귀 검증:
 

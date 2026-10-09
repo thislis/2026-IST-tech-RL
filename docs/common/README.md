@@ -2,19 +2,17 @@
 
 > 아래는 과거 구현·실험 설명이다. 재배치 후 현재 실행 방법은 [루트 README](../../README.md)와 [디렉터리 안내](project_layout.md)를 따른다. 기존 등록의 소스 해시는 그대로 보존한다.
 
-**현재 상태 (2026-09-30): 원본 환경 v8 실험 완료, 성능 개선 미확인.** 원본 `BlackOut.app`과
+**당시 상태 (2026-09-30): 원본 환경 v8 실험 완료, 성능 개선 미확인.** 원본 `BlackOut.app`과
 제공 API/obs 생성 코드를 유지하며 6개 run, 총 6,291,456 step과 dev 780경기를 완료했습니다.
 제공 로컬 runner 기준 780경기 전패이며 초기 관측 반복도 확인됐습니다. 제출 파일 생성·loader
 검증은 통과했지만 공식 서버 성능 인증은 아닙니다. 상세 결과는 [history.md](history.md)에 있습니다.
 **[현재 실행·제출 안내](../v8/competition.md)** · [환경 복구 기록](../v8/environment_restoration.md)
 
 ```bash
-bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v8/scripts/run_v8_fast.sh
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v8/scripts/run_v8_fast.sh --status
 ```
 
-위 명령은 `provided_competition_v1` 실행기이며 현재는 완료 작업을 건너뛰고 집계·export를
-재검증합니다. 아래 수정 Unity 연구 환경의
-성능·실행 설명은 과거 기록이며 새 제공 환경 실험 결과와 구분합니다.
+위 명령은 기존 `provided_competition_v1`의 완료 기록을 조회합니다. 2026-10-09 재배치로 소스 해시가 변경되어 기존 v8 등록의 재개·재집계 검사는 통과하지 않습니다. 아래 실행·성능 설명은 당시 기록이며, 현재 v9 실행 방법은 [루트 README](../../README.md)를 따릅니다.
 
 **선정 모델 관전:** 다음 한 줄로 v6 최종 모델과 v7-1 A3(FlyWire) seed 11의 실제 플레이를
 게임 창에서 볼 수 있습니다. 기본값은 정상 속도, 진영을 바꾼 두 경기이며 Ctrl+C로 종료합니다.
@@ -25,7 +23,7 @@ bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/shared/watch_best_mo
 
 `--check`는 모델·게임 검사만 수행하며 창을 열지 않습니다. `--games 1 --speed 2`도 사용할 수
 있습니다. 관전은 원본 API로 수행하는 시범 경기이며 과거 평가나 공식 성능 검증이 아닙니다.
-로그·reports·submission·체크포인트·빌드·그래프 원자료는 Git에 포함하지 않고 로컬에 보존합니다.
+`logs/`의 실행 기록·자동 보고서와 `artifacts/`의 제출물·체크포인트·빌드·그래프 원자료는 Git에서 제외합니다. `docs/`의 직접 작성한 보고서는 공유합니다.
 새 clone에서는 관전에 필요한 이 로컬 자산과 Python 환경을 별도로 준비해야 합니다.
 
 BlackOut 5대5 환경에서 scripted planner, IPPO/MAPPO 및 planner residual PPO를
@@ -49,7 +47,7 @@ BlackOut 5대5 환경에서 scripted planner, IPPO/MAPPO 및 planner residual PP
 C1/flat × 3 seeds를 최대 6개 worker로 실행하고 dev 평가까지 이어가는 백그라운드 실행기를
 준비했습니다. native 통신, 중복 계산 제거, mask 일괄 계산, 무손실 로그 압축을 적용했습니다.
 당시 예산은 총 6,291,456 학습 step과 780 dev 경기였습니다.
-현재 `run_v8_fast.sh`는 문서 상단의 새 제공 환경 실험을 실행합니다.
+현재 `code/v8/scripts/run_v8_fast.sh --status`로 문서 상단의 제공 환경 실험 기록을 조회합니다.
 **[가속 내용·검증 결과·상태 확인과 재개 방법](../v8/acceleration.md)**
 
 ## v7 과거 실행 기록 (2026-09-19~21 시점)
@@ -146,17 +144,17 @@ ablation도 포함하며, 목표 승률 달성이나 최종 제출 준비 완료
 | PREP-01 | ☑ 게임/Python API commit, executable hash, Python·PyTorch·CUDA·Unity 버전 고정 | [`versions.md`](versions.md), [`requirements.lock`](../../code/shared/requirements.lock), [`docker-image.env`](../../code/shared/docker-image.env) |
 | PREP-02 | ☑ 로컬 또는 Docker에서 random policy 1경기 실행 | [`logs/prep04_07_contract.json`](../../logs/pre_v1/prep04_07_contract.json): corrected seed contract로 reset부터 terminal까지 실행, seed·점수·winner 저장 및 검증 |
 | PREP-03 | ☑ 게임 규칙을 RL state/action/event 관점으로 문서화 | [`game_spec.md`](game_spec.md): 유닛, 아이템, 창고, 성소, 전투 상성, 20초 이벤트 |
-| PREP-04 | ☑ 관측값 96개 vector field와 11개 map channel 파서 작성 | [`blackout_rl/observation.py`](../../code/shared/blackout_rl/observation.py), [`reports/prep04_observation_contract.md`](../pre_v1/reports/prep04_observation_contract.md): field shape·범위·team perspective 테스트 통과 |
-| PREP-05 | ☑ PettingZoo API contract test 작성 | [`tests/test_contract.py`](../../code/shared/tests/test_contract.py), [`reports/prep05_pettingzoo_contract.md`](../pre_v1/reports/prep05_pettingzoo_contract.md): reset/step/termination, agent 수, dtype, action 범위, seed 재현성 통과 |
-| PREP-06 | ☑ self-ID 및 batch-order 실험 | [`reports/prep06_agent_identity_order.md`](../pre_v1/reports/prep06_agent_identity_order.md): 5+5 canonical batch·side perspective·terminal 순서 검증, slot ID 보완 확정 |
-| PREP-07 | ☑ 행동 의미 테스트 | [`reports/prep07_action_semantics.md`](../pre_v1/reports/prep07_action_semantics.md): `(0,0)`, 작은/큰/초과 vector와 8방향 displacement 측정 |
-| PREP-08 | ☑ 실제 terminal winner 기반 evaluator 작성 | [`eval/paired_series.py`](../../code/shared/eval/paired_series.py), [`reports/prep08_terminal_evaluator.md`](../pre_v1/reports/prep08_terminal_evaluator.md): terminal winner만 사용하고 side-swapped model 결과 검증 |
-| PREP-09 | ☑ Python score-delta team reward 구현 | [`blackout_rl/reward.py`](../../code/shared/blackout_rl/reward.py), [`reports/prep09_score_delta_reward.md`](../pre_v1/reports/prep09_score_delta_reward.md): 증가·감소·약탈·terminal 부호 테스트 통과 |
-| PREP-10 | ☑ 통합 logging schema 작성 | [`schemas/episode_v1.schema.json`](../../code/shared/schemas/episode_v1.schema.json), [`reports/prep10_logging_schema.md`](../pre_v1/reports/prep10_logging_schema.md), [`logs/prep08_10_paired_seed_810.json`](../../logs/pre_v1/prep08_10_paired_seed_810.json): seed·side·opponent·score·winner·length·checkpoint SHA 검증 |
-| PREP-11 | ☑ 처리량 benchmark | [`scripts/benchmark_env.py`](../../code/shared/scripts/benchmark_env.py), [`logs/prep11_benchmark.json`](../../logs/pre_v1/prep11_benchmark.json), [`reports/prep11_throughput_benchmark.md`](../pre_v1/reports/prep11_throughput_benchmark.md): 환경 1/2개의 steps/sec, host CPU/RSS, Apple GPU utilization, full-episode 비용 측정 |
-| PREP-12 | ☑ 첫 actor/critic 인터페이스 설계 | [`blackout_rl/model_contract.py`](../../code/shared/blackout_rl/model_contract.py), [`schemas/checkpoint_v1.schema.json`](../../code/shared/schemas/checkpoint_v1.schema.json), [`reports/prep12_actor_critic_interface.md`](../pre_v1/reports/prep12_actor_critic_interface.md): tensor/slot/action/checkpoint 계약과 실제 torch round-trip 검증 |
-| PREP-13 | ☑ 평가 계약에 없는 항목 확인 | [`reports/prep13_evaluation_contract_checklist.md`](../pre_v1/reports/prep13_evaluation_contract_checklist.md): 확인된 계약, 공식 미정 항목, 확인 전 fail-closed 결정을 분리 관리 |
-| PREP-14 | ☑ random-vs-random paired-seed 평가 | [`logs/prep14_random_paired_5seeds.json`](../../logs/pre_v1/prep14_random_paired_5seeds.json), [`reports/prep14_random_paired_evaluation.md`](../pre_v1/reports/prep14_random_paired_evaluation.md): 5 paired seeds·10경기의 side별 승률/점수 차 측정, 균형 side 배정과 evaluator attribution 검증 |
+| PREP-04 | ☑ 관측값 96개 vector field와 11개 map channel 파서 작성 | [`code/shared/blackout_rl/observation.py`](../../code/shared/blackout_rl/observation.py), [`docs/pre_v1/reports/prep04_observation_contract.md`](../pre_v1/reports/prep04_observation_contract.md): field shape·범위·team perspective 테스트 통과 |
+| PREP-05 | ☑ PettingZoo API contract test 작성 | [`code/shared/tests/test_contract.py`](../../code/shared/tests/test_contract.py), [`docs/pre_v1/reports/prep05_pettingzoo_contract.md`](../pre_v1/reports/prep05_pettingzoo_contract.md): reset/step/termination, agent 수, dtype, action 범위, seed 재현성 통과 |
+| PREP-06 | ☑ self-ID 및 batch-order 실험 | [`docs/pre_v1/reports/prep06_agent_identity_order.md`](../pre_v1/reports/prep06_agent_identity_order.md): 5+5 canonical batch·side perspective·terminal 순서 검증, slot ID 보완 확정 |
+| PREP-07 | ☑ 행동 의미 테스트 | [`docs/pre_v1/reports/prep07_action_semantics.md`](../pre_v1/reports/prep07_action_semantics.md): `(0,0)`, 작은/큰/초과 vector와 8방향 displacement 측정 |
+| PREP-08 | ☑ 실제 terminal winner 기반 evaluator 작성 | [`code/shared/eval/paired_series.py`](../../code/shared/eval/paired_series.py), [`docs/pre_v1/reports/prep08_terminal_evaluator.md`](../pre_v1/reports/prep08_terminal_evaluator.md): terminal winner만 사용하고 side-swapped model 결과 검증 |
+| PREP-09 | ☑ Python score-delta team reward 구현 | [`code/shared/blackout_rl/reward.py`](../../code/shared/blackout_rl/reward.py), [`docs/pre_v1/reports/prep09_score_delta_reward.md`](../pre_v1/reports/prep09_score_delta_reward.md): 증가·감소·약탈·terminal 부호 테스트 통과 |
+| PREP-10 | ☑ 통합 logging schema 작성 | [`code/shared/schemas/episode_v1.schema.json`](../../code/shared/schemas/episode_v1.schema.json), [`docs/pre_v1/reports/prep10_logging_schema.md`](../pre_v1/reports/prep10_logging_schema.md), [`logs/prep08_10_paired_seed_810.json`](../../logs/pre_v1/prep08_10_paired_seed_810.json): seed·side·opponent·score·winner·length·checkpoint SHA 검증 |
+| PREP-11 | ☑ 처리량 benchmark | [`code/shared/scripts/benchmark_env.py`](../../code/shared/scripts/benchmark_env.py), [`logs/prep11_benchmark.json`](../../logs/pre_v1/prep11_benchmark.json), [`docs/pre_v1/reports/prep11_throughput_benchmark.md`](../pre_v1/reports/prep11_throughput_benchmark.md): 환경 1/2개의 steps/sec, host CPU/RSS, Apple GPU utilization, full-episode 비용 측정 |
+| PREP-12 | ☑ 첫 actor/critic 인터페이스 설계 | [`code/shared/blackout_rl/model_contract.py`](../../code/shared/blackout_rl/model_contract.py), [`code/shared/schemas/checkpoint_v1.schema.json`](../../code/shared/schemas/checkpoint_v1.schema.json), [`docs/pre_v1/reports/prep12_actor_critic_interface.md`](../pre_v1/reports/prep12_actor_critic_interface.md): tensor/slot/action/checkpoint 계약과 실제 torch round-trip 검증 |
+| PREP-13 | ☑ 평가 계약에 없는 항목 확인 | [`docs/pre_v1/reports/prep13_evaluation_contract_checklist.md`](../pre_v1/reports/prep13_evaluation_contract_checklist.md): 확인된 계약, 공식 미정 항목, 확인 전 fail-closed 결정을 분리 관리 |
+| PREP-14 | ☑ random-vs-random paired-seed 평가 | [`logs/prep14_random_paired_5seeds.json`](../../logs/pre_v1/prep14_random_paired_5seeds.json), [`docs/pre_v1/reports/prep14_random_paired_evaluation.md`](../pre_v1/reports/prep14_random_paired_evaluation.md): 5 paired seeds·10경기의 side별 승률/점수 차 측정, 균형 side 배정과 evaluator attribution 검증 |
 
 #### 준비 단계의 필수 테스트
 
@@ -200,21 +198,21 @@ win / draw / loss, 평균 최종 점수 차
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
-    | BASE-S01 | ☑ `Random`, `NoOp`, `FixedDirection` policy 구현 | [`blackout_rl/policy.py`](../../code/shared/blackout_rl/policy.py), [`reports/base_s01_policy_primitives.md`](../pre_v1/reports/base_s01_policy_primitives.md): 공통 evaluator protocol, deterministic/범위/누락-agent 회귀 테스트 통과 |
-    | BASE-S02 | ☑ semantic map decoder 구현 | [`blackout_rl/semantic_map.py`](../../code/shared/blackout_rl/semantic_map.py), [`reports/base_s02_semantic_decoder.md`](../pre_v1/reports/base_s02_semantic_decoder.md): 좌표 반전 계약과 벽·창고·유닛·Battery·특수 아이템 위치 추출 검증 |
-    | BASE-S03 | ☑ 이동 가능 영역과 path planner 구현 | [`blackout_rl/navigation.py`](../../code/shared/blackout_rl/navigation.py), [`scripts/verify_base_s01_s03.py`](../../code/pre_v1/scripts/verify_base_s01_s03.py), [`logs/base_s01_s03_live_navigation.json`](../../logs/pre_v1/base_s01_s03_live_navigation.json), [`reports/base_s03_single_unit_navigation.md`](../pre_v1/reports/base_s03_single_unit_navigation.md): A*·waypoint·replan 신호 및 실제 단일 유닛 wall 우회 Battery pickup 통과 |
-    | BASE-S04 | ☑ stuck detector 구현 | [`blackout_rl/coordination.py`](../../code/shared/blackout_rl/coordination.py), [`reports/base_s04_stuck_detector.md`](../pre_v1/reports/base_s04_stuck_detector.md): 위치 window 판정, 임시 장애물 우회 및 목표 재선정 연결 검증 |
-    | BASE-S05 | ☑ team-local slot과 unit state 추적 | [`blackout_rl/team_state.py`](../../code/shared/blackout_rl/team_state.py), [`reports/base_s05_team_state.md`](../pre_v1/reports/base_s05_team_state.md): 위치·보유 item·class·역할·목표를 canonical team slot으로 추적 |
-    | BASE-S06 | ☑ task assignment 구현 | [`blackout_rl/coordination.py`](../../code/shared/blackout_rl/coordination.py), [`reports/base_s06_s07_assignment_roles.md`](../pre_v1/reports/base_s06_s07_assignment_roles.md): A* path distance 기반 deterministic greedy 고유 할당 및 도달 불가/예약 목표 테스트 |
-    | BASE-S07 | ☑ 기본 역할 구성 | [`blackout_rl/team_state.py`](../../code/shared/blackout_rl/team_state.py), [`logs/base_s04_s07_s13_coordination.json`](../../logs/pre_v1/base_s04_s07_s13_coordination.json): worker 3·guard 1·carrier 1 역할과 실제 5유닛 동시 Battery 회수 검증 |
-    | BASE-S08 | ☑ 노동자 FSM 구현 | [`blackout_rl/scripted_fsm.py`](../../code/shared/blackout_rl/scripted_fsm.py), [`reports/base_s08_worker_fsm.md`](../pre_v1/reports/base_s08_worker_fsm.md): 노동자 3명의 고유 Battery 회수→창고 적재→재탐색 및 포화 창고 재배정 검증 |
-    | BASE-S09 | ☑ 경비원 FSM 구현 | [`reports/base_s09_guard_fsm.md`](../pre_v1/reports/base_s09_guard_fsm.md), [`logs/base_s08_s10_role_fsm.json`](../../logs/pre_v1/base_s08_s10_role_fsm.json): 중앙 성소 Hunter 변신→창고 순찰과 적 추격 전환 검증 |
-    | BASE-S10 | ☑ 전달자 FSM 구현 | [`reports/base_s10_carrier_fsm.md`](../pre_v1/reports/base_s10_carrier_fsm.md), [`logs/base_s08_s10_role_fsm_trajectory.jsonl`](../../logs/pre_v1/base_s08_s10_role_fsm_trajectory.jsonl): 본진 Carrier 변신→원거리 Battery 회수·적재 및 적 접근 회피 검증 |
-    | BASE-S11 | ☑ 20초 흡수 주기 전략 구현 | [`blackout_rl/strategy.py`](../../code/shared/blackout_rl/strategy.py), [`reports/base_s11_absorption_strategy.md`](../pre_v1/reports/base_s11_absorption_strategy.md): `time_left` 기반 20초 phase 복원, 직전 적재·직후 수집·조건부 약탈과 실제 첫 흡수 통과 검증 |
-    | BASE-S12 | ☑ 위험 지도 구현 | [`reports/base_s12_danger_map.md`](../pre_v1/reports/base_s12_danger_map.md), [`logs/base_s11_s12_strategy.json`](../../logs/pre_v1/base_s11_s12_strategy.json): 적 위치 거리 비용과 역할별 weighted A*를 실제 중앙 적 위치에서 경로 비교 검증 |
-    | BASE-S13 | ☑ scripted trajectory recorder 구현 | [`blackout_rl/trajectory.py`](../../code/shared/blackout_rl/trajectory.py), [`logs/base_s13_coordination_trajectory.jsonl`](../../logs/pre_v1/base_s13_coordination_trajectory.jsonl), [`reports/base_s13_trajectory_recorder.md`](../pre_v1/reports/base_s13_trajectory_recorder.md): obs/action/role/target/reward/score/seed JSONL 기록과 hash·round-trip 검증 |
-    | BASE-S14 | ☑ scripted-vs-random 평가 | [`eval/scripted_series.py`](../../code/shared/eval/scripted_series.py), [`logs/base_s14_scripted_vs_random.json`](../../logs/pre_v1/base_s14_scripted_vs_random.json), [`reports/base_s14_scripted_vs_random.md`](../pre_v1/reports/base_s14_scripted_vs_random.md): held-out 5 paired seeds·10경기 전승, 평균 점수 차 +97.7, model A/B 모두 전승 및 물리 side 50/50 |
-    | BASE-S15 | ☑ 특수 아이템 정책을 선택적으로 추가 | [`logs/base_s15_special_item_ablation.json`](../../logs/pre_v1/base_s15_special_item_ablation.json), [`reports/base_s15_special_item_ablation.md`](../pre_v1/reports/base_s15_special_item_ablation.md): 옵션 동작 검증 후 평균 점수 차 −1.7·평균 +74.1 step으로 개선 없어 기본 battery-only 유지 |
+    | BASE-S01 | ☑ `Random`, `NoOp`, `FixedDirection` policy 구현 | [`code/shared/blackout_rl/policy.py`](../../code/shared/blackout_rl/policy.py), [`docs/pre_v1/reports/base_s01_policy_primitives.md`](../pre_v1/reports/base_s01_policy_primitives.md): 공통 evaluator protocol, deterministic/범위/누락-agent 회귀 테스트 통과 |
+    | BASE-S02 | ☑ semantic map decoder 구현 | [`code/shared/blackout_rl/semantic_map.py`](../../code/shared/blackout_rl/semantic_map.py), [`docs/pre_v1/reports/base_s02_semantic_decoder.md`](../pre_v1/reports/base_s02_semantic_decoder.md): 좌표 반전 계약과 벽·창고·유닛·Battery·특수 아이템 위치 추출 검증 |
+    | BASE-S03 | ☑ 이동 가능 영역과 path planner 구현 | [`code/shared/blackout_rl/navigation.py`](../../code/shared/blackout_rl/navigation.py), [`code/pre_v1/scripts/verify_base_s01_s03.py`](../../code/pre_v1/scripts/verify_base_s01_s03.py), [`logs/base_s01_s03_live_navigation.json`](../../logs/pre_v1/base_s01_s03_live_navigation.json), [`docs/pre_v1/reports/base_s03_single_unit_navigation.md`](../pre_v1/reports/base_s03_single_unit_navigation.md): A*·waypoint·replan 신호 및 실제 단일 유닛 wall 우회 Battery pickup 통과 |
+    | BASE-S04 | ☑ stuck detector 구현 | [`code/shared/blackout_rl/coordination.py`](../../code/shared/blackout_rl/coordination.py), [`docs/pre_v1/reports/base_s04_stuck_detector.md`](../pre_v1/reports/base_s04_stuck_detector.md): 위치 window 판정, 임시 장애물 우회 및 목표 재선정 연결 검증 |
+    | BASE-S05 | ☑ team-local slot과 unit state 추적 | [`code/shared/blackout_rl/team_state.py`](../../code/shared/blackout_rl/team_state.py), [`docs/pre_v1/reports/base_s05_team_state.md`](../pre_v1/reports/base_s05_team_state.md): 위치·보유 item·class·역할·목표를 canonical team slot으로 추적 |
+    | BASE-S06 | ☑ task assignment 구현 | [`code/shared/blackout_rl/coordination.py`](../../code/shared/blackout_rl/coordination.py), [`docs/pre_v1/reports/base_s06_s07_assignment_roles.md`](../pre_v1/reports/base_s06_s07_assignment_roles.md): A* path distance 기반 deterministic greedy 고유 할당 및 도달 불가/예약 목표 테스트 |
+    | BASE-S07 | ☑ 기본 역할 구성 | [`code/shared/blackout_rl/team_state.py`](../../code/shared/blackout_rl/team_state.py), [`logs/base_s04_s07_s13_coordination.json`](../../logs/pre_v1/base_s04_s07_s13_coordination.json): worker 3·guard 1·carrier 1 역할과 실제 5유닛 동시 Battery 회수 검증 |
+    | BASE-S08 | ☑ 노동자 FSM 구현 | [`code/shared/blackout_rl/scripted_fsm.py`](../../code/shared/blackout_rl/scripted_fsm.py), [`docs/pre_v1/reports/base_s08_worker_fsm.md`](../pre_v1/reports/base_s08_worker_fsm.md): 노동자 3명의 고유 Battery 회수→창고 적재→재탐색 및 포화 창고 재배정 검증 |
+    | BASE-S09 | ☑ 경비원 FSM 구현 | [`docs/pre_v1/reports/base_s09_guard_fsm.md`](../pre_v1/reports/base_s09_guard_fsm.md), [`logs/base_s08_s10_role_fsm.json`](../../logs/pre_v1/base_s08_s10_role_fsm.json): 중앙 성소 Hunter 변신→창고 순찰과 적 추격 전환 검증 |
+    | BASE-S10 | ☑ 전달자 FSM 구현 | [`docs/pre_v1/reports/base_s10_carrier_fsm.md`](../pre_v1/reports/base_s10_carrier_fsm.md), [`logs/base_s08_s10_role_fsm_trajectory.jsonl`](../../logs/pre_v1/base_s08_s10_role_fsm_trajectory.jsonl): 본진 Carrier 변신→원거리 Battery 회수·적재 및 적 접근 회피 검증 |
+    | BASE-S11 | ☑ 20초 흡수 주기 전략 구현 | [`code/shared/blackout_rl/strategy.py`](../../code/shared/blackout_rl/strategy.py), [`docs/pre_v1/reports/base_s11_absorption_strategy.md`](../pre_v1/reports/base_s11_absorption_strategy.md): `time_left` 기반 20초 phase 복원, 직전 적재·직후 수집·조건부 약탈과 실제 첫 흡수 통과 검증 |
+    | BASE-S12 | ☑ 위험 지도 구현 | [`docs/pre_v1/reports/base_s12_danger_map.md`](../pre_v1/reports/base_s12_danger_map.md), [`logs/base_s11_s12_strategy.json`](../../logs/pre_v1/base_s11_s12_strategy.json): 적 위치 거리 비용과 역할별 weighted A*를 실제 중앙 적 위치에서 경로 비교 검증 |
+    | BASE-S13 | ☑ scripted trajectory recorder 구현 | [`code/shared/blackout_rl/trajectory.py`](../../code/shared/blackout_rl/trajectory.py), [`logs/base_s13_coordination_trajectory.jsonl`](../../logs/pre_v1/base_s13_coordination_trajectory.jsonl), [`docs/pre_v1/reports/base_s13_trajectory_recorder.md`](../pre_v1/reports/base_s13_trajectory_recorder.md): obs/action/role/target/reward/score/seed JSONL 기록과 hash·round-trip 검증 |
+    | BASE-S14 | ☑ scripted-vs-random 평가 | [`code/shared/eval/scripted_series.py`](../../code/shared/eval/scripted_series.py), [`logs/base_s14_scripted_vs_random.json`](../../logs/pre_v1/base_s14_scripted_vs_random.json), [`docs/pre_v1/reports/base_s14_scripted_vs_random.md`](../pre_v1/reports/base_s14_scripted_vs_random.md): held-out 5 paired seeds·10경기 전승, 평균 점수 차 +97.7, model A/B 모두 전승 및 물리 side 50/50 |
+    | BASE-S15 | ☑ 특수 아이템 정책을 선택적으로 추가 | [`logs/base_s15_special_item_ablation.json`](../../logs/pre_v1/base_s15_special_item_ablation.json), [`docs/pre_v1/reports/base_s15_special_item_ablation.md`](../pre_v1/reports/base_s15_special_item_ablation.md): 옵션 동작 검증 후 평균 점수 차 −1.7·평균 +74.1 step으로 개선 없어 기본 battery-only 유지 |
     
     첫 scripted agent- 특수 아이템과 적극적인 약탈을 우선 제외. 아래 동작 확인 우선
     
@@ -228,21 +226,21 @@ win / draw / loss, 평균 최종 점수 차
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
-    | BASE-R01 | ☑ 9-way categorical action distribution 구현 | [`blackout_rl/action_distribution.py`](../../code/shared/blackout_rl/action_distribution.py), [`reports/base_r01_r05_r14_policy_model.md`](../pre_v1/reports/base_r01_r05_r14_policy_model.md): sampling·argmax·log-prob·entropy와 `(dx,dy)` 변환 검증 |
-    | BASE-R02 | ☑ vector/entity encoder 구현 | [`blackout_rl/ippo_model.py`](../../code/shared/blackout_rl/ippo_model.py): 10개 unit block과 score·time·class context 분리 인코딩 검증 |
+    | BASE-R01 | ☑ 9-way categorical action distribution 구현 | [`code/shared/blackout_rl/action_distribution.py`](../../code/shared/blackout_rl/action_distribution.py), [`docs/pre_v1/reports/base_r01_r05_r14_policy_model.md`](../pre_v1/reports/base_r01_r05_r14_policy_model.md): sampling·argmax·log-prob·entropy와 `(dx,dy)` 변환 검증 |
+    | BASE-R02 | ☑ vector/entity encoder 구현 | [`code/shared/blackout_rl/ippo_model.py`](../../code/shared/blackout_rl/ippo_model.py): 10개 unit block과 score·time·class context 분리 인코딩 검증 |
     | BASE-R03 | ☑ semantic CNN encoder 구현 | `11×96×96` 입력의 고정 길이 latent 변환 검증 |
     | BASE-R04 | ☑ slot embedding 또는 specialized head 구현 | 동일 observation에서 5개 slot의 출력 분화와 embedding gradient 검증 |
     | BASE-R05 | ☑ shared actor와 local critic 구현 | 단일 actor parameter 공유, logits `(B,9)`와 local value `(B,)` 검증 |
-    | BASE-R06 | ☑ PettingZoo parallel rollout collector 구현 | [`blackout_rl/rollout.py`](../../code/shared/blackout_rl/rollout.py), [`reports/base_r06_r09_ppo_engine.md`](../pre_v1/reports/base_r06_r09_ppo_engine.md): agent별 obs/action/logprob/value/reward/mask와 10-agent parallel step 검증 |
+    | BASE-R06 | ☑ PettingZoo parallel rollout collector 구현 | [`code/shared/blackout_rl/rollout.py`](../../code/shared/blackout_rl/rollout.py), [`docs/pre_v1/reports/base_r06_r09_ppo_engine.md`](../pre_v1/reports/base_r06_r09_ppo_engine.md): agent별 obs/action/logprob/value/reward/mask와 10-agent parallel step 검증 |
     | BASE-R07 | ☑ GAE와 episodic buffer 구현 | 여러 episode를 가로지르는 rollout, truncation bootstrap과 termination 차단 검증 |
-    | BASE-R08 | ☑ PPO update 구현 | [`blackout_rl/ppo.py`](../../code/shared/blackout_rl/ppo.py): clipped policy/value loss, entropy, minibatch epoch, gradient clipping과 parameter update 검증 |
-    | BASE-R09 | ☑ PPO 진단 logging | [`tests/test_ppo_training.py`](../../code/shared/tests/test_ppo_training.py): KL, clip fraction, entropy, explained variance, gradient norm의 strict JSONL round-trip 검증 |
-    | BASE-R10 | ☑ score-delta team reward와 terminal reward 연결 | [`blackout_rl/training_reward.py`](../../code/shared/blackout_rl/training_reward.py), [`reports/base_r10_r12_fixed_opponent_bc.md`](../pre_v1/reports/base_r10_r12_fixed_opponent_bc.md): 팀 공유 score-delta·winner bonus와 Unity shaping off/on/combined 검증 |
-    | BASE-R11 | ☑ 고정 scripted opponent 연결 | [`blackout_rl/frozen_opponent.py`](../../code/shared/blackout_rl/frozen_opponent.py): trainable state 없는 battery-only scripted opponent와 episode reset·fingerprint 불변 검증 |
-    | BASE-R12 | ☑ scripted trajectory 기반 BC pretraining 실험 | [`blackout_rl/behavior_cloning.py`](../../code/shared/blackout_rl/behavior_cloning.py), [`logs/base_r12_bc_warm_start.json`](../../logs/pre_v1/base_r12_bc_warm_start.json): 별도 held-out trajectory에서 scratch 대비 NLL `2.1738→2.1145`, 동일 environment-step budget 기록 |
-    | BASE-R13 | ☑ checkpoint와 experiment registry 구현 | [`blackout_rl/experiment_registry.py`](../../code/shared/blackout_rl/experiment_registry.py), [`experiments/registry.jsonl`](../../logs/shared/experiments/registry.jsonl), [`reports/base_r13_r15_registry_evaluation.md`](../pre_v1/reports/base_r13_r15_registry_evaluation.md): config·seed·git SHA·opponent ID와 artifact/config SHA를 checkpoint/registry에 저장·검증 |
-    | BASE-R14 | ☑ 제출용 deterministic policy wrapper 구현 | [`blackout_rl/model_contract.py`](../../code/shared/blackout_rl/model_contract.py), [`tests/test_ippo_model.py`](../../code/shared/tests/test_ippo_model.py): `forward(vector, graphic) → (B,2)`, argmax와 `[-1,1]` 계약 검증 |
-    | BASE-R15 | ☑ random/scripted/IPPO 평가 matrix 작성 | [`eval/policy_matrix.py`](../../code/shared/eval/policy_matrix.py), [`logs/base_r15_policy_matrix_seed1401.json`](../../logs/pre_v1/base_r15_policy_matrix_seed1401.json): 공통 environment seed·opponent artifact/RNG seed·side swap으로 3개 policy 비교, scripted > random > PPO-step-0 IPPO baseline |
+    | BASE-R08 | ☑ PPO update 구현 | [`code/shared/blackout_rl/ppo.py`](../../code/shared/blackout_rl/ppo.py): clipped policy/value loss, entropy, minibatch epoch, gradient clipping과 parameter update 검증 |
+    | BASE-R09 | ☑ PPO 진단 logging | [`code/shared/tests/test_ppo_training.py`](../../code/shared/tests/test_ppo_training.py): KL, clip fraction, entropy, explained variance, gradient norm의 strict JSONL round-trip 검증 |
+    | BASE-R10 | ☑ score-delta team reward와 terminal reward 연결 | [`code/shared/blackout_rl/training_reward.py`](../../code/shared/blackout_rl/training_reward.py), [`docs/pre_v1/reports/base_r10_r12_fixed_opponent_bc.md`](../pre_v1/reports/base_r10_r12_fixed_opponent_bc.md): 팀 공유 score-delta·winner bonus와 Unity shaping off/on/combined 검증 |
+    | BASE-R11 | ☑ 고정 scripted opponent 연결 | [`code/shared/blackout_rl/frozen_opponent.py`](../../code/shared/blackout_rl/frozen_opponent.py): trainable state 없는 battery-only scripted opponent와 episode reset·fingerprint 불변 검증 |
+    | BASE-R12 | ☑ scripted trajectory 기반 BC pretraining 실험 | [`code/shared/blackout_rl/behavior_cloning.py`](../../code/shared/blackout_rl/behavior_cloning.py), [`logs/base_r12_bc_warm_start.json`](../../logs/pre_v1/base_r12_bc_warm_start.json): 별도 held-out trajectory에서 scratch 대비 NLL `2.1738→2.1145`, 동일 environment-step budget 기록 |
+    | BASE-R13 | ☑ checkpoint와 experiment registry 구현 | [`code/shared/blackout_rl/experiment_registry.py`](../../code/shared/blackout_rl/experiment_registry.py), [`logs/shared/experiments/registry.jsonl`](../../logs/shared/experiments/registry.jsonl), [`docs/pre_v1/reports/base_r13_r15_registry_evaluation.md`](../pre_v1/reports/base_r13_r15_registry_evaluation.md): config·seed·git SHA·opponent ID와 artifact/config SHA를 checkpoint/registry에 저장·검증 |
+    | BASE-R14 | ☑ 제출용 deterministic policy wrapper 구현 | [`code/shared/blackout_rl/model_contract.py`](../../code/shared/blackout_rl/model_contract.py), [`code/shared/tests/test_ippo_model.py`](../../code/shared/tests/test_ippo_model.py): `forward(vector, graphic) → (B,2)`, argmax와 `[-1,1]` 계약 검증 |
+    | BASE-R15 | ☑ random/scripted/IPPO 평가 matrix 작성 | [`code/shared/eval/policy_matrix.py`](../../code/shared/eval/policy_matrix.py), [`logs/base_r15_policy_matrix_seed1401.json`](../../logs/pre_v1/base_r15_policy_matrix_seed1401.json): 공통 environment seed·opponent artifact/RNG seed·side swap으로 3개 policy 비교, scripted > random > PPO-step-0 IPPO baseline |
     
     #### IPPO actor 권장 구조
     
@@ -274,9 +272,9 @@ win / draw / loss, 평균 최종 점수 차
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
-| AGENT-01 | ☑ centralized state builder 구현 | [`blackout_rl/mappo.py`](../../code/shared/blackout_rl/mappo.py), [`reports/agent01_05_mappo_ctde.md`](../pre_v1/reports/agent01_05_mappo_ctde.md): 10개 유닛·score·map·전체 class의 123-field critic state 검증 |
+| AGENT-01 | ☑ centralized state builder 구현 | [`code/shared/blackout_rl/mappo.py`](../../code/shared/blackout_rl/mappo.py), [`docs/pre_v1/reports/agent01_05_mappo_ctde.md`](../pre_v1/reports/agent01_05_mappo_ctde.md): 10개 유닛·score·map·전체 class의 123-field critic state 검증 |
 | AGENT-02 | ☑ decentralized actor + centralized critic 구현 | 제출 경로는 local actor만 받고 centralized critic은 joint 학습에서만 사용 |
-| AGENT-03 | ☑ joint rollout과 team mask 검증 | [`tests/test_phase3_mappo.py`](../../code/shared/tests/test_phase3_mappo.py): death mask·respawn·termination GAE와 실제 Unity joint rollout/update 통과 |
+| AGENT-03 | ☑ joint rollout과 team mask 검증 | [`code/shared/tests/test_phase3_mappo.py`](../../code/shared/tests/test_phase3_mappo.py): death mask·respawn·termination GAE와 실제 Unity joint rollout/update 통과 |
 | AGENT-04 | ☑ IPPO checkpoint에서 MAPPO 초기화 | 이전 전후 actor logits bit-identical, centralized critic만 신규 초기화 |
 | AGENT-05 | ☑ IPPO 대비 MAPPO ablation | [`logs/phase3_mappo_ablation_128.json`](../../logs/pre_v1/phase3_mappo_ablation_128.json): 동일 초기 actor·seed·scripted opponent·128-step budget·5 paired dev seeds 비교(단기 결과 동률) |
     
@@ -286,13 +284,13 @@ win / draw / loss, 평균 최종 점수 차
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
-    | AGENT-06 | ☑ unit entity attention 실험 | [`reports/agent06_08_11_representation_ablation.md`](../pre_v1/reports/agent06_08_11_representation_ablation.md), [`logs/phase3_representation_ablation.json`](../../logs/pre_v1/phase3_representation_ablation.json): 동일 budget dev 10경기에서 replay 정확도 `89.84→90.25%`지만 점수차 `-90.3→-93.4`로 악화되어 미승격 |
-| AGENT-07 | ☑ self-relative position feature 추가 | [`blackout_rl/representation.py`](../../code/shared/blackout_rl/representation.py), [`tests/test_phase3_representation.py`](../../code/shared/tests/test_phase3_representation.py): team-local self slot 기준 10개 유닛 상대 좌표 검증 |
+    | AGENT-06 | ☑ unit entity attention 실험 | [`docs/pre_v1/reports/agent06_08_11_representation_ablation.md`](../pre_v1/reports/agent06_08_11_representation_ablation.md), [`logs/phase3_representation_ablation.json`](../../logs/pre_v1/phase3_representation_ablation.json): 동일 budget dev 10경기에서 replay 정확도 `89.84→90.25%`지만 점수차 `-90.3→-93.4`로 악화되어 미승격 |
+| AGENT-07 | ☑ self-relative position feature 추가 | [`code/shared/blackout_rl/representation.py`](../../code/shared/blackout_rl/representation.py), [`code/shared/tests/test_phase3_representation.py`](../../code/shared/tests/test_phase3_representation.py): team-local self slot 기준 10개 유닛 상대 좌표 검증 |
     | AGENT-08 | ☑ global map + local crop 구조 실험 | global/local replay 정확도 `91.04%`였으나 dev 점수차 `-95.4`로 legacy 대비 5.1점 악화되어 미승격 |
 | AGENT-09 | ☑ absorption phase feature 추가 | normalized `time_left`에서 반복되는 20초 sin/cos 경계 테스트 통과 |
 | AGENT-10 | ☑ auxiliary target logging | 역할·보유 item·다음 흡수 시간·score delta head/loss 및 strict JSONL logger 검증 |
     | AGENT-11 | ☑ auxiliary loss 선택 실험 | role·holding item·absorption time·score delta를 독립 평가했으나 모두 0승, baseline 대비 점수차 `-0.1~-1.0`; 선택 target 없음 |
-| AGENT-12 | ☑ 역할 분화 시각화 | [`reports/phase3_role_differentiation.svg`](../pre_v1/reports/phase3_role_differentiation.svg), [`logs/phase3_role_metrics.json`](../../logs/pre_v1/phase3_role_metrics.json), [`reports/agent07_12_representation_features.md`](../pre_v1/reports/agent07_12_representation_features.md): 실제 325 slot 관측 분석 |
+| AGENT-12 | ☑ 역할 분화 시각화 | [`docs/pre_v1/reports/phase3_role_differentiation.svg`](../pre_v1/reports/phase3_role_differentiation.svg), [`logs/phase3_role_metrics.json`](../../logs/pre_v1/phase3_role_metrics.json), [`docs/pre_v1/reports/agent07_12_representation_features.md`](../pre_v1/reports/agent07_12_representation_features.md): 실제 325 slot 관측 분석 |
     
     현재 제출 인터페이스는 명시적인 hidden state와 reset API를 제공하지 않으므로, stateful model 허용 여부와 episode reset 감지가 검증된 후에만 RNN 도입.
     
@@ -300,8 +298,8 @@ win / draw / loss, 평균 최종 점수 차
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
-| AGENT-13 | ☑ curriculum 단계 정의 | [`blackout_rl/curriculum.py`](../../code/shared/blackout_rl/curriculum.py), [`reports/agent13_17_curriculum_contract.md`](../pre_v1/reports/agent13_17_curriculum_contract.md): random→weak scripted→full scripted→frozen RL 순서와 승격 gate 검증 |
-    | AGENT-14 | ☑ 초기 navigation shaping 실험 | [`reports/agent14_navigation_shaping_ablation.md`](../pre_v1/reports/agent14_navigation_shaping_ablation.md), [`logs/phase3_agent14_navigation.json`](../../logs/pre_v1/phase3_agent14_navigation.json): 동일 512-step budget에서 navigation arm 점수차 `-94.3`, score-only `-89.7`로 미승격 |
+| AGENT-13 | ☑ curriculum 단계 정의 | [`code/shared/blackout_rl/curriculum.py`](../../code/shared/blackout_rl/curriculum.py), [`docs/pre_v1/reports/agent13_17_curriculum_contract.md`](../pre_v1/reports/agent13_17_curriculum_contract.md): random→weak scripted→full scripted→frozen RL 순서와 승격 gate 검증 |
+    | AGENT-14 | ☑ 초기 navigation shaping 실험 | [`docs/pre_v1/reports/agent14_navigation_shaping_ablation.md`](../pre_v1/reports/agent14_navigation_shaping_ablation.md), [`logs/phase3_agent14_navigation.json`](../../logs/pre_v1/phase3_agent14_navigation.json): 동일 512-step budget에서 navigation arm 점수차 `-94.3`, score-only `-89.7`로 미승격 |
 | AGENT-15 | ☑ shaping annealing 구현 | linear schedule 종료 후 navigation weight 0, score+terminal reward만 잔존 |
 | AGENT-16 | ☑ curriculum별 별도 evaluator 구성 | stage/opponent별 결과 분리와 중복 stage fail-closed 검증 |
 | AGENT-17 | ☑ 약탈·특수 아이템 curriculum 추가 | common-seed/common-budget 무회귀 승격 gate 구현; 기존 BASE-S15 성능 저하 증거에 따라 기본 비활성 유지 |
@@ -312,10 +310,10 @@ win / draw / loss, 평균 최종 점수 차
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
-| AGENT-18 | ☑ frozen checkpoint opponent loader 구현 | [`blackout_rl/self_play.py`](../../code/shared/blackout_rl/self_play.py): immutable SHA 검증, inference-only opponent, learner SHA 재사용 차단 |
+| AGENT-18 | ☑ frozen checkpoint opponent loader 구현 | [`code/shared/blackout_rl/self_play.py`](../../code/shared/blackout_rl/self_play.py): immutable SHA 검증, inference-only opponent, learner SHA 재사용 차단 |
 | AGENT-19 | ☑ snapshot pool 구현 | bounded immutable pool과 configurable latest/history sampling 검증 |
 | AGENT-20 | ☑ side 균형 sampling | 모든 prefix에서 A/B 노출 차이가 최대 1인 alternating sampler 검증 |
-    | AGENT-21 | ☑ opponent mixture에 따른 PPO 안정화 | [`reports/agent21_24_self_play_empirical.md`](../pre_v1/reports/agent21_24_self_play_empirical.md): 8세대 frozen mixture에서 entropy `1.699~1.929`, KL 최대 `0.0081`, value loss 최대 `0.00132`로 안정성 gate 통과 |
+    | AGENT-21 | ☑ opponent mixture에 따른 PPO 안정화 | [`docs/pre_v1/reports/agent21_24_self_play_empirical.md`](../pre_v1/reports/agent21_24_self_play_empirical.md): 8세대 frozen mixture에서 entropy `1.699~1.929`, KL 최대 `0.0081`, value loss 최대 `0.00132`로 안정성 gate 통과 |
     | AGENT-22 | ☑ checkpoint evaluation matrix 자동화 | [`logs/phase3_agent21_24_self_play.json`](../../logs/pre_v1/phase3_agent21_24_self_play.json): 주요 세대 0/2/4/8의 모든 12 directed cell을 dev seed 양 진영 5,000-step score horizon으로 생성 |
     | AGENT-23 | ☑ exploiter/과거 상대 회귀 검사 | gen 4 기준 past gen 0/2 및 `win_70_vs_scripted.pt` 상대 5% tolerance 회귀 없음; 강도 향상 증거는 아님 |
     | AGENT-24 | ☑ 필요 시 population/PSRO 확장 판단 | 8-slot pool 포화·6세대 plateau 뒤 cyclic regression 0으로 PSRO 확장 보류 |
@@ -326,32 +324,32 @@ win / draw / loss, 평균 최종 점수 차
     
     | ID | Todo | 산출물 및 완료 조건 |
     | --- | --- | --- |
-| AGENT-25 | ☑ train/dev/test seed 집합 고정 | [`configs/seed_splits_v1.json`](../../code/shared/configs/seed_splits_v1.json), [`reports/agent25_26_evaluation_protocol.md`](../pre_v1/reports/agent25_26_evaluation_protocol.md): split 중복과 test 기반 모델 선택을 fail-closed로 차단 |
-| AGENT-26 | ☑ paired-seed bootstrap CI 구현 | [`blackout_rl/evaluation_protocol.py`](../../code/shared/blackout_rl/evaluation_protocol.py), [`tests/test_phase3_evaluation.py`](../../code/shared/tests/test_phase3_evaluation.py): 개별 경기가 아닌 side-swapped seed pair 단위 재표본 검증 |
-| AGENT-27 | ☑ opponent suite 구성 | [`configs/opponent_suite_v1.json`](../../code/shared/configs/opponent_suite_v1.json), [`reports/agent18_27_self_play.md`](../pre_v1/reports/agent18_27_self_play.md): random·scripted·IPPO·historical MAPPO·latest candidate 고유 ID 계약 |
-| AGENT-28 | ☑ deterministic inference mode 확정 | [`submission/policy.py`](../../artifacts/submission/policy.py), [`tests/test_phase3_submission.py`](../../code/shared/tests/test_phase3_submission.py), [`reports/agent28_31_submission_validation.md`](../pre_v1/reports/agent28_31_submission_validation.md): argmax 반복 bit-identical |
-    | AGENT-29 | ☑ 모델 경량화 | [`reports/agent29_32_final_submission_review.md`](../pre_v1/reports/agent29_32_final_submission_review.md): legacy encoder 선택으로 parameter 31.3%, CPU median latency 39.8% 감소, dev 점수 회귀 없음 |
+| AGENT-25 | ☑ train/dev/test seed 집합 고정 | [`code/shared/configs/seed_splits_v1.json`](../../code/shared/configs/seed_splits_v1.json), [`docs/pre_v1/reports/agent25_26_evaluation_protocol.md`](../pre_v1/reports/agent25_26_evaluation_protocol.md): split 중복과 test 기반 모델 선택을 fail-closed로 차단 |
+| AGENT-26 | ☑ paired-seed bootstrap CI 구현 | [`code/shared/blackout_rl/evaluation_protocol.py`](../../code/shared/blackout_rl/evaluation_protocol.py), [`code/shared/tests/test_phase3_evaluation.py`](../../code/shared/tests/test_phase3_evaluation.py): 개별 경기가 아닌 side-swapped seed pair 단위 재표본 검증 |
+| AGENT-27 | ☑ opponent suite 구성 | [`code/shared/configs/opponent_suite_v1.json`](../../code/shared/configs/opponent_suite_v1.json), [`docs/pre_v1/reports/agent18_27_self_play.md`](../pre_v1/reports/agent18_27_self_play.md): random·scripted·IPPO·historical MAPPO·latest candidate 고유 ID 계약 |
+| AGENT-28 | ☑ deterministic inference mode 확정 | [`artifacts/submission/policy.py`](../../artifacts/submission/policy.py), [`code/shared/tests/test_phase3_submission.py`](../../code/shared/tests/test_phase3_submission.py), [`docs/pre_v1/reports/agent28_31_submission_validation.md`](../pre_v1/reports/agent28_31_submission_validation.md): argmax 반복 bit-identical |
+    | AGENT-29 | ☑ 모델 경량화 | [`docs/pre_v1/reports/agent29_32_final_submission_review.md`](../pre_v1/reports/agent29_32_final_submission_review.md): legacy encoder 선택으로 parameter 31.3%, CPU median latency 39.8% 감소, dev 점수 회귀 없음 |
 | AGENT-30 | ☑ clean-room 제출 테스트 | 임시 빈 디렉터리에 `policy.py`·`checkpoint.pt`만 복사해 `(5,2)` 추론 통과 |
     | AGENT-31 | ☑ CPU와 GPU 양쪽 smoke test | [`logs/phase3_agent29_32_submission.json`](../../logs/pre_v1/phase3_agent29_32_submission.json): CPU·Apple MPS 실제 deterministic inference와 dtype·batch·device mismatch 검사 통과 |
     | AGENT-32 | ☑ 최종 모델 승격 회의 | gen 8이 incumbent에 0/10, 점수차 `-94.9`로 미승격; guarded incumbent도 two-file clean-room 비호환이므로 final-submission-ready 모델 없음 |
 
 ### MAPPO 장기 학습: `win_70_vs_scripted.pt` 상대 85%
 
-[`scripts/train_mappo_vs_win70.py`](../../code/v2/scripts/train_mappo_vs_win70.py)는 frozen
+[`code/v2/scripts/train_mappo_vs_win70.py`](../../code/v2/scripts/train_mappo_vs_win70.py)는 frozen
 `win_70_vs_scripted.pt`를 상대로 진영을 번갈아 MAPPO를 학습한다. dev seed
 5개를 side-swap한 10경기 중 최소 9승일 때만
 `artifacts/checkpoints/mappo_win_85_vs_win70.pt`를 저장한다. 기본 실행과 resume 방법,
 체크포인트·로그 계약은
-[`reports/mappo_vs_win70_training.md`](../v2/reports/mappo_vs_win70_training.md)에 정리했다.
+[`docs/v2/reports/mappo_vs_win70_training.md`](../v2/reports/mappo_vs_win70_training.md)에 정리했다.
 v1 실패 원인과 persistent collector, 초기 actor, 하이퍼파라미터 및 산출물
 경로 변경은
-[`reports/mappo_vs_win70_v2_plan_changes.md`](../v2/reports/mappo_vs_win70_v2_plan_changes.md)에
+[`docs/v2/reports/mappo_vs_win70_v2_plan_changes.md`](../v2/reports/mappo_vs_win70_v2_plan_changes.md)에
 별도로 기록했다.
 
 v2 장기 실행에서 planner를 사용하는 상대 전략이 neural learner에 전달되지 않는
 문제가 확인되어, 이후 v3에서 DAgger teacher 증류와 단계별 상대 혼합을 적용했다.
 당시 구현과 변경 근거는
-[`reports/mappo_teacher_curriculum_v3_plan.md`](../v3/reports/mappo_teacher_curriculum_v3_plan.md)에
+[`docs/v3/reports/mappo_teacher_curriculum_v3_plan.md`](../v3/reports/mappo_teacher_curriculum_v3_plan.md)에
 정리했다.
 
 ## Reference
@@ -528,7 +526,7 @@ jq '{status, global_step, update, stage, target_reached,
 ```
 
 구현 차이, 검증 범위 및 planner를 포함한 제출 계약은
-[`reports/mappo_planner_residual_v6_plan_changes.md`](../v6/reports/mappo_planner_residual_v6_plan_changes.md)를
+[`docs/v6/reports/mappo_planner_residual_v6_plan_changes.md`](../v6/reports/mappo_planner_residual_v6_plan_changes.md)를
 참고하세요.
 
 ## MAPPO planner-conditioned residual v5 학습 실행 방법 (이전 실험 보존용)
@@ -572,7 +570,7 @@ stage-best checkpoint를 분리하며 빠른 10게임 gate는 30게임 확인 �
 `artifacts/checkpoints/mappo_win_85_vs_win70_v5.pt`를 저장합니다.
 
 실패 원인, residual action 계약, fail-closed gate, 백그라운드/배속 검증은
-[`reports/mappo_planner_residual_v5_plan_changes.md`](../v5/reports/mappo_planner_residual_v5_plan_changes.md)를
+[`docs/v5/reports/mappo_planner_residual_v5_plan_changes.md`](../v5/reports/mappo_planner_residual_v5_plan_changes.md)를
 참조합니다.
 
 v4 실행 파일과 산출물은 이전 실험 재현용으로 보존합니다.
@@ -648,7 +646,7 @@ dev 평가를 배치합니다. 개별 모델의 rollout·PPO·난수는 다른 �
 v7-2 전뇌 희소 행렬 계산의 MPS/Metal 실행**입니다. 인코더는 측정상 MPS가 더 느려 CPU를
 유지합니다. 원본 `.venv`, 학습 코드·설정과 Protobuf wire schema는 보존하고 별도 실행
 오버레이의 해시·체크포인트 이력을 기록합니다. 자세한 병렬 수·측정 결과·검증 범위는
-[가속 및 재개 보고서](reports/v7/acceleration_and_resume.md)를 참고하세요.
+[가속 및 재개 보고서](../v7/reports/acceleration_and_resume.md)를 참고하세요.
 
 - **A2 시드 11은 147,456스텝에서 optimizer·난수 상태를 포함해 재개**합니다.
   완료된 A0·A1 시드 11은 재학습하지 않고 평가만 남깁니다. 아직 시작하지 않은 모델만
@@ -695,7 +693,7 @@ bash "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v7/scripts/start_co
 | `logs/v7/main_study/pre_acceleration_backup/` | 중단 시점 원본 체크포인트·설정·상태 백업 |
 | `logs/v7/<experiment_id>_main_2m_v1/<seed>/status.json` | 해당 모델의 현재 학습 스텝 |
 | `logs/v7/<experiment_id>_main_2m_v1/<seed>/checkpoints/latest.pt` | 해당 모델의 저장된 재개 지점 |
-| [본실험 사전 등록](reports/v7/main_study_preregistration.md) | 비교 범위, 예산, 선택·중단 규칙, 검증 범위 |
+| [본실험 사전 등록](../v7/reports/main_study_preregistration.md) | 비교 범위, 예산, 선택·중단 규칙, 검증 범위 |
 | [기계 판독 등록 파일](../../logs/v7/reports/main_study_registration.json) | 코드·설정 해시 및 소스 보관본 |
 | [가속 실행 등록 파일](../../logs/v7/reports/acceleration_registration.json) | 통신·MPS·병렬 설정과 추가 코드 해시 |
 
@@ -765,4 +763,4 @@ bash "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v7/scripts/start_co
 기존 `code/v7/scripts/start_pilot_evaluation.sh`는 v7-1 평가만 수행합니다.
 두 버전을 함께 실행할 때는 위 통합 스크립트를 사용하세요.
 
-상세 설정·실행·정지·재개와 검증 범위는 [v7 실행 안내](reports/v7/implementation_and_runbook.md)를 참고한다. F2, 전뇌 대조군 전체 연구, 공식 제출 export는 후속 범위이며 현재 승률 개선을 주장하지 않는다.
+상세 설정·실행·정지·재개와 검증 범위는 [v7 실행 안내](../v7/reports/implementation_and_runbook.md)를 참고한다. F2, 전뇌 대조군 전체 연구, 공식 제출 export는 후속 범위이며 현재 승률 개선을 주장하지 않는다.

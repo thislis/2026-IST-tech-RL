@@ -82,4 +82,4 @@ planner가 적용되지 않으므로, 동일 승률은 프로젝트의 `Determin
 - checkpoint metadata 기반 inference safety controller
 - 재사용 가능한 side-swapped checkpoint 평가 script
 
-전체 회귀 검증은 `python -m unittest discover -s tests` 기준 151개 테스트가 통과했다.
+당시 전체 회귀 검증은 151개 테스트가 통과했다. 현재 공통 테스트는 `.venv/bin/python code/run.py -m unittest discover -s code/shared/tests`로 실행한다. 버전별 테스트까지 포함하는 명령은 [루트 README](../../README.md)를 따른다.

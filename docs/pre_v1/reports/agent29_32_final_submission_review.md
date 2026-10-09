@@ -50,5 +50,5 @@ reproduce the planner override. Consequently:
 
 AGENT-32 is complete as a fail-closed promotion review, not as a successful
 model promotion. Full measurements and all ten head-to-head episodes are in
-[`logs/phase3_agent29_32_submission.json`](../logs/phase3_agent29_32_submission.json).
+[`logs/phase3_agent29_32_submission.json`](../../../logs/pre_v1/phase3_agent29_32_submission.json).
 

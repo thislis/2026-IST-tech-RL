@@ -1,7 +1,7 @@
 # BASE-S03 이동 가능 영역과 path planner
 
-구현은 [`blackout_rl/navigation.py`](../blackout_rl/navigation.py), 실제 재현 runner는
-[`scripts/verify_base_s01_s03.py`](../scripts/verify_base_s01_s03.py)에 있다.
+구현은 [`code/shared/blackout_rl/navigation.py`](../../../code/shared/blackout_rl/navigation.py), 실제 재현 runner는
+[`code/pre_v1/scripts/verify_base_s01_s03.py`](../../../code/pre_v1/scripts/verify_base_s01_s03.py)에 있다.
 
 ## Planner 계약
 
@@ -42,4 +42,4 @@
 - target unit의 실제 Battery pickup
 
 전체 trajectory 표본과 경로는
-[`logs/base_s01_s03_live_navigation.json`](../logs/base_s01_s03_live_navigation.json)에 있다.
+[`logs/base_s01_s03_live_navigation.json`](../../../logs/pre_v1/base_s01_s03_live_navigation.json)에 있다.

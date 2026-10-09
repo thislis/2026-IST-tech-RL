@@ -5,7 +5,7 @@ checkpoint를 random/scripted baseline과 공통 조건에서 비교하는 평�
 
 ## BASE-R13 · Checkpoint와 experiment registry
 
-[`ExperimentIdentity`](../blackout_rl/experiment_registry.py)는 다음 다섯 항목을 checkpoint
+[`ExperimentIdentity`](../../../code/shared/blackout_rl/experiment_registry.py)는 다음 다섯 항목을 checkpoint
 payload 내부와 append-only JSONL registry 양쪽에 저장한다.
 
 ```text
@@ -22,7 +22,7 @@ checkpoint v1은 `experiment`가 선택 항목이므로 PREP-12 checkpoint와 �
 | field | value |
 | --- | --- |
 | run ID | `base-r13-bc-warm-start-seed-1212` |
-| checkpoint | [`checkpoints/base_r13_bc_warm_start.pt`](../checkpoints/base_r13_bc_warm_start.pt) |
+| checkpoint | [`artifacts/checkpoints/pre_v1/base_r13_bc_warm_start.pt`](../../../artifacts/checkpoints/pre_v1/base_r13_bc_warm_start.pt) |
 | checkpoint SHA-256 | `d185fbe497e9d0752ae98552b91b3de902965dbbb59fbeea0c8cb01b40140842` |
 | config SHA-256 | `ca15ade35f69f9465e750587a821e9d46d1f921502ed881f7e84b0eda8192e77` |
 | seed | `1212` |
@@ -30,14 +30,14 @@ checkpoint v1은 `experiment`가 선택 항목이므로 PREP-12 checkpoint와 �
 | opponent ID | `scripted-battery-v1` |
 | PPO global step | `0` |
 
-Registry 원본은 [`experiments/registry.jsonl`](../experiments/registry.jsonl), JSON Schema는
-[`experiment_registry_v1.schema.json`](../schemas/experiment_registry_v1.schema.json)이다.
+Registry 원본은 [`logs/shared/experiments/registry.jsonl`](../../../logs/shared/experiments/registry.jsonl), JSON Schema는
+[`experiment_registry_v1.schema.json`](../../../code/shared/schemas/experiment_registry_v1.schema.json)이다.
 `register_base_r13_checkpoint.py`는 BASE-R12 trajectory를 다시 BC 학습하고 provenance-complete
 checkpoint를 생성하는 재현 entry point다.
 
 ## BASE-R15 · Common-condition policy matrix
 
-[`policy_matrix.py`](../eval/policy_matrix.py)는 세 개의 paired-series log에서 지정한 공통 seed만
+[`policy_matrix.py`](../../../code/shared/eval/policy_matrix.py)는 세 개의 paired-series log에서 지정한 공통 seed만
 선택한 후 다음 조건을 검증한다.
 
 - random, scripted, IPPO 세 policy가 모두 존재
@@ -58,10 +58,10 @@ executable SHA `49172f...e29f4a69`이다. 각 후보가 A/B에서 한 경기씩 
 
 원본은 다음과 같다.
 
-- [`base_r15_random_vs_random_seed1401.json`](../logs/base_r15_random_vs_random_seed1401.json)
-- [`base_r15_scripted_vs_random_seed1401.json`](../logs/base_r15_scripted_vs_random_seed1401.json)
-- [`base_r15_ippo_vs_random_seed1401.json`](../logs/base_r15_ippo_vs_random_seed1401.json)
-- 통합 [`base_r15_policy_matrix_seed1401.json`](../logs/base_r15_policy_matrix_seed1401.json)
+- [`base_r15_random_vs_random_seed1401.json`](../../../logs/pre_v1/base_r15_random_vs_random_seed1401.json)
+- [`base_r15_scripted_vs_random_seed1401.json`](../../../logs/pre_v1/base_r15_scripted_vs_random_seed1401.json)
+- [`base_r15_ippo_vs_random_seed1401.json`](../../../logs/pre_v1/base_r15_ippo_vs_random_seed1401.json)
+- 통합 [`base_r15_policy_matrix_seed1401.json`](../../../logs/pre_v1/base_r15_policy_matrix_seed1401.json)
 
 IPPO artifact는 BASE-R12 BC warm start 직후이며 registry상 PPO global step이 `0`이다. 따라서 이
 결과는 학습된 IPPO 성능 주장이 아니라 evaluator/registry/checkpoint 경로의 end-to-end baseline
@@ -73,8 +73,10 @@ IPPO artifact는 BASE-R12 BC warm start 직후이며 registry상 PPO global step
 `code/shared/tests/test_registry_matrix.py`는 checkpoint 저장/복원, embedded identity와 registry 일치,
 duplicate run rejection, common-condition matrix validation과 실제 evidence log를 검증한다.
 
+테스트 수와 결과는 당시 기록이다. 아래 현재 경로의 discovery 명령은 공통 테스트만 수집하며, 전체 버전 검사는 [루트 README](../../../README.md)의 순회 명령을 사용한다.
+
 ```text
-python -m unittest discover -s tests -v
+.venv/bin/python code/run.py -m unittest discover -s code/shared/tests -v
 Ran 101 tests
 OK
 ```
