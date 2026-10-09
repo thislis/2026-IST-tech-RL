@@ -1,0 +1,1 @@
+../../../scripts/v8_worker.py

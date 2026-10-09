@@ -1,0 +1,1 @@
+../../../scripts/register_base_r13_checkpoint.py

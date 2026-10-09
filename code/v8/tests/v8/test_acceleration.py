@@ -1,0 +1,1 @@
+../../../../tests/v8/test_acceleration.py

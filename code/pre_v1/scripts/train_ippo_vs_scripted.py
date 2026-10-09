@@ -1,0 +1,1 @@
+../../../scripts/train_ippo_vs_scripted.py

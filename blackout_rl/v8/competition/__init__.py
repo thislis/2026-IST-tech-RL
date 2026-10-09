@@ -1,1 +1,1 @@
-"""v8 competition branch: supplied game/API, tensor-only submission policy."""
+../../../code/v8/blackout_rl/v8/competition/__init__.py

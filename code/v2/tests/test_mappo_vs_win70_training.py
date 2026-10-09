@@ -1,0 +1,1 @@
+../../../tests/test_mappo_vs_win70_training.py

@@ -1,0 +1,1 @@
+../../../scripts/run_phase3_agent21_24_self_play.py

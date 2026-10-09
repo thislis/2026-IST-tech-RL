@@ -1,0 +1,1 @@
+../../../scripts/verify_base_s08_s10.py

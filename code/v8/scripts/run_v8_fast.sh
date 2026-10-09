@@ -1,0 +1,1 @@
+../../../scripts/run_v8_fast.sh

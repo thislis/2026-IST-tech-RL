@@ -1,0 +1,1 @@
+../../../scripts/train_mappo_teacher_curriculum_v3.py

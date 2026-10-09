@@ -1,0 +1,1 @@
+../../../tests/test_registry_matrix.py

@@ -1,0 +1,1 @@
+../../../scripts/train_mappo_planner_residual_v6.sh

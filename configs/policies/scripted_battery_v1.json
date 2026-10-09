@@ -1,8 +1,1 @@
-{
-  "policy_id": "scripted-battery-v1",
-  "kind": "deterministic-role-fsm",
-  "roles": ["worker", "worker", "worker", "guard", "carrier"],
-  "absorption_strategy": true,
-  "danger_map": true,
-  "special_items": false
-}
+../../code/shared/configs/policies/scripted_battery_v1.json

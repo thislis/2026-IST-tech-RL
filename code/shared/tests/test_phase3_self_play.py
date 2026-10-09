@@ -1,0 +1,1 @@
+../../../tests/test_phase3_self_play.py

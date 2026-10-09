@@ -1,0 +1,1 @@
+../../../scripts/train_v8.py

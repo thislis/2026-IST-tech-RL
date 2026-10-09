@@ -1,0 +1,1 @@
+../../../scripts/resume_connectome_pilot.sh

@@ -1,46 +1,99 @@
-# Local Python environment
+# Shared: code/, authored docs/, tests, configs, contracts, schemas, scripts,
+# launcher scripts, submission templates, dependency locks and source aliases.
+# Keep both ends of source symlinks: Git stores links, not their target contents.
+# Do not blanket-ignore scripts/, *.json, *.yaml or *.lock.
+# docker-image.env is a shared image pin, not a credentials file.
+
+# Local Python environments and generated caches.
 .venv/
-
-# Local Unity editor and standalone build artifacts
+venv/
 .unity/
-builds/
-logs/*.log
-
-# Python-generated files
 __pycache__/
 *.py[cod]
 *.egg-info/
-build/
-dist/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.tox/
+.nox/
+.ipynb_checkpoints/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+build/
+dist/
 
-# Local configuration and macOS metadata
-.env
-.DS_Store
+# Local experiment outputs and their legacy compatibility symlinks.
+# No trailing slash: these root entries may be directories OR symlinks.
+/logs
+/reports
+/checkpoints
+/data
+/build
+/builds
+/dist
+/submission
+/submissions
+/experiments
+/wandb
+/runs
+/tensorboard
+
+# Local generated artifacts, with a narrow exception for authored research plans.
+# The reorganization kept their real files here; docs/plans and /plans are links.
+# These parent exceptions are necessary for Git to discover the shared documents.
+/artifacts/*
+!/artifacts/documents/
+/artifacts/documents/*
+!/artifacts/documents/plans/
+/artifacts/documents/plans/**
+!/artifacts/documents/plans/**/
+!/artifacts/documents/plans/**/*.md
+!/artifacts/documents/plans/**/request_manifest.json
+!/artifacts/documents/plans/v8_research_requests_2026-09-27
+
+# Share reproducible analysis scripts, but not generated analysis data/reports.
+/artifacts/documents/plans/**/internal_analysis/**
+!/artifacts/documents/plans/**/internal_analysis/
+!/artifacts/documents/plans/**/internal_analysis/*.py
+
+# Documentation shortcuts to excluded local reports must not become broken links
+# in a fresh clone. Authored docs/v8/, docs/v9/ and plan links remain shared.
+/docs/reports
+/docs/**/reports
 files_directory.md
 
-# checkpoint and logs files for tests
-checkpoints/*.pt
-checkpoints
-logs/
-
-# v7 official source data and derived graphs (recreate from pinned manifests).
-data/connectomes/
-
-# other local files
-/plans
-/scripts
-# V9's two reproducible CLI entrypoints are source, not local experiment output.
-!/scripts/
-/scripts/*
-!/scripts/run_v9_fast.sh
-!/scripts/v9_experiments.py
-/submissions
-/reports
-
-# Generated submissions and local experiment/verification artifacts.
-/submission/
-/artifacts/
+# Model exports and runtime telemetry, wherever a tool writes them.
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
 *.log
+*.pid
+*.pid.lock
+events.out.tfevents.*
+
+# Local credentials/settings; sanitized environment templates are shareable.
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+*.local.env
+.aws/
+.ssh/
+.secrets/
+.codex/config.local.toml
+.vscode/
+.idea/
+
+# OS/editor temporary files.
+.DS_Store
+._*
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~

@@ -1,0 +1,8 @@
+{
+  "schema_version": "blackout.opponent_suite.v1",
+  "random": "random-v1",
+  "scripted": "scripted-battery-v1",
+  "ippo": "phase3-ippo-128",
+  "historical_mappo": ["phase3-mappo-128"],
+  "latest_candidate": "mappo-latest-candidate"
+}

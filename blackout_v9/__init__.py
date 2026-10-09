@@ -1,3 +1,1 @@
-"""V9: observation-only Attention policies and original-environment experiments."""
-
-__version__ = "9.0.0"
+../code/v9/blackout_v9/__init__.py

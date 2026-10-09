@@ -1,0 +1,1 @@
+../../../scripts/export_v8_submission.py

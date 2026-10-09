@@ -1,16 +1,1 @@
-{
-  "schema": "blackout.v8.environment_contract.v2",
-  "scope": "provided_game_and_api_unchanged",
-  "build": "builds/BlackOut.app",
-  "environment_class": "blackout_env.BlackOutEnv",
-  "observation_generation": "provided implementation unchanged",
-  "reset": "provided BlackOutEnv.reset unchanged; no hidden gameplay flush or cache patch",
-  "step": "provided BlackOutEnv.step unchanged",
-  "reward": "provided reward unchanged",
-  "winner_source": "provided API info; reliability not reclassified",
-  "custom_side_channel": false,
-  "engine_mutations": false,
-  "transport_overlay": false,
-  "training_integration": "not_ready",
-  "previous_contract": "retired; see reports/v8/environment_restoration/before_rollback.zip"
-}
+../../code/v8/contracts/v8/environment_contract.json

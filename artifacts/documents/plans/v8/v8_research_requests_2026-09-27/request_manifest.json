@@ -1,0 +1,72 @@
+{
+  "date": "2026-09-27",
+  "audit_snapshot": "e6e98a63e9f401f6bf03e463a720c03878d1beb7",
+  "repository": "https://github.com/thislis/2026-IST-tech-RL/tree/e6e98a63e9f401f6bf03e463a720c03878d1beb7",
+  "previous_findings_internal_coverage": {
+    "I00": [
+      30,
+      31,
+      33
+    ],
+    "I01": [
+      1,
+      2,
+      3,
+      4,
+      35
+    ],
+    "I02": [
+      9,
+      15
+    ],
+    "I03": [
+      11,
+      13,
+      14
+    ],
+    "I04": [
+      10,
+      13
+    ],
+    "I05": [
+      5,
+      6,
+      7,
+      8,
+      12,
+      36
+    ],
+    "I06": [
+      7,
+      11,
+      18,
+      19,
+      20,
+      21
+    ],
+    "I07": [
+      16,
+      17,
+      20,
+      22,
+      23,
+      24,
+      34
+    ],
+    "I08": [
+      14,
+      25
+    ],
+    "I09": [
+      26,
+      27,
+      28,
+      29,
+      31,
+      32
+    ]
+  },
+  "source_starters_count": 18,
+  "new_training_or_unity_execution": false,
+  "purpose": "Research requests, not completed collaborator investigations"
+}
