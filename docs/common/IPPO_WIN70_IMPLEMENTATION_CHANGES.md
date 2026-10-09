@@ -2,7 +2,7 @@
 
 ## 결론
 
-`checkpoints/win_70_vs_scripted.pt`를 저장했고, 고정 `scripted-battery-v1` 상대의 진영 교대
+`artifacts/checkpoints/pre_v1/win_70_vs_scripted.pt`를 저장했고, 고정 `scripted-battery-v1` 상대의 진영 교대
 평가에서 목표 승률 70%를 넘겼다.
 
 | 평가군 | seed | 경기 수 | W-D-L | 승률 | 평균 점수차 |
@@ -17,7 +17,7 @@
 
 체크포인트 정보:
 
-- 경로: `checkpoints/win_70_vs_scripted.pt`
+- 경로: `artifacts/checkpoints/pre_v1/win_70_vs_scripted.pt`
 - SHA-256: `c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9`
 - 학습 global step: `216048`
 - 크기: `934253` bytes

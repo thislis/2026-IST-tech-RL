@@ -1,1 +1,0 @@
-../../code/v7/tests/v7/test_teammates.py

@@ -1,5 +1,9 @@
 """Experiment-side utilities for the BlackOut reinforcement-learning project."""
 
+from project_paths import package_paths
+__path__ = package_paths('blackout_rl')
+
+
 from .batching import ObservationBatch, canonical_agents, stack_observations, team_agents
 from .env import ContractBlackOutEnv
 from .reward import ScoreDeltaEvent, ScoreDeltaRewardTracker

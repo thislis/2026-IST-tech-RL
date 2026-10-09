@@ -1,1 +1,0 @@
-../code/v6/scripts/launch_mappo_v6_background.py

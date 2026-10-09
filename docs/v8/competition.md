@@ -1,6 +1,6 @@
 # v8 제공 환경·대회 제출 경로 — 2026-09-29
 
-기준은 [대회 제출 안내](../../blackout_last_4_pages.md)와 설치된 제공 `blackout_env`의 loader/match 코드다.
+기준은 [대회 제출 안내](../common/blackout_last_4_pages.md)와 설치된 제공 `blackout_env`의 loader/match 코드다.
 게임·obs 생성·제공 API·전송 구현을 수정하지 않는 별도 실험 `provided_competition_v1`을 준비했다.
 초기 구현 이후 사용자가 실행한 6개 run은 각각 2,048 step에서 중지·저장되었다.
 후속 창 숨김 수정에서는 32 step 기술 검사만 수행했으며 학습·평가를 재개하지 않았다.
@@ -10,7 +10,7 @@
 이전과 같은 한 줄이다. 기존 수정 환경 실험을 재개하지 않고 새 등록의 실험을 실행한다.
 
 ```bash
-bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/scripts/run_v8_fast.sh
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v8/scripts/run_v8_fast.sh
 ```
 
 관리자는 백그라운드로 분리되며 터미널 종료 후에도 유지된다. 중복 실행 잠금, `caffeinate`,
@@ -27,9 +27,9 @@ graphic 렌더링은 유지되며 Unity 게임 창은 표시하지 않는다.
 10개 에이전트의 `96×96×11` float32 맵, 픽셀별 one-hot, 벽·양 팀 유닛 채널을 확인했고
 시작부터 종료까지 수집한 화면 창 목록 28회에서 해당 Unity PID의 창은 발견되지 않았다.
 아이템이 없는 채널은 0일 수 있으며 11개 채널 모두가 항상 비제로라는 의미는 아니다.
-[실행 검사 결과](../../reports/v8/background_window_fix/live_rendered_check.json).
+[실행 검사 결과](../../logs/v8/reports/background_window_fix/live_rendered_check.json).
 이후 전체 회귀 검사 287개 중 286개 통과, Metal 접근 관련 1개 skip을 확인했다.
-[창 숨김·재개 준비 결과](../../reports/v8/background_window_fix/preparation.json).
+[창 숨김·재개 준비 결과](../../logs/v8/reports/background_window_fix/preparation.json).
 실행 옵션 참고: [Unity Player 공식 문서](https://docs.unity3d.com/6000.0/Documentation/Manual/PlayerCommandLineArguments.html).
 
 | 작업 | 예산 |
@@ -44,9 +44,9 @@ graphic 렌더링은 유지되며 Unity 게임 창은 표시하지 않는다.
 제공 loader 검증까지 자동 진행한다. 다음 명령들은 프로젝트 루트에서 실행한다.
 
 ```bash
-bash scripts/run_v8_fast.sh --check   # 원본 파일/등록만 검사, Unity 실행 없음
-bash scripts/run_v8_fast.sh --status
-bash scripts/run_v8_fast.sh --stop    # PPO update 완료 후 저장 요청
+bash code/v8/scripts/run_v8_fast.sh --check   # 원본 파일/등록만 검사, Unity 실행 없음
+bash code/v8/scripts/run_v8_fast.sh --status
+bash code/v8/scripts/run_v8_fast.sh --stop    # PPO update 완료 후 저장 요청
 ```
 
 중단 후 같은 시작 명령으로 재개한다. 물리 상태를 복원하지 않는 새 에피소드 재개다.
@@ -112,8 +112,8 @@ worker가 종료 정리를 위해 읽는 Unity PID는 프로세스 관리용이�
 완료 후 선택된 checkpoint별로 다음 두 파일만 생성된다.
 
 ```text
-submission/v8/<checkpoint_sha256>/policy.py
-submission/v8/<checkpoint_sha256>/checkpoint.pt
+artifacts/submission/v8<checkpoint_sha256>/policy.py
+artifacts/submission/v8<checkpoint_sha256>/checkpoint.pt
 ```
 
 `MyPolicy(nn.Module)`의 생성자는 `vector_size=96, n_channels=11`, forward 출력은
@@ -128,10 +128,10 @@ encoder 가중치도 포함한다. `policy.py`는 torch와 Python 표준 라이�
 수동으로 새 실험의 특정 checkpoint를 내보낼 수도 있다.
 
 ```bash
-.venv/bin/python scripts/export_v8_submission.py \
+.venv/bin/python code/v8/scripts/export_v8_submission.py \
   --checkpoint-store logs/v8/provided_competition_v1/runs/c1_s11/checkpoints \
-  --output submission/v8/manual_c1 \
-  --report reports/v8/competition/manual_c1_export.json
+  --output artifacts/submission/v8/manual_c1 \
+  --report logs/v8/reports/competition/manual_c1_export.json
 ```
 
 선택된 checkpoint와 export의 전체 tensor 가중치를 비교하고, 제공 `load_checkpoint()`로
@@ -143,18 +143,18 @@ CPU를 검증했다. 공식 서버의 장치·시간/메모리 제한·업로드
 
 ## 산출물과 검증
 
-- 새 등록: `reports/v8/competition/registration.json`
+- 새 등록: `logs/v8/reports/competition/registration.json`
 - 관리 로그/상태: `logs/v8/provided_competition_v1/{console.log,status.json}`
 - run checkpoint/로그: `logs/v8/provided_competition_v1/runs/<arm>_s<seed>/`
 - 경기 attempt/loader 검사: `logs/v8/provided_competition_v1/jobs/<job>/attempt-*/`
 - 최종 결과/선택 제출물: `logs/v8/provided_competition_v1/summary.json`
-- 초기 준비 검증(변경 전 기록): [preparation.json](../../reports/v8/competition/preparation.json)
-- 테스트: [unit_tests.txt](../../reports/v8/competition/unit_tests.txt), [regression_tests.txt](../../reports/v8/competition/regression_tests.txt)
-- loader 형식 검사 전용 초기 모델: `reports/v8/competition/contract_fixture/` (학습·제출용 모델이 아님)
+- 초기 준비 검증(변경 전 기록): [preparation.json](../../logs/v8/reports/competition/preparation.json)
+- 테스트: [unit_tests.txt](../../logs/v8/reports/competition/unit_tests.txt), [regression_tests.txt](../../logs/v8/reports/competition/regression_tests.txt)
+- loader 형식 검사 전용 초기 모델: `logs/v8/reports/competition/contract_fixture` (학습·제출용 모델이 아님)
 
 소스·설정·제공 게임/API·원본 checkpoint·패키지 버전·실행 스크립트를 등록한다.
 소스가 임의로 바뀌면 재개를 거부한다. 이번 실행 방식 변경은 별도 migration으로 기록했다.
 각 2,048 step checkpoint의 원본 blob과 이전 등록을 보존하고, 새 등록을 참조하는 자식 checkpoint를
 만들었다. 모델·optimizer·RNG·수집 상태·학습 로그 위치는 tensor/필드별 완전 동일성을 확인했다.
 같은 실행 명령으로 2,048 step부터 새 에피소드로 재개하며 학습 step은 추가하지 않았다.
-[변경 이력](../../reports/v8/background_window_fix/migration.json).
+[변경 이력](../../logs/v8/reports/background_window_fix/migration.json).

@@ -1,10 +1,25 @@
-# Shared: code/, authored docs/, tests, configs, contracts, schemas, scripts,
-# launcher scripts, submission templates, dependency locks and source aliases.
-# Keep both ends of source symlinks: Git stores links, not their target contents.
-# Do not blanket-ignore scripts/, *.json, *.yaml or *.lock.
-# docker-image.env is a shared image pin, not a credentials file.
+# Shared: code/ (versioned source, tests, configs, contracts, launchers,
+# templates and dependency locks), docs/ (plans, history and authored reports).
+# Do not ignore *.json, *.yaml, *.lock or launcher *.app directories globally.
+# code/shared/docker-image.env is a shared image pin, not credentials.
 
-# Local Python environments and generated caches.
+# Local experiments, weights, datasets, game binaries and submissions.
+/logs/
+/artifacts/
+
+# Prevent historical tool defaults from adding outputs at the root.
+/reports/
+/checkpoints/
+/data/
+/builds/
+/submission/
+/submissions/
+/experiments/
+/wandb/
+/runs/
+/tensorboard/
+
+# Python environments, generated packages and caches.
 .venv/
 venv/
 .unity/
@@ -24,47 +39,7 @@ htmlcov/
 build/
 dist/
 
-# Local experiment outputs and their legacy compatibility symlinks.
-# No trailing slash: these root entries may be directories OR symlinks.
-/logs
-/reports
-/checkpoints
-/data
-/build
-/builds
-/dist
-/submission
-/submissions
-/experiments
-/wandb
-/runs
-/tensorboard
-
-# Local generated artifacts, with a narrow exception for authored research plans.
-# The reorganization kept their real files here; docs/plans and /plans are links.
-# These parent exceptions are necessary for Git to discover the shared documents.
-/artifacts/*
-!/artifacts/documents/
-/artifacts/documents/*
-!/artifacts/documents/plans/
-/artifacts/documents/plans/**
-!/artifacts/documents/plans/**/
-!/artifacts/documents/plans/**/*.md
-!/artifacts/documents/plans/**/request_manifest.json
-!/artifacts/documents/plans/v8_research_requests_2026-09-27
-
-# Share reproducible analysis scripts, but not generated analysis data/reports.
-/artifacts/documents/plans/**/internal_analysis/**
-!/artifacts/documents/plans/**/internal_analysis/
-!/artifacts/documents/plans/**/internal_analysis/*.py
-
-# Documentation shortcuts to excluded local reports must not become broken links
-# in a fresh clone. Authored docs/v8/, docs/v9/ and plan links remain shared.
-/docs/reports
-/docs/**/reports
-files_directory.md
-
-# Model exports and runtime telemetry, wherever a tool writes them.
+# Weights, model exports and telemetry wherever generated.
 *.pt
 *.pth
 *.ckpt
@@ -75,7 +50,7 @@ files_directory.md
 *.pid.lock
 events.out.tfevents.*
 
-# Local credentials/settings; sanitized environment templates are shareable.
+# Local credentials/settings. Sanitized examples remain shareable.
 .env
 .env.*
 !.env.example
@@ -88,8 +63,9 @@ events.out.tfevents.*
 .codex/config.local.toml
 .vscode/
 .idea/
+files_directory.md
 
-# OS/editor temporary files.
+# OS and editor temporary files.
 .DS_Store
 ._*
 Thumbs.db

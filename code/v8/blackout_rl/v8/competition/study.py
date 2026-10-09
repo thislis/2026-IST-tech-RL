@@ -1,4 +1,7 @@
 """Separate immutable registration for the unchanged-game competition branch."""
+
+from project_paths import project_root, project_path
+
 import json
 import importlib.metadata
 from pathlib import Path
@@ -6,9 +9,9 @@ from blackout_rl.v8.checkpoints import atomic_json,fingerprints
 from blackout_rl.v8.contracts import file_hash
 from blackout_rl.v8.provided_environment import ROOT,verify_original,LAUNCHER_EXECUTABLE
 
-DIRECTORY=ROOT/'logs/v8/provided_competition_v1'
-REGISTRATION=ROOT/'reports/v8/competition/registration.json'
-CONFIG=ROOT/'configs/v8/competition/study.json'
+DIRECTORY=project_path('logs/v8/provided_competition_v1', root=ROOT)
+REGISTRATION=project_path('logs/v8/reports/competition/registration.json', root=ROOT)
+CONFIG=project_path('code/v8/configs/competition/study.json', root=ROOT)
 PACKAGES=('torch','numpy','protobuf','mlagents-envs','grpcio','blackout-env')
 
 
@@ -27,9 +30,9 @@ def prepare():
         training['schedule'][-1]['until']<=training['steps'] or
         not training['side_cycle'] or not set(training['side_cycle'])<={0,1}):
         raise ValueError('invalid registered budget/checkpoint/worker/evaluation settings')
-    protected=[CONFIG,LAUNCHER_EXECUTABLE,ROOT/'blackout_last_4_pages.md',ROOT/'contracts/v8/submission_contract.json',
-               ROOT/'scripts/run_v8_fast.sh',ROOT/'checkpoints/win_70_vs_scripted.pt',
-               ROOT/'reports/v8/environment_restoration/restoration.json']
+    protected=[CONFIG,LAUNCHER_EXECUTABLE,project_path('docs/common/blackout_last_4_pages.md', root=ROOT),project_path('code/v8/contracts/submission_contract.json', root=ROOT),
+               project_path('code/v8/scripts/run_v8_fast.sh', root=ROOT),project_path('artifacts/checkpoints/win_70_vs_scripted.pt', root=ROOT),
+               project_path('logs/v8/reports/environment_restoration/restoration.json', root=ROOT)]
     registration=dict(schema='blackout.v8.provided_competition.v1',sources=fingerprints(),
                       files={str(p.relative_to(ROOT)):file_hash(p) for p in protected},config=cfg,
                       packages={name:importlib.metadata.version(name) for name in PACKAGES},
@@ -42,14 +45,14 @@ def validate():
     r=read(REGISTRATION)
     if r['schema']!='blackout.v8.provided_competition.v1' or r['sources']!=fingerprints():raise ValueError('competition source registration changed')
     for name,h in r['files'].items():
-        if file_hash(ROOT/name)!=h:raise ValueError('registered input changed: '+name)
+        if file_hash(project_path(name, root=ROOT))!=h:raise ValueError('registered input changed: '+name)
     if r['packages']!={name:importlib.metadata.version(name) for name in PACKAGES}:raise ValueError('registered package version changed')
     verify_original();return r
 
 
 def run_config(r,run):
     cfg=dict(r['config']['training']);cfg.update(seed=int(run.split('_s')[1]),arm=run.split('_s')[0])
-    cfg['opponent']=dict(path=str(ROOT/'checkpoints/win_70_vs_scripted.pt'),sha256=r['files']['checkpoints/win_70_vs_scripted.pt'],
+    cfg['opponent']=dict(path=str(project_path('artifacts/checkpoints/win_70_vs_scripted.pt', root=ROOT)),sha256=r['files']['checkpoints/win_70_vs_scripted.pt'],
         source_sha256={p:h for p,h in r['sources'].items() if p.startswith('blackout_rl/') and '/v8/' not in p})
     return cfg
 
@@ -71,7 +74,7 @@ def completed(job):
     if not p.exists():return False
     done=read(p)
     if done['registration_sha256']!=file_hash(REGISTRATION):raise ValueError('foreign completion record')
-    if file_hash(ROOT/done['artifact'])!=done['artifact_sha256']:raise ValueError('completion artifact changed')
+    if file_hash(project_path(done['artifact'], root=ROOT))!=done['artifact_sha256']:raise ValueError('completion artifact changed')
     if job['kind']=='train':
         run=DIRECTORY/'runs'/job['run']
         if read(run/'status.json')['state']!='complete' or read(run/'checkpoints/latest.json')['sha256']!=done['artifact_sha256']:

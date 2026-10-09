@@ -1,4 +1,7 @@
 """Read-only verification of supplied artifacts. No runtime/env monkey patches."""
+
+from project_paths import project_root, project_path, source_files
+
 import importlib.metadata
 import importlib.util
 import os
@@ -6,9 +9,9 @@ from pathlib import Path
 import subprocess
 from .io import ROOT, digest, file_hash, read_json
 
-CONFIG = ROOT / "configs/v9/default.json"
-ORIGINAL = ROOT / "contracts/v9/original.json"
-LAUNCHER = ROOT / "launchers/v9/BlackOutRendered.app"
+CONFIG = project_path('code/v9/configs/default.json', root=ROOT)
+ORIGINAL = project_path('code/v9/contracts/original.json', root=ROOT)
+LAUNCHER = project_path('code/v9/launchers/BlackOutRendered.app', root=ROOT)
 
 
 def config(path=CONFIG):
@@ -44,12 +47,12 @@ def verify_original():
                 raise ValueError("provided source changed: " + rel)
     for group in ("api_files", "bundle_files"):
         for rel, checksum in record[group].items():
-            if file_hash(ROOT / rel) != checksum:
+            if file_hash(project_path(rel, root=ROOT)) != checksum:
                 raise ValueError("provided runtime changed: " + rel)
     for package, directory in (("blackout_env", "blackout_env"), ("mlagents_envs", "mlagents_envs"),
                                ("google.protobuf", "google/protobuf")):
         origin = Path(importlib.util.find_spec(package).origin).resolve()
-        expected = ROOT / ".venv/lib/python3.10/site-packages" / directory
+        expected = project_path(Path(".venv/lib/python3.10/site-packages") / directory, root=ROOT)
         if not origin.is_relative_to(expected):
             raise ValueError("non-original import: " + str(origin))
     executable = LAUNCHER / "Contents/MacOS/BlackOutRendered"
@@ -59,12 +62,13 @@ def verify_original():
 
 
 def source_fingerprint():
-    files = list((ROOT / "blackout_v9").glob("*.py"))
+    files = list((project_path('code/v9/blackout_v9', root=ROOT)).glob("*.py"))
     # Historical opponents are used as-is and must remain pinned too.
-    files += list((ROOT / "blackout_rl").rglob("*.py"))
-    files += [ORIGINAL, CONFIG, ROOT / "scripts/run_v9_fast.sh", ROOT / "scripts/v9_experiments.py",
-              ROOT / "run_v9_fast.sh", LAUNCHER / "Contents/MacOS/BlackOutRendered",
-              ROOT / "blackout_last_4_pages.md", ROOT / "checkpoints/win_70_vs_scripted.pt"]
+    files += source_files(ROOT, "blackout_rl")
+    files += [ROOT / "code/shared/project_paths.py", ROOT / "code/shared/legacy_paths.json", ROOT / "code/shared/relocation_sources.json"]
+    files += [ORIGINAL, CONFIG, project_path('code/v9/scripts/run_v9_fast.sh', root=ROOT), project_path('code/v9/scripts/v9_experiments.py', root=ROOT),
+              project_path('code/v9/run_v9_fast.sh', root=ROOT), LAUNCHER / "Contents/MacOS/BlackOutRendered",
+              project_path('docs/common/blackout_last_4_pages.md', root=ROOT), project_path('artifacts/checkpoints/win_70_vs_scripted.pt', root=ROOT)]
     return {str(p.relative_to(ROOT)): file_hash(p) for p in sorted(files)}
 
 

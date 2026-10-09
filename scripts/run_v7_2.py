@@ -1,1 +1,0 @@
-../code/v7/scripts/run_v7_2.py

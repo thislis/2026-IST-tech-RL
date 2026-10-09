@@ -1,1 +1,0 @@
-../code/v7/scripts/export_v7.py

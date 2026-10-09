@@ -1,1 +1,0 @@
-docs/common/game_spec.md

@@ -1,1 +1,0 @@
-v8/v8_implementation_plan_with_references.md

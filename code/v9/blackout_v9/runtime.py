@@ -1,4 +1,7 @@
 """Bounded spawn scheduler with external watchdogs and owned-process cleanup."""
+
+from project_paths import project_root, project_path
+
 import os
 from pathlib import Path
 import signal
@@ -19,7 +22,7 @@ def owned_members(record):
         parts = line.split(None, 2)
         if len(parts) != 3 or int(parts[1]) != record["pid"]:
             continue
-        if ("blackout_v9.worker" in parts[2] or str(ROOT / "builds/BlackOut.app") in parts[2]
+        if ("blackout_v9.worker" in parts[2] or str(project_path('artifacts/builds/BlackOut.app', root=ROOT)) in parts[2]
                 or "tests.v9.runtime_fixture" in parts[2]):
             members.append({"pid": int(parts[0]), "birth": process_birth(int(parts[0]))})
     return members

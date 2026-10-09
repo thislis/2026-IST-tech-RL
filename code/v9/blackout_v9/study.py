@@ -1,4 +1,7 @@
 """Plan gates, three-arm study, independent confirmation and frozen submission."""
+
+from project_paths import project_root, project_path
+
 from pathlib import Path
 import shutil
 import time
@@ -137,10 +140,10 @@ def run_study(directory, cfg, registration_sha, stop, progress, memory):
     ensure_export(initial, initial_bundle)
     baseline = evaluate_bundle(initial_bundle, baseline_directory / "initial_eval", cfg,
                  replicates=cfg["dev_replicates"], stop=stop, progress=progress)
-    v8_summary = ROOT / "logs/v8/provided_competition_v1/summary.json"
+    v8_summary = project_path('logs/v8/provided_competition_v1/summary.json', root=ROOT)
     historical = None
     if v8_summary.exists():
-        old_bundle = ROOT / read_json(v8_summary)["selected"]["bundle"]
+        old_bundle = project_path(read_json(v8_summary)["selected"]["bundle"], root=ROOT)
         if old_bundle.is_dir():
             historical = evaluate_bundle(old_bundle, baseline_directory / "v8_eval", cfg,
                          replicates=cfg["dev_replicates"], stop=stop, progress=progress)
@@ -187,8 +190,8 @@ def run_study(directory, cfg, registration_sha, stop, progress, memory):
                            replicates=cfg["test_replicates"], offset=81000, stop=stop, progress=progress)
     frozen_baseline = evaluate_bundle(initial_bundle, directory / "frozen_baseline_test", cfg,
                            replicates=cfg["test_replicates"], offset=81000, stop=stop, progress=progress)
-    checkpoint_sha = file_hash(Path(selected["bundle"]) / "checkpoint.pt")
-    destination = ROOT / "submission/v9" / checkpoint_sha
+    checkpoint_sha = file_hash(project_path(selected["bundle"], root=ROOT) / "checkpoint.pt")
+    destination = project_path(Path("submission/v9") / checkpoint_sha, root=ROOT)
     if not destination.exists(): shutil.copytree(selected["bundle"], destination)
     submission = verify_export(destination)
     summary = {"complete": True, "registration_sha256": registration_sha, "selected": selection,

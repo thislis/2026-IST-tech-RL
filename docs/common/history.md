@@ -5,13 +5,13 @@
 > 최종 평가 4,016경기를 완료했다. 선택 모델 B_s22의 최종 승률은 58/240=24.17%로,
 > 학습 전 Attention 기준선 60/240=25%를 넘지 못했다. 제출 형식 검증은 통과했지만
 > 학습에 따른 성능 개선·전략적 협동·공식 서버 성능은 입증하지 못했다.
-> 실행 근거: [`v9 최종 집계`](logs/v9/attention_original_v1/summary.json),
-> 실행·제출 계약: [`v9 안내`](docs/v9.md). 로그·reports·체크포인트·submission은
+> 실행 근거: [`v9 최종 집계`](../../logs/v9/attention_original_v1/summary.json),
+> 실행·제출 계약: [`v9 안내`](../v9/README.md). 로그·reports·체크포인트·submission은
 > 로컬 산출물로 보존하며 Git 추적 대상에서 제외한다.
 
 ## 목표와 공통 평가 기준
 
-최종 목표는 고정 상대 `checkpoints/win_70_vs_scripted.pt`를 상대로 MAPPO 정책을
+최종 목표는 고정 상대 `artifacts/checkpoints/pre_v1/win_70_vs_scripted.pt`를 상대로 MAPPO 정책을
 학습해, dev seed 5개를 양 진영으로 바꿔 치르는 10경기에서 승률 85% 이상을
 달성하는 것이다. 10경기에서는 최소 9승이 필요하며 무승부는 승리로 계산하지
 않는다. v1~v5는 decentralized actor와 centralized critic을 사용하는 MAPPO
@@ -272,7 +272,7 @@ PPO의 확률 계산을 일치시키고, 탐색 하한과 B 진영·실패 seed 
   weak win70 8경기 중 4승, full win70 184경기 중 27승이었다. 학습 중 탐색과 상대
   혼합을 포함하므로 이 수치는 deterministic dev 평가 승률과 직접 비교하지 않는다.
 - latest·target-best·stage-best checkpoint와 실행 로그는 저장됐다. 최종 dev 9/10 및
-  confirmation 조건을 통과하지 못해 `mappo_win_85_vs_win70_v6.pt`와 `submission/v6/`
+  confirmation 조건을 통과하지 못해 `mappo_win_85_vs_win70_v6.pt`와 `artifacts/submission/v6`
   산출물은 생성되지 않았고, 최종 test 평가도 실행되지 않았다.
 - 제출 export의 독립 실행은 테스트했지만 stateful planner와 canonical batch 순서를
   공식 평가 환경이 허용하는지는 별도 확인이 필요하다. 순수 stateless Torch actor만
@@ -429,7 +429,7 @@ PPO의 확률 계산을 일치시키고, 탐색 하한과 B 진영·실패 seed 
   확정하지 않는다.
 - 자동 선택 모델은 `c1_s11`이다. 최종 arm 평균 동률이면 C1, arm 내 seed별 동률이면
   먼저 등록한 seed를 선택하는 규칙에 따른 결과다. 성능 우위로 선정된 모델이 아니다.
-  `submission/v8/37907297bcf0234e823b12bfdb95433b0490e7e7f2672b119c9929b98cd1e493/`
+  `artifacts/submission/v8/37907297bcf0234e823b12bfdb95433b0490e7e7f2672b119c9929b98cd1e493`
   에 두 제출 파일을 생성했고, 제공 loader의 격리 CPU 로드·입력 형식·행동 범위·배치
   순서/분할·실제 수집 관측 8개 배치의 행동 일치 검사를 통과했다.
 - 제공 안내는 보상이 대회 점수와 무관하다고 설명하지만, 설치된 로컬 `run_match()`는
@@ -446,7 +446,7 @@ greedy 행동 편중을 분석하는 데서 시작해야 한다. 게임·obs 생
 
 ### v8 문제를 해결하기 위한 구현
 
-- v1~v8 로그·코드 감사와 관련 연구를 바탕으로 `plans/v9_plan.md`를 작성하고,
+- v1~v8 로그·코드 감사와 관련 연구를 바탕으로 `docs/v9/plans/v9_plan.md`를 작성하고,
   새 구현을 `blackout_v9/`에 분리했다. 원본 Unity·제공 API·obs 생성 및 전처리와
   v1~v8 코드는 유지한다. 게임 내부의 타이머 문제를 수정하지 않고 경기마다 원본
   환경을 새로 실행하며, 정상 종료되지 않은 경기는 학습에 반영하지 않는다.
@@ -473,7 +473,7 @@ greedy 행동 편중을 분석하는 데서 시작해야 한다. 게임·obs 생
 - 공통 장면의 forward 내 계산 재사용, graphic의 lossless 저장, CPU actor·MPS learner,
   최대 8개 수집 worker 자동 조정을 연결했다. 평가 worker는 4개이며 API 통신이나
   obs를 패치하지 않는다. 원본 앱에 `-batchmode`를 전달해 graphic 렌더링은 유지하고
-  창을 숨긴다. `run_v9_fast.sh` 한 줄로 분리된 백그라운드 실행·상태·중지·재개를 제공한다.
+  창을 숨긴다. `code/v9/run_v9_fast.sh` 한 줄로 분리된 백그라운드 실행·상태·중지·재개를 제공한다.
 - 환경 lifecycle 20경기와 기능 pilot 후 A/B/C × seed 11/22/33을 각각 목표
   1,048,576 step까지 새로 학습했다. 완료 경기 wave 단위로 예산을 마감해 실제 step은
   목표를 초과할 수 있다. 설정 선택 후 seed 44/55를 추가 학습하고 선택 모델·미학습
@@ -533,7 +533,7 @@ greedy 행동 편중을 분석하는 데서 시작해야 한다. 게임·obs 생
 - 평가 초기 관측 해시는 진영별 한 종류였다. 별도 action RNG 반복을 새로운 맵
   일반화 검증으로 해석하지 않는다. 로컬 누적 reward 승패와 공식 게임 승패의 일치,
   self-ID 계약, 전략적 협동·공식 서버 성능은 검증되지 않았다.
-- `submission/v9/4b6e8bae8713413fb65a557883ab1b1b9353f02273d4854b174654e6556cf18c/`
+- `artifacts/submission/v9/4b6e8bae8713413fb65a557883ab1b1b9353f02273d4854b174654e6556cf18c`
   에 `policy.py`와 `checkpoint.pt`를 생성했다. 제공 loader의 격리 CPU 로드,
   B=0/1/3/5/10 입력, 출력·분포 일치 검증을 통과했고 저장 파일 해시도 일치했다.
   `format_ready=true`지만 `official_server_certified=false`, 외부 제출은 하지 않았다.
@@ -587,19 +587,19 @@ v9 역시 두 파일 제출 검증과 최종 test를 완료했지만 미학습 �
 
 | 세대 | 구현/설계 | 실행 근거 |
 | --- | --- | --- |
-| v1 | 초기 구현은 현재 v2로 교체되었으며 스키마와 실패 분석으로 보존 | `logs/mappo_vs_win70/`, `reports/mappo_vs_win70_v2_plan_changes.md` |
-| v2 | `scripts/train_mappo_vs_win70.py` | `logs/mappo_vs_win70_v2/`, `reports/mappo_vs_win70_training.md` |
-| v3 | 당시 구현은 v4 entry point로 발전했으며 설계 문서로 보존 | `logs/mappo_teacher_curriculum_v3/`, `reports/mappo_teacher_curriculum_v3_plan.md` |
-| v4 | `scripts/train_mappo_planner_residual_v4.py` 및 v4 호환 학습기 | `logs/mappo_planner_residual_v4/`, `reports/mappo_planner_residual_v4_plan_changes.md` |
-| v5 | `scripts/train_mappo_planner_residual_v5.py`, `blackout_rl/mappo_curriculum_v5.py` | `logs/mappo_planner_residual_v5/`, `reports/mappo_planner_residual_v5_plan_changes.md` |
-| v6 | `scripts/train_mappo_planner_residual_v6.py`, `blackout_rl/mappo_v6.py`, `blackout_rl/mappo_v6_training.py`, `blackout_rl/mappo_curriculum_v6.py` | `logs/mappo_planner_residual_v6/`의 `run_summary.json`, `training.jsonl`, `training_episodes.jsonl`, `target_eval_step_1159168.json`, `confirmation_rollback_eval_step_*.json`; 구현 검증: `tests/test_mappo_v6.py`, `reports/mappo_planner_residual_v6_plan_changes.md` |
-| v7-1 | `blackout_rl/v7_1/`, `blackout_rl/v7_training.py`, `configs/v7/main_study/v7_1_*.yaml`, `reports/v7/main_study_preregistration.md` | `logs/v7/v7_1_*_main_2m_v1/<seed>/`의 `status.json`, `training.jsonl`, `eval_dev_target_*.json`; 집계: `logs/v7/main_study/accelerated/summary.json` |
-| v7-2 | `blackout_rl/v7_2/`, `configs/v7/main_study/v7_2_readout_ppo.yaml`, `reports/v7/teammate_v2_recovery.md` | `logs/v7/v7_2_*_teammate_v2_main_2m_v1/<seed>/`의 `status.json`, `training.jsonl`, `eval_dev_target_*.json`; 개입 검증: `reports/v7/unity_causality_teammate_v2.json` |
-| v7 공통 실행 | `scripts/connectome_main.py`, `scripts/accelerated_connectome.py`, `scripts/evaluate_v7.py`, `reports/v7/acceleration_and_resume.md` | `logs/v7/main_study/accelerated/status.json`, `summary.json`; 등록·재개 근거: `reports/v7/main_study_registration.json`, `acceleration_registration.json`, `acceleration_resume_points.json` |
-| v8 초기 연구 경로(철회) | `blackout_rl/v8/`, `docs/v8/environment_restoration.md` | `logs/v8/accelerated_pilot_v1/summary.json`, `reports/v8/environment_restoration/`, `build/retired_v8_environment_2026-09-29/` |
-| v8 원본 환경·제출 | `blackout_rl/v8/competition/`, `configs/v8/competition/study.json`, `contracts/v8/submission_contract.json`, `docs/v8/competition.md` | `logs/v8/provided_competition_v1/{status,summary,submission_verification}.json`, `reports/v8/competition/registration.json`, `reports/v8/background_window_fix/` |
-| v9 Attention·원본 환경·제출 | `blackout_v9/`, `configs/v9/default.json`, `contracts/v9/original.json`, `plans/v9_plan.md`, `docs/v9.md`, `run_v9_fast.sh` | `logs/v9/attention_original_v1/{status,summary,registration,selection}.json` 및 `runs/`, `confirmation/`, `frozen_test/`, `frozen_baseline_test/`; 구현 검증: `tests/v9/test_v9.py`, `reports/v9/implementation_validation.json` |
-| v6·v7 관전 | `watch_best_models.sh`, `tools/watch_best_models.py` | v6 latest(1,159,168 step), v7-1 A3 seed 11 평가 당시 불변 checkpoint(2,000,000 step); `--check`로 실행 전 검사 |
+| v1 | 초기 구현은 현재 v2로 교체되었으며 스키마와 실패 분석으로 보존 | `logs/mappo_vs_win70/`, `docs/v2/reports/mappo_vs_win70_v2_plan_changes.md` |
+| v2 | `code/v2/scripts/train_mappo_vs_win70.py` | `logs/mappo_vs_win70_v2/`, `docs/v2/reports/mappo_vs_win70_training.md` |
+| v3 | 당시 구현은 v4 entry point로 발전했으며 설계 문서로 보존 | `logs/mappo_teacher_curriculum_v3/`, `docs/v3/reports/mappo_teacher_curriculum_v3_plan.md` |
+| v4 | `code/v4/scripts/train_mappo_planner_residual_v4.py` 및 v4 호환 학습기 | `logs/mappo_planner_residual_v4/`, `docs/v4/reports/mappo_planner_residual_v4_plan_changes.md` |
+| v5 | `code/v5/scripts/train_mappo_planner_residual_v5.py`, `code/v5/blackout_rl/mappo_curriculum_v5.py` | `logs/mappo_planner_residual_v5/`, `docs/v5/reports/mappo_planner_residual_v5_plan_changes.md` |
+| v6 | `code/v6/scripts/train_mappo_planner_residual_v6.py`, `code/v6/blackout_rl/mappo_v6.py`, `code/v6/blackout_rl/mappo_v6_training.py`, `code/v6/blackout_rl/mappo_curriculum_v6.py` | `logs/mappo_planner_residual_v6/`의 `run_summary.json`, `training.jsonl`, `training_episodes.jsonl`, `target_eval_step_1159168.json`, `confirmation_rollback_eval_step_*.json`; 구현 검증: `code/v6/tests/test_mappo_v6.py`, `docs/v6/reports/mappo_planner_residual_v6_plan_changes.md` |
+| v7-1 | `code/v7/blackout_rl/v7_1`, `code/v7/blackout_rl/v7_training.py`, `code/v7/configs/main_study/v7_1_*.yaml`, `docs/v7/reports/main_study_preregistration.md` | `logs/v7/v7_1_*_main_2m_v1/<seed>/`의 `status.json`, `training.jsonl`, `eval_dev_target_*.json`; 집계: `logs/v7/main_study/accelerated/summary.json` |
+| v7-2 | `code/v7/blackout_rl/v7_2`, `code/v7/configs/main_study/v7_2_readout_ppo.yaml`, `docs/v7/reports/teammate_v2_recovery.md` | `logs/v7/v7_2_*_teammate_v2_main_2m_v1/<seed>/`의 `status.json`, `training.jsonl`, `eval_dev_target_*.json`; 개입 검증: `logs/v7/reports/unity_causality_teammate_v2.json` |
+| v7 공통 실행 | `code/v7/scripts/connectome_main.py`, `code/v7/scripts/accelerated_connectome.py`, `code/v7/scripts/evaluate_v7.py`, `docs/v7/reports/acceleration_and_resume.md` | `logs/v7/main_study/accelerated/status.json`, `summary.json`; 등록·재개 근거: `logs/v7/reports/main_study_registration.json`, `acceleration_registration.json`, `acceleration_resume_points.json` |
+| v8 초기 연구 경로(철회) | `code/v8/blackout_rl/v8`, `docs/v8/environment_restoration.md` | `logs/v8/accelerated_pilot_v1/summary.json`, `logs/v8/reports/environment_restoration`, `build/retired_v8_environment_2026-09-29/` |
+| v8 원본 환경·제출 | `code/v8/blackout_rl/v8/competition`, `code/v8/configs/competition/study.json`, `code/v8/contracts/submission_contract.json`, `docs/v8/competition.md` | `logs/v8/provided_competition_v1/{status,summary,submission_verification}.json`, `logs/v8/reports/competition/registration.json`, `logs/v8/reports/background_window_fix` |
+| v9 Attention·원본 환경·제출 | `blackout_v9/`, `code/v9/configs/default.json`, `code/v9/contracts/original.json`, `docs/v9/plans/v9_plan.md`, `docs/v9.md`, `code/v9/run_v9_fast.sh` | `logs/v9/attention_original_v1/{status,summary,registration,selection}.json` 및 `runs/`, `confirmation/`, `frozen_test/`, `frozen_baseline_test/`; 구현 검증: `code/v9/tests/v9/test_v9.py`, `logs/v9/reports/implementation_validation.json` |
+| v6·v7 관전 | `code/shared/watch_best_models.sh`, `tools/watch_best_models.py` | v6 latest(1,159,168 step), v7-1 A3 seed 11 평가 당시 불변 checkpoint(2,000,000 step); `--check`로 실행 전 검사 |
 
 ## 선정 모델 관전과 로컬 산출물
 
@@ -608,7 +608,7 @@ v9 역시 두 파일 제출 검증과 최종 test를 완료했지만 미학습 �
 v6는 개선 기반, v7-1 A3는 다중 시드 비교 후보라는 기준과 동률 내 명시적 선택이다.
 
 ```bash
-bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/watch_best_models.sh
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/shared/watch_best_models.sh
 ```
 
 두 모델이 원본 게임 창에서 정상 속도로 두 경기를 치르며 두 번째 경기는 진영을 바꾼다.

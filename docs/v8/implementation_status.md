@@ -3,7 +3,7 @@
 **C1/flat41의 로컬 연구 실행 경로를 구현했고 실제 Unity 기술 검증을 통과했다.**
 정규 파일럿·성능 개선·공식 제출 인증은 완료하지 않았다. 원본 v7 소스, 82-file 가속
 runtime, 기존 checkpoint를 보존했다. 핵심 결과는
-[engineering_validation.json](../../reports/v8/engineering_validation.json)에 해시와 함께 기록했다.
+[engineering_validation.json](../../logs/v8/reports/engineering_validation.json)에 해시와 함께 기록했다.
 
 ## 계획서와 구현 대응
 
@@ -23,19 +23,19 @@ runtime, 기존 checkpoint를 보존했다. 핵심 결과는
 ## 실제 수행한 검증
 
 - 전체 회귀: **263개 중 262 pass, 1 skip**.
-  [전체 로그](../../reports/v8/full_regression.txt). skip은 기존 v7의 Metal 장치 접근 검사다.
+  [전체 로그](../../logs/v8/reports/full_regression.txt). skip은 기존 v7의 Metal 장치 접근 검사다.
   v8 필수 unit test는 skip 없이 통과했다.
 - 실제 Unity: 자동 재시작 timeout 3회와 명시 reset timeout 3회.
   97→100 마지막 reward **1.03**, 99→100 **1.01**, 감점/이전, draw+shaping, duplicate/late
   event, reset score 검사. B→A 순서로 두 target score를 쓰는 fixture에서는 기존 엔진의
   첫 종료(B 승리, snapshot 0:100)가 보존된다. 물리적으로 모든 동시 충돌을 열거한 검사는 아니다.
-  [결과](../../reports/v8/live_contract_validation.json).
+  [결과](../../logs/v8/reports/live_contract_validation.json).
 - 렌더: CPU numeric RGBA8→GPU texture→LLAPI→one-hot에서 복원한 RGBA8의 SHA256 일치.
   seed3001 초기 map의 ID counts는 `[5844,2688,320,320,1,1,42,0,0,0,0]`이며 양 가장자리
   row는 wall ID1이다. `[96,96,11]` one-hot만 검사해서는 all-empty map을 발견하지 못하므로
   양 storage 채널도 검사한다. 원시 바이트 비교는 reset golden fixture 범위다.
 - 기존 native protobuf/queue에서도 같은 timeout 6건의 terminal/decision/tick/score/winner와
-  semantic golden hash 일치. [parity 결과](../../reports/v8/runtime_contract_parity.json).
+  semantic golden hash 일치. [parity 결과](../../logs/v8/reports/runtime_contract_parity.json).
   학습 정책의 장기간 cross-backend trajectory가 동일하다고 확대하지 않는다.
 - 실제 C1과 flat 각각 **384 transitions, 6 PPO updates, 3 timeout episodes**.
   exposure는 각 384개로 partial episode까지 일치한다. encoder는 고정하고 trunk/gate/correction/
@@ -45,10 +45,10 @@ runtime, 기존 checkpoint를 보존했다. 핵심 결과는
   2초 진단 경기의 1승1패는 정규 승률이나 개선 증거가 아니다.
 - 두 연구 export: 실제 관측 2 episodes×8 decisions, dictionary 역순·동일 ID 재호출,
   별도 `python -I`에서 행동 및 planner state digest 일치.
-  [C1](../../reports/v8/export_parity.json), [flat](../../reports/v8/export_parity_flat.json).
+  [C1](../../logs/v8/reports/export_parity.json), [flat](../../logs/v8/reports/export_parity_flat.json).
 - 기존 final A2/A3 seed11 checkpoint의 합성 feature 96개 exact factorization에서 joint argmax
   변경은 각각 0건. threshold decoder는 다른 정책이며 바뀐 action 수를 별도 기록했다.
-  [A2](../../reports/v8/legacy_A2_seed11.json), [A3](../../reports/v8/legacy_A3_seed11.json).
+  [A2](../../logs/v8/reports/legacy_A2_seed11.json), [A3](../../logs/v8/reports/legacy_A3_seed11.json).
 
 | 진단 arm | request p50 | p95 | p99 | 수집 wall time |
 | --- | ---: | ---: | ---: | ---: |
@@ -81,7 +81,7 @@ runtime, 기존 checkpoint를 보존했다. 핵심 결과는
 초기 진단 빌드 r1/r2/r3와 실패 run은 결과를 성공으로 덮어쓰지 않고 별도 파일로 보존했다.
 현재 검증된 bundle hash는
 `70893bf06ea30239df6ff25666ac7cb595aa45a3c7b6e5859093174d39bfdbf5`이며,
-source→binary 목록은 [unity_build_manifest.json](../../reports/v8/unity_build_manifest.json)에 있다.
+source→binary 목록은 [unity_build_manifest.json](../../logs/v8/reports/unity_build_manifest.json)에 있다.
 
 ## 완료 상태와 다음 실험
 
