@@ -1,6 +1,6 @@
 # BASE-S02 semantic map decoder
 
-구현은 [`blackout_rl/semantic_map.py`](../blackout_rl/semantic_map.py)에 있다.
+구현은 [`code/shared/blackout_rl/semantic_map.py`](../../../code/shared/blackout_rl/semantic_map.py)에 있다.
 
 ## 좌표 계약
 
@@ -38,4 +38,4 @@ seed `210301`에서 다음을 decode했다.
 
 `unit_0` vector 위치 `(0.0625, 0.9375)`와 가장 가까운 ally-unit semantic pixel 중심의
 오차는 `0.7071 pixel`로, 허용 기준 `1.5 pixel` 이내였다. 이 결과는
-[`logs/base_s01_s03_live_navigation.json`](../logs/base_s01_s03_live_navigation.json)에 기록했다.
+[`logs/base_s01_s03_live_navigation.json`](../../../logs/pre_v1/base_s01_s03_live_navigation.json)에 기록했다.

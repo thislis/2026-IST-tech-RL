@@ -14,7 +14,7 @@ bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v9/run_v9_fast.sh --
 
 사전 검사 뒤 background supervisor의 PID·로그 경로를 출력하고 셸로 돌아온다. 터미널을 닫아도 실행되며, Unity는 `-batchmode`와 `no_graphics=False`로 렌더링을 유지하고 창은 숨긴다. macOS idle sleep은 `caffeinate`로 방지한다. 로그아웃·재부팅 후 자동 재시작은 설정하지 않는다.
 
-같은 명령에 다음 옵션을 붙인다.
+새 실험을 조회·중단·재개할 때는 시작 시 사용한 `--name attention_relocated_v1`을 계속 붙인다. 기존 완료 실험 `attention_original_v1`은 `--name` 없이 `--status`로 조회한다. 아래 옵션을 같은 명령에 붙인다.
 
 | 옵션 | 동작 |
 |---|---|
@@ -26,7 +26,7 @@ bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v9/run_v9_fast.sh --
 | `--name NAME` | 별도 실험 이름. source/config를 바꾼 경우 새 이름 필요 |
 | `--config /absolute/config.json` | 새 등록용 설정. 기존 실험의 설정을 덮어쓰지 않음 |
 
-기본 로그 경로는 `logs/v9/attention_original_v1/`이다. 전체 v9 supervisor는 한 개만 실행 가능하며 최초 4개, 최대 8개의 Unity worker를 사용한다. v8 실행 명령은 변경하지 않는다.
+기본 이름의 로그 경로는 `logs/v9/attention_original_v1/`이고, 위 새 실행 예시는 `logs/v9/attention_relocated_v1/`에 기록된다. 전체 v9 supervisor는 한 개만 실행 가능하며 최초 4개, 최대 8개의 Unity worker를 사용한다. v8 실행 명령은 변경하지 않는다.
 
 ## 자동 진행 순서
 
@@ -72,7 +72,7 @@ artifacts/submission/v9<checkpoint_sha256>/
 합성 환경 회귀 검증에는 shape·채널 gradient, sample decoder 일치, bounded reward/GAE 경계, PopArt 보존, nonbinary graphic 복원, 손상 episode의 update 차단, 실제 MPS optimizer/CPU 저장·복원, 원본 loader/runner, detached supervisor·중단·watchdog가 포함된다. 실행 시 전체 lifecycle과 pilot은 새로 수행한다.
 
 ```bash
-.venv/bin/python -W ignore::DeprecationWarning -m unittest tests.v9.test_v9 -v
+.venv/bin/python -W ignore::DeprecationWarning code/run.py -m unittest tests.v9.test_v9 -v
 ```
 
 원본 Unity 32-step 연결 진단은 별도 명령이며 학습하지 않는다.

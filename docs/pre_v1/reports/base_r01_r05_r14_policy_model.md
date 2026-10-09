@@ -7,12 +7,12 @@ Phase 2-2의 첫 Task 묶음은 학습 시 사용하는 stochastic categorical p
 
 | ID | 구현 | 완료 근거 |
 | --- | --- | --- |
-| BASE-R01 | [`action_distribution.py`](../blackout_rl/action_distribution.py)의 9-way `Categorical` sampling, argmax, stored-action 재평가 | index/action/log-prob/entropy shape와 PPO gradient 검증 |
-| BASE-R02 | [`EntityVectorEncoder`](../blackout_rl/ippo_model.py)가 10개의 9-field unit block을 shared entity MLP로 각각 처리하고 class·score·time 6-field context를 별도 처리 | `(B,10,entity_dim)` entity와 `(B,context_dim)` context 분리 및 독립성 검증 |
-| BASE-R03 | [`SemanticCNNEncoder`](../blackout_rl/ippo_model.py)의 2-layer CNN과 adaptive pooling | 공식 `(B,11,96,96)` 입력을 고정 길이 latent로 변환 |
+| BASE-R01 | [`action_distribution.py`](../../../code/shared/blackout_rl/action_distribution.py)의 9-way `Categorical` sampling, argmax, stored-action 재평가 | index/action/log-prob/entropy shape와 PPO gradient 검증 |
+| BASE-R02 | [`EntityVectorEncoder`](../../../code/shared/blackout_rl/ippo_model.py)가 10개의 9-field unit block을 shared entity MLP로 각각 처리하고 class·score·time 6-field context를 별도 처리 | `(B,10,entity_dim)` entity와 `(B,context_dim)` context 분리 및 독립성 검증 |
+| BASE-R03 | [`SemanticCNNEncoder`](../../../code/shared/blackout_rl/ippo_model.py)의 2-layer CNN과 adaptive pooling | 공식 `(B,11,96,96)` 입력을 고정 길이 latent로 변환 |
 | BASE-R04 | team-local slot `0~4`의 learned embedding | 동일 observation의 slot별 actor 출력 분화와 다섯 embedding row의 gradient 검증 |
-| BASE-R05 | [`IPPOActorCritic`](../blackout_rl/ippo_model.py)의 단일 shared actor head와 agent-local value head | logits `(B,9)`, value `(B,)`; 같은 observation/slot row의 동일 출력 검증 |
-| BASE-R14 | [`SubmissionPolicy`](../blackout_rl/model_contract.py)의 canonical-row slot 주입과 deterministic argmax adapter | `forward(vector, graphic) -> (5,2)`, normalized action과 `[-1,1]` 범위 검증 |
+| BASE-R05 | [`IPPOActorCritic`](../../../code/shared/blackout_rl/ippo_model.py)의 단일 shared actor head와 agent-local value head | logits `(B,9)`, value `(B,)`; 같은 observation/slot row의 동일 출력 검증 |
+| BASE-R14 | [`SubmissionPolicy`](../../../code/shared/blackout_rl/model_contract.py)의 canonical-row slot 주입과 deterministic argmax adapter | `forward(vector, graphic) -> (5,2)`, normalized action과 `[-1,1]` 범위 검증 |
 
 ## 모델 구조
 
@@ -43,8 +43,10 @@ latent를 pooling하지 않고 unit block 순서대로 보존하므로 현재 ac
 
 `code/shared/tests/test_ippo_model.py`의 신규 테스트 8개와 전체 regression suite를 실행했다.
 
+테스트 수와 결과는 당시 기록이다. 아래 현재 경로의 discovery 명령은 공통 테스트만 수집하며, 전체 버전 검사는 [루트 README](../../../README.md)의 순회 명령을 사용한다.
+
 ```text
-python -m unittest discover -s tests -v
+.venv/bin/python code/run.py -m unittest discover -s code/shared/tests -v
 Ran 84 tests in 0.688s
 OK
 ```

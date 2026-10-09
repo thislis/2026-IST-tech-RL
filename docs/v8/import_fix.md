@@ -1,5 +1,7 @@
 # v8 최종 집계의 모듈 경로 오류 수정
 
+> 현재 위치 안내(2026-10-09): 아래 실행·검증 결과는 당시 기록이다. 재배치 후 경로와 기존 v8 등록의 실행 제약은 [현재 상태 조회 안내](competition.md#실행)를 따른다.
+
 **2026-09-29 후속 변경:** 사용자 지시에 따라 이 연구 환경의 실행을 철회하고 원본 게임/API를
 복구했다. 아래 동일 명령 재실행 안내는 철회 전 기록이다. [현재 상태](environment_restoration.md).
 
@@ -10,8 +12,8 @@
 
 ## 원인과 수정
 
-`python /.../scripts/v8_experiments.py`로 파일을 실행하면 Python의 기본 모듈 검색 경로에는
-`scripts/`가 들어간다. 작업 디렉터리를 프로젝트 루트로 바꾸는 것만으로는 충분하지 않다.
+`python code/v8/scripts/v8_experiments.py`로 파일을 실행하면 Python의 기본 모듈 검색 경로에는
+현재 파일 위치인 `code/v8/scripts/`가 들어간다. 작업 디렉터리를 프로젝트 루트로 바꾸는 것만으로는 충분하지 않다.
 worker는 `_v8_cli.py`에서 루트를 등록했지만 별도 프로세스인 관리자에는 적용되지 않았다.
 기존 검사는 worker의 `--check`와 이미 패키지를 import한 테스트 프로세스를 사용하여 이 차이를 놓쳤다.
 
@@ -19,6 +21,8 @@ v1 계열 `run_base_r12_bc.py`, v3/v5/v6의 학습 CLI, v7의 `launch_v7_backgro
 `pilot_evaluation.py`와 같이 파일 위치에서 구한 프로젝트 루트를 `sys.path`에 등록했다.
 이제 실행 전 검사에서도 관리자 자체의 statistics import를 확인한다.
 새 회귀 검사는 `PYTHONPATH` 없이 다른 작업 디렉터리의 새 Python 프로세스에서 같은 경로를 검사한다.
+
+현재 재배치된 CLI는 `code/shared/project_paths.py`의 `activate()`로 공통·버전별 패키지와 자식 프로세스의 검색 경로를 설정한다. 아래 해시 보존·수정 허용 범위는 2026-09-28 당시 복구 작업에 관한 기록이다.
 
 ## v8 실험 계약과 기록 보존
 

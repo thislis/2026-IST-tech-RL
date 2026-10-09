@@ -1,6 +1,6 @@
 # v7 초기 파일럿 등록
 
-실행 구성과 예산은 `pilot_registration.json`, 각 `code/v7/configs*.yaml`, `splits.json`에 고정했다. 소스와 설정의 실행 시점 사본은 `logs/v7/pilot_source_snapshot.zip`에 있다. 원본/그래프 SHA-256 및 가공 정책은 `data/` 보고서 사본과 각 run manifest에서 확인한다.
+실행 구성과 예산은 `pilot_registration.json`, 각 `code/v7/configs/*.yaml`, `splits.json`에 고정했다. 소스와 설정의 실행 시점 사본은 `logs/v7/pilot_source_snapshot.zip`에 있다. 원본/그래프 SHA-256 및 가공 정책은 `artifacts/data/` 보고서 사본과 각 run manifest에서 확인한다.
 
 - v7-1: A3/A0/A2 × seed 11/22/33 × 200,000 env-step. 합계 1,800,000. A1 matched MLP는 실행 가능하게 준비했으나 기본 초기 큐에는 포함하지 않는다.
 - v7-2: F0 seed 11, 22,000 env-step 후 F1 seed 11/22/33, 각 128,000 env-step. 이는 폐루프·학습 실행 안정성 파일럿이며 B2/B3까지 포함한 인과적 배선 비교가 아니다.

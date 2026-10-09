@@ -1,7 +1,7 @@
 # BASE-S11 20초 흡수 주기 전략
 
-구현은 [`blackout_rl/strategy.py`](../blackout_rl/strategy.py)의 `absorption_state`,
-`choose_strategy_mode`와 [`blackout_rl/scripted_fsm.py`](../blackout_rl/scripted_fsm.py)의
+구현은 [`code/shared/blackout_rl/strategy.py`](../../../code/shared/blackout_rl/strategy.py)의 `absorption_state`,
+`choose_strategy_mode`와 [`code/shared/blackout_rl/scripted_fsm.py`](../../../code/shared/blackout_rl/scripted_fsm.py)의
 역할별 연결부에 있다.
 
 ## 시간 계약
@@ -38,4 +38,4 @@ seed `241112`에서 1,050 step / game time `21.0003초`를 실행했다.
 - 흡수 전 아군 창고 Battery cell 최대 4개, 흡수 0.5초 후 0개
 - 흡수 전후 normalized 점수 `0.34 → 0.34`: 적재 시 획득 점수가 흡수 후 유지
 
-전체 결과는 [`logs/base_s11_s12_strategy.json`](../logs/base_s11_s12_strategy.json)에 있다.
+전체 결과는 [`logs/base_s11_s12_strategy.json`](../../../logs/pre_v1/base_s11_s12_strategy.json)에 있다.

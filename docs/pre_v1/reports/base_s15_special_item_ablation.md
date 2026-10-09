@@ -1,6 +1,6 @@
 # BASE-S15 특수 아이템 정책 ablation
 
-선택형 정책은 [`blackout_rl/scripted_fsm.py`](../blackout_rl/scripted_fsm.py)의
+선택형 정책은 [`code/shared/blackout_rl/scripted_fsm.py`](../../../code/shared/blackout_rl/scripted_fsm.py)의
 `enable_special_items`에 구현했다. 기본값은 `False`다.
 
 활성화하면 대기 중인 노동자 최대 1명만 현재 semantic map의 특수 아이템을 우선 배정받고,
@@ -26,10 +26,10 @@ BASE-S14와 같은 seeds `5141~5145`, side swap, random action stream으로 10�
 승격 규칙은 `승률 하락 없음 AND 평균 점수 차의 엄격한 개선`이다. 이번 결과는 두 번째
 조건을 충족하지 못했으므로 특수 아이템 정책을 기본 agent에 유지하지 않는다.
 
-- 기본 설정: [`configs/policies/scripted_default_v1.json`](../configs/policies/scripted_default_v1.json)
-- battery 원본: [`logs/base_s14_scripted_vs_random.json`](../logs/base_s14_scripted_vs_random.json)
-- special 원본: [`logs/base_s15_special_vs_random.json`](../logs/base_s15_special_vs_random.json)
-- paired 판단: [`logs/base_s15_special_item_ablation.json`](../logs/base_s15_special_item_ablation.json)
+- 기본 설정: [`code/shared/configs/policies/scripted_default_v1.json`](../../../code/shared/configs/policies/scripted_default_v1.json)
+- battery 원본: [`logs/base_s14_scripted_vs_random.json`](../../../logs/pre_v1/base_s14_scripted_vs_random.json)
+- special 원본: [`logs/base_s15_special_vs_random.json`](../../../logs/pre_v1/base_s15_special_vs_random.json)
+- paired 판단: [`logs/base_s15_special_item_ablation.json`](../../../logs/pre_v1/base_s15_special_item_ablation.json)
 
 구현과 실험 옵션은 향후 더 강한 opponent에서 재평가할 수 있도록 보존하지만 기본값은
 `special_items=false`로 확정했다.

@@ -6,7 +6,7 @@ scripted opponent 경계, recorded scripted trajectory 기반 behavior cloning�
 
 ## BASE-R10 · Training reward
 
-[`TeamTrainingReward`](../blackout_rl/training_reward.py)는 기존
+[`TeamTrainingReward`](../../../code/shared/blackout_rl/training_reward.py)는 기존
 `ScoreDeltaRewardTracker`를 collector용 stateful reward transform으로 감싼다. 모든 학습 팀원에게
 동일한 team reward를 주며 다음 세 mode를 명시적으로 선택할 수 있다.
 
@@ -26,7 +26,7 @@ combined mode도 별도로 검증했다.
 
 ## BASE-R11 · Frozen scripted opponent
 
-[`FrozenScriptedOpponent`](../blackout_rl/frozen_opponent.py)는 battery-only
+[`FrozenScriptedOpponent`](../../../code/shared/blackout_rl/frozen_opponent.py)는 battery-only
 `ScriptedTeamController`를 training opponent protocol로 노출한다.
 
 - trainable parameter와 optimizer state가 없음
@@ -41,7 +41,7 @@ combined mode도 별도로 검증했다.
 
 ## BASE-R12 · Scripted trajectory BC
 
-[`ScriptedTrajectoryDataset`](../blackout_rl/behavior_cloning.py)은 versioned JSONL의 header/footer와
+[`ScriptedTrajectoryDataset`](../../../code/shared/blackout_rl/behavior_cloning.py)은 versioned JSONL의 header/footer와
 record count를 검증하고 다음 agent-row tensor를 복원한다.
 
 ```text
@@ -77,7 +77,7 @@ demonstration samples를 소비했다. 같은 초기 weights와 같은 downstrea
 개선됐지만 argmax accuracy는 개선되지 않았으므로 BC를 성능 우위로 승격하지는 않는다. 후속 실제
 PPO 실험에서는 log의 `downstream_environment_step_budget`을 scratch/BC에 동일하게 설정해야 한다.
 
-결과 원본은 [`logs/base_r12_bc_warm_start.json`](../logs/base_r12_bc_warm_start.json)에 저장했다.
+결과 원본은 [`logs/base_r12_bc_warm_start.json`](../../../logs/pre_v1/base_r12_bc_warm_start.json)에 저장했다.
 
 ## 검증
 
@@ -90,8 +90,10 @@ PPO 실험에서는 log의 `downstream_environment_step_budget`을 scratch/BC에
 - BC backward/update와 scratch 대비 NLL 감소
 - scratch/BC의 동일 environment-step budget 기록
 
+테스트 수와 결과는 당시 기록이다. 아래 현재 경로의 discovery 명령은 공통 테스트만 수집하며, 전체 버전 검사는 [루트 README](../../../README.md)의 순회 명령을 사용한다.
+
 ```text
-python -m unittest discover -s tests -v
+.venv/bin/python code/run.py -m unittest discover -s code/shared/tests -v
 Ran 96 tests
 OK
 ```

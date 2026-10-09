@@ -1,6 +1,6 @@
 # BASE-S12 위험 지도
 
-구현은 [`blackout_rl/strategy.py`](../blackout_rl/strategy.py)의 `DangerMap`과
+구현은 [`code/shared/blackout_rl/strategy.py`](../../../code/shared/blackout_rl/strategy.py)의 `DangerMap`과
 `WeightedAStarPlanner`에 있다.
 
 ## 역할별 비용
@@ -30,4 +30,4 @@ Unity seed `241112`에서 상대 `unit_5`를 spawn `(22,1)`에서 중앙 `(11,9)
 
 위험 경로는 기하학적으로 더 길지만 관측된 적에게서 충분히 떨어져 총 위험비용이 낮았다.
 좌표와 전체 cell path는
-[`logs/base_s11_s12_strategy.json`](../logs/base_s11_s12_strategy.json)에 기록했다.
+[`logs/base_s11_s12_strategy.json`](../../../logs/pre_v1/base_s11_s12_strategy.json)에 기록했다.

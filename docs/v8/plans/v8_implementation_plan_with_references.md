@@ -140,14 +140,14 @@ code/v8/contracts
   environment_contract.json
   submission_contract.json
   permissions.json
-scripts/
+code/v8/scripts/
   validate_v8_contracts.py
   audit_v8_behavior.py
   train_v8.py
   evaluate_v8.py
   analyze_v8.py
   verify_v8_export.py
-code/shared/tests/v8
+code/v8/tests/v8
   test_outcome.py / test_timer_integration.py / test_distributions.py
   test_episode_state.py / test_planner_isolation.py / test_returns.py
   test_factory_parity.py / test_checkpoint_lineage.py / test_statistics.py
@@ -213,7 +213,7 @@ Unity score handler가 새 점수>0을 보고 shaping을 부여하는 경로도 
 
 ### WP-A 완료 기준
 
-99→100, 97→100, 감점/약탈, draw+shaping, 동시 사건, 정상 reset, 중복·지연 event에서 engine→broker→reward→evaluation 값이 일치한다. 결과 누락·중복 부여·reset 음의 delta는 모두 0건이어야 한다. 검증된 build/source 대응과 fixture 산출물을 보존한다. 공식 운영 승인과는 별도의 local engineering gate다.
+99→100, 97→100, 감점/약탈, draw+shaping, 동시 사건, 정상 reset, 중복·지연 event에서 engine→broker→reward→evaluation 값이 일치한다. 결과 누락·중복 부여·reset 음의 delta는 모두 0건이어야 한다. 검증된 artifacts/build/source 대응과 fixture 산출물을 보존한다. 공식 운영 승인과는 별도의 local engineering gate다.
 
 <a id="sec-4"></a>
 

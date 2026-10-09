@@ -25,7 +25,7 @@ is installed into this repository's `.venv` from the second path.
 | Executable | `artifacts/builds/BlackOut.app/Contents/MacOS/RLGame2026` |
 | Executable SHA-256 | `49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69` |
 
-`builds/` and the locally installed `.unity/` Editor are reproducible local
+`artifacts/builds/` and the locally installed `.unity/` Editor are reproducible local
 artifacts and are intentionally ignored by Git. The hash above, not merely the
 bundle name, identifies the player used by the experiment log.
 
@@ -61,7 +61,7 @@ does not satisfy this seed contract.
 
 ## Linux / Docker identity
 
-The fixed experiment image identity is stored in `docker-image.env`:
+The fixed experiment image identity is stored in `code/shared/docker-image.env`:
 
 ```text
 BLACKOUT_DOCKER_IMAGE=blackout-rl:prep01-d2220a7-6ba7d99-cu124

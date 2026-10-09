@@ -1,7 +1,7 @@
 # BASE-S14 scripted-vs-random paired 평가
 
-평가 runner는 [`eval/scripted_series.py`](../eval/scripted_series.py), 원본 결과는
-[`logs/base_s14_scripted_vs_random.json`](../logs/base_s14_scripted_vs_random.json)에 있다.
+평가 runner는 [`code/shared/eval/scripted_series.py`](../../../code/shared/eval/scripted_series.py), 원본 결과는
+[`logs/base_s14_scripted_vs_random.json`](../../../logs/pre_v1/base_s14_scripted_vs_random.json)에 있다.
 
 ## 평가 조건
 

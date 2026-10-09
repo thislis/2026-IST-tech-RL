@@ -1,7 +1,7 @@
 # BASE-S06~S07 task assignment와 기본 역할
 
-구현은 [`blackout_rl/coordination.py`](../blackout_rl/coordination.py)의
-`greedy_path_assignment`와 [`blackout_rl/team_state.py`](../blackout_rl/team_state.py)의 기본
+구현은 [`code/shared/blackout_rl/coordination.py`](../../../code/shared/blackout_rl/coordination.py)의
+`greedy_path_assignment`와 [`code/shared/blackout_rl/team_state.py`](../../../code/shared/blackout_rl/team_state.py)의 기본
 역할 구성에 있다.
 
 ## 할당 계약
@@ -30,4 +30,4 @@ team-local slot에 따라 `worker ×3`, `guard ×1`, `carrier ×1`을 고정한�
 이 검증은 S04~S07의 **상태·할당·동시 이동 기반**을 분리 확인하기 위해 guard/carrier에도
 Battery 목표를 준 coordination smoke다. 중앙/본진 성소 이동과 역할별 행동은 BASE-S08~S10의
 FSM에서 연결한다. 전체 할당과 pickup step은
-[`logs/base_s04_s07_s13_coordination.json`](../logs/base_s04_s07_s13_coordination.json)에 있다.
+[`logs/base_s04_s07_s13_coordination.json`](../../../logs/pre_v1/base_s04_s07_s13_coordination.json)에 있다.

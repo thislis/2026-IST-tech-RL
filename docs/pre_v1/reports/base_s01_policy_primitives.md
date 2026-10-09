@@ -1,6 +1,6 @@
 # BASE-S01 policy primitives
 
-구현은 [`blackout_rl/policy.py`](../blackout_rl/policy.py)에 있다.
+구현은 [`code/shared/blackout_rl/policy.py`](../../../code/shared/blackout_rl/policy.py)에 있다.
 
 ## 공통 계약
 

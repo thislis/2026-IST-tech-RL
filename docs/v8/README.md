@@ -1,5 +1,7 @@
 # v8 구현 및 실행
 
+> 현재 위치 안내(2026-10-09): 아래 실행·검증 결과는 당시 기록이다. 재배치 후 경로와 기존 v8 등록의 실행 제약은 [현재 상태 조회 안내](competition.md#실행)를 따른다.
+
 **최신:** 제출 안내에 맞춘 원본 환경용 `provided_competition_v1` 경로를 새로 구현했다.
 [현재 학습·평가·제출 안내](competition.md)를 참조한다. 아래 실행 예시는 과거 수정 환경 경로다.
 
@@ -43,14 +45,14 @@ v8-C1과 같은 용량의 flat41 대조군을 `code/v8/blackout_rl/v8`에 구현
 기존 `.venv`와 `.unity/6000.3.8f1/Unity.app`을 사용한다. 설치/외부 파일 다운로드는 수행하지 않았다.
 `prepare_v8_unity.py`는 `../blackout` commit
 `d2220a7d01be88d413f551efd529f4758833be8b`의 Assets/Packages/ProjectSettings와 로컬 Library를
-별도 `build/v8_unity`에 복사한다. 기존 출력이 있으면 덮어쓰지 않는다.
+별도 `artifacts/build/v8_unity`에 복사한다. 기존 출력이 있으면 덮어쓰지 않는다.
 
 ```bash
 .venv/bin/python code/v8/scripts/prepare_v8_unity.py
-V8_BUILD_OUTPUT="$PWD/builds/BlackOut-v8.app" \
+V8_BUILD_OUTPUT="$PWD/artifacts/builds/BlackOut-v8.app" \
   .unity/6000.3.8f1/Unity.app/Contents/MacOS/Unity -batchmode -quit \
-  -projectPath "$PWD/build/v8_unity" -executeMethod V8Build.Build \
-  -logFile "$PWD/reports/v8/unity_build.log"
+  -projectPath "$PWD/artifacts/build/v8_unity" -executeMethod V8Build.Build \
+  -logFile "$PWD/logs/v8/reports/unity_build.log"
 .venv/bin/python code/v8/scripts/register_v8_build.py --log logs/v8/reports/unity_build.log
 .venv/bin/python code/v8/scripts/register_v8_provenance.py
 ```
@@ -67,7 +69,7 @@ V8_BUILD_OUTPUT="$PWD/builds/BlackOut-v8.app" \
 .venv/bin/python code/v8/scripts/validate_v8_contracts.py
 .venv/bin/python code/v8/scripts/validate_v8_contracts.py --live \
   --output logs/v8/reports/live_contract_validation.json
-.venv/bin/python code/run.py -m unittest discover -s tests -v
+.venv/bin/python code/run.py -m unittest discover -s code/shared/tests -v
 .venv/bin/python code/v8/scripts/train_v8.py --config code/v8/configs/experiments/c1_smoke.yaml \
   --run-dir logs/v8/c1_smoke_NEW
 .venv/bin/python code/v8/scripts/train_v8.py --config code/v8/configs/experiments/flat_smoke.yaml \
@@ -91,7 +93,7 @@ V8_BUILD_OUTPUT="$PWD/builds/BlackOut-v8.app" \
 .venv/bin/python code/v8/scripts/verify_v8_export.py \
   --checkpoint-store logs/v8/c1_smoke_v2/checkpoints \
   --trace logs/v8/c1_smoke_v2/windows.jsonl \
-  --bundle build/v8_research_export_NEW --output logs/v8/reports/export_parity_NEW.json
+  --bundle artifacts/build/v8_research_export_NEW --output logs/v8/reports/export_parity_NEW.json
 ```
 
 평가는 모든 셀의 시작·성공·실패를 기록하고 실패한 셀을 빼고 승률을 계산하지 않는다.
@@ -111,7 +113,7 @@ paired run으로 취급하지 않는다. 누락·NaN 셀은 거부하며 crossed
 
 ## 정규 파일럿과 후속 범위
 
-`code/v8/configs/experiments{c1,flat}.yaml`은 각 1,048,576 step, 기존 200k/600k 상대 schedule,
+`code/v8/configs/experiments/{c1,flat}.yaml`은 각 1,048,576 step, 기존 200k/600k 상대 schedule,
 train/dev 분리를 유지한다. seed11이 기본이며 독립 seed22/33은 config의 seed와 experiment ID,
 run 경로를 별도로 고정해야 한다. 가속 실행기는 이를 `accelerated_pilot/` 설정과 별도 등록으로 준비했다.
 3 seeds×2 arms의 전체 파일럿은 과거 기술 검증과 별도다.

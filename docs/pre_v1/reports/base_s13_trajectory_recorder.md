@@ -1,6 +1,6 @@
 # BASE-S13 scripted trajectory recorder
 
-구현은 [`blackout_rl/trajectory.py`](../blackout_rl/trajectory.py)에 있다. 메모리를 누적하지 않고
+구현은 [`code/shared/blackout_rl/trajectory.py`](../../../code/shared/blackout_rl/trajectory.py)에 있다. 메모리를 누적하지 않고
 한 줄씩 flush하는 versioned JSONL 형식이며 schema version은
 `blackout.scripted_trajectory.v1`이다.
 
@@ -17,5 +17,5 @@ synthetic round-trip에서 vector 길이, 필수 field, 역할/목표, semantic 
 실제 seed `240513` 실행은 31개 step record를 생성했으며 파일은 33줄, 147,253 bytes다.
 evidence에 저장된 SHA-256과 파일을 다시 계산한 값도 일치한다.
 
-- trajectory: [`logs/base_s13_coordination_trajectory.jsonl`](../logs/base_s13_coordination_trajectory.jsonl)
-- 실행 요약: [`logs/base_s04_s07_s13_coordination.json`](../logs/base_s04_s07_s13_coordination.json)
+- trajectory: [`logs/base_s13_coordination_trajectory.jsonl`](../../../logs/pre_v1/base_s13_coordination_trajectory.jsonl)
+- 실행 요약: [`logs/base_s04_s07_s13_coordination.json`](../../../logs/pre_v1/base_s04_s07_s13_coordination.json)

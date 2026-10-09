@@ -1,7 +1,7 @@
 # v8 참고자료 적용 기록
 
 2026-09-27. 구현 기준은 로컬 `docs/v8/plans/v8_implementation_plan_with_references.md`와
-`docs/v8/plans/v8_research_requests_2026-09-27/internal_result.md`, 동반 `internal_analysis/`이다.
+`docs/v8/plans/v8_research_requests_2026-09-27/internal_result.md`, 분석 코드 `code/v8/research/v8_research_requests_2026-09-27/internal_analysis/`, 생성 데이터 `logs/v8/research/v8_research_requests_2026-09-27/internal_analysis/`이다.
 구현 시작 HEAD는 `ee5d0a9e33a7c7ab7e860eaab48bf80b231ae927`이다.
 
 `v8_external_research.md`, `v8_external_research.json`, 구판 `v8_implementation_plan.md`,

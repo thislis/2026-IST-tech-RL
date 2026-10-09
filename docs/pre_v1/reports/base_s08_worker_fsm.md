@@ -1,6 +1,6 @@
 # BASE-S08 노동자 FSM
 
-구현은 [`blackout_rl/scripted_fsm.py`](../blackout_rl/scripted_fsm.py)의
+구현은 [`code/shared/blackout_rl/scripted_fsm.py`](../../../code/shared/blackout_rl/scripted_fsm.py)의
 `ScriptedTeamController`와 `WorkerPhase`에 있다.
 
 ## 상태 전환
@@ -29,4 +29,4 @@ seed `240810`에서 초기 목표는 `unit_0=(1,17)`, `unit_1=(4,17)`,
 
 세 노동자 모두 전환 순서를 실제 관측으로 확인했다. 332 step 동안 팀 전체로 Battery pickup
 10회, deposit 9회가 발생했고 최종 Team A 점수는 normalized `0.51`이었다. 결과는
-[`logs/base_s08_s10_role_fsm.json`](../logs/base_s08_s10_role_fsm.json)에 있다.
+[`logs/base_s08_s10_role_fsm.json`](../../../logs/pre_v1/base_s08_s10_role_fsm.json)에 있다.

@@ -17,6 +17,6 @@ held-out sample efficiency at this budget: its mean score difference was 4.6
 points worse. It was not promoted, and the selected output is
 `artifacts/checkpoints/pre_v1/phase3_agent14_score_terminal_only.pt`.
 
-Evidence: [`logs/phase3_agent14_navigation.json`](../logs/phase3_agent14_navigation.json)
-and [`scripts/run_phase3_agent14_navigation.py`](../scripts/run_phase3_agent14_navigation.py).
+Evidence: [`logs/phase3_agent14_navigation.json`](../../../logs/pre_v1/phase3_agent14_navigation.json)
+and [`code/pre_v1/scripts/run_phase3_agent14_navigation.py`](../../../code/pre_v1/scripts/run_phase3_agent14_navigation.py).
 

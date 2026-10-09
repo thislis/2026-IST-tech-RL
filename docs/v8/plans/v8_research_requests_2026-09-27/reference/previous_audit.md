@@ -13,7 +13,7 @@ v6는 더 많은 탐색을 도입했어도 최종 target 5/10이고 best는 시�
 
 ### 범위와 확인 수준
 
-GitHub 연결로 전체 tracked tree를 확인하고 핵심 실행 경로, 설정, 보고서, 브랜치와 최신 커밋/PR을 대조했다. 모든 과거 파일을 한 줄도 빠짐없이 읽거나 모든 버그가 없음을 증명한 감사는 아니다. `logs/`, `checkpoints/`, `builds/`, `artifacts/data/connectomes`가 snapshot에 없어 실제 checkpoint 행동·학습 로그 재집계·Unity 재실행은 하지 못했다. 기존 감사 문서의 62개 테스트 통과는 이번 실행 결과가 아니다.
+GitHub 연결로 전체 tracked tree를 확인하고 핵심 실행 경로, 설정, 보고서, 브랜치와 최신 커밋/PR을 대조했다. 모든 과거 파일을 한 줄도 빠짐없이 읽거나 모든 버그가 없음을 증명한 감사는 아니다. `logs/`, `artifacts/checkpoints/`, `artifacts/builds/`, `artifacts/data/connectomes`가 snapshot에 없어 실제 checkpoint 행동·학습 로그 재집계·Unity 재실행은 하지 못했다. 기존 감사 문서의 62개 테스트 통과는 이번 실행 결과가 아니다.
 
 이번에 별도로 실행한 것은 `audit_sanity_checks.py`의 네 가지 산술/인터페이스 검사뿐이다. 이 검사는 실제 학습 정책의 붕괴나 실제 게임 패배를 재현했다고 주장하지 않는다.
 
@@ -39,7 +39,7 @@ Unity build
 
 ## 3. 버전별 실패 경로와 현재 상태
 
-아래 수치는 `history.md` 및 `issues/1st_issues_v0-v7.md`에 기록된 결과다. 원본 로그를 이번에 재집계한 값이 아니다.
+아래 수치는 `docs/common/history.md` 및 `docs/issues/1st_issues_v0-v7.md`에 기록된 결과다. 원본 로그를 이번에 재집계한 값이 아니다.
 
 | 세대 | 기록된 결과 | 추적된 원인 | 현재 판정 |
 |---|---|---|---|
@@ -143,7 +143,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 정상 득점·점수 감소·목표 점수 조기 종료·timeout fixture에서 점수 출처/단위/시점이 검증되고 Unity 이벤트와 대조된다.
 
-**근거 파일:** `code/v7/scripts/evaluate_v7.py`, `code/shared/eval/evaluator.py`, `issues/1st_issues_v0-v7.md`
+**근거 파일:** `code/v7/scripts/evaluate_v7.py`, `code/shared/eval/evaluator.py`, `docs/issues/1st_issues_v0-v7.md`
 
 #### F02 · P0 · 로컬 승자·upstream 경기 판정 기준 불일치 위험
 
@@ -157,7 +157,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 동점+shaping, 동시 이벤트, 마지막 득점, timeout에서 engine outcome과 양쪽 runner의 판정이 일치한다.
 
-**근거 파일:** `issues/1st_issues_v0-v7.md`, `code/shared/eval/evaluator.py`, `code/shared/blackout_rl/reward.py`
+**근거 파일:** `docs/issues/1st_issues_v0-v7.md`, `code/shared/eval/evaluator.py`, `code/shared/blackout_rl/reward.py`
 
 #### F03 · P1 · 종료 순간의 마지막 점수 변화가 보상에서 빠짐
 
@@ -185,7 +185,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 자동 재시작과 명시 reset 각각 최소 3회 연속 timeout, timer ID와 종료 사유·build hash를 함께 보존한다.
 
-**근거 파일:** `issues/1st_issues_v0-v7.md`, `code/shared/blackout_rl/env.py`
+**근거 파일:** `docs/issues/1st_issues_v0-v7.md`, `code/shared/blackout_rl/env.py`
 
 #### F05 · P1 · 고정 지형과 활성 창고 변동을 혼동할 위험
 
@@ -199,7 +199,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 여러 seed와 빌드에서 활성 영역 목록을 기록하고 planner 목표가 해당 에피소드의 합법 영역인지 검사한다.
 
-**근거 파일:** `issues/1st_issues_v0-v7.md`, `game_spec.md`, `code/shared/blackout_rl/env.py`
+**근거 파일:** `docs/issues/1st_issues_v0-v7.md`, `docs/common/game_spec.md`, `code/shared/blackout_rl/env.py`
 
 #### F06 · P1 · semantic one-hot가 맞아도 원래 클래스가 맞다는 보장은 없음
 
@@ -213,7 +213,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 플랫폼별 경계 fixture·가림 fixture를 통과하고 그래픽 0/stale 관측을 실행 초기에 차단한다.
 
-**근거 파일:** `issues/1st_issues_v0-v7.md`, `code/shared/blackout_rl/observation.py`, `code/shared/blackout_rl/env.py`, `docs/pre_v1/reports/prep04_observation_contract.md`
+**근거 파일:** `docs/issues/1st_issues_v0-v7.md`, `code/shared/blackout_rl/observation.py`, `code/shared/blackout_rl/env.py`, `docs/pre_v1/reports/prep04_observation_contract.md`
 
 #### F07 · P1 · 배터리 수량·자기 ID·상대 클래스의 정보 한계
 
@@ -227,7 +227,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 배터리 수량을 픽셀 수로 계산하지 않으며 입력 dict permutation에서도 동일 agent에게 동일 의미의 행동을 반환한다.
 
-**근거 파일:** `code/shared/blackout_rl/observation.py`, `issues/1st_issues_v0-v7.md`, `artifacts/submission/policy.py`
+**근거 파일:** `code/shared/blackout_rl/observation.py`, `docs/issues/1st_issues_v0-v7.md`, `artifacts/submission/policy.py`
 
 #### F08 · P1 · 하드코딩 금지 영역·근사 action mask와 실제 물리의 차이
 
@@ -241,7 +241,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 벽·모서리·금지 영역·버프 상태별 false-positive/false-negative mask 비율과 stuck 비율을 측정한다.
 
-**근거 파일:** `code/v6/blackout_rl/mappo_v6.py`, `docs/pre_v1/reports/prep07_action_semantics.md`, `issues/1st_issues_v0-v7.md`
+**근거 파일:** `code/v6/blackout_rl/mappo_v6.py`, `docs/pre_v1/reports/prep07_action_semantics.md`, `docs/issues/1st_issues_v0-v7.md`
 
 #### F09 · P1 · sampling→argmax와 KEEP 편향: 학습 변화가 평가 행동으로 안 나올 수 있음
 
@@ -283,7 +283,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 표현에서 유효 타깃·막힘·다음 score event를 예측할 수 있는지 확인하며 표현 변경의 실제 성능 효과를 분리한다.
 
-**근거 파일:** `code/v6/blackout_rl/mappo_v6.py`, `code/v7/blackout_rl/v7_1/model.py`, `history.md`
+**근거 파일:** `code/v6/blackout_rl/mappo_v6.py`, `code/v7/blackout_rl/v7_1/model.py`, `docs/common/history.md`
 
 #### F12 · P1 · 하나의 PathNotFound가 팀 전체 정지로 확대
 
@@ -339,7 +339,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** logit/greedy action/요청 action/실제 변위의 최초 분기와 planner 대비 성능 변화가 확인된다.
 
-**근거 파일:** `issues/1st_issues_v0-v7.md`, `code/v7/scripts/evaluate_v7.py`, `code/v7/blackout_rl/v7_training.py`
+**근거 파일:** `docs/issues/1st_issues_v0-v7.md`, `code/v7/scripts/evaluate_v7.py`, `code/v7/blackout_rl/v7_training.py`
 
 #### F16 · P1 · v7-1은 생물학적 기능 이전이 아니라 topology prior 실험
 
@@ -451,7 +451,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 추가 계산 비용과 독립 seed 불확실성을 포함해 구조별 효과를 보고한다.
 
-**근거 파일:** `docs/v7/reports/main_study_preregistration.md`, `history.md`, `code/v7/configs/main_study/v7_2_readout_ppo.yaml`
+**근거 파일:** `docs/v7/reports/main_study_preregistration.md`, `docs/common/history.md`, `code/v7/configs/main_study/v7_2_readout_ppo.yaml`
 
 #### F24 · P2 · 전뇌 동역학·망막 위치의 proxy 가정
 
@@ -479,7 +479,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 진영별·맵별·학습 seed별 결과, 구조별 효과와 불확실성, test 사용 이력이 함께 보존된다.
 
-**근거 파일:** `code/v7/scripts/evaluate_v7.py`, `history.md`, `docs/v7/reports/main_study_preregistration.md`, `issues/1st_issues_v0-v7.md`
+**근거 파일:** `code/v7/scripts/evaluate_v7.py`, `docs/common/history.md`, `docs/v7/reports/main_study_preregistration.md`, `docs/issues/1st_issues_v0-v7.md`
 
 #### F26 · P2 · 통신 직렬화·planner·CSR 비용: 일부는 이미 개선됨
 
@@ -507,7 +507,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 전체 정책 cold/warm p50/p95/p99, peak RSS/VRAM, 장기 throughput과 제한 충족 여부가 기록된다.
 
-**근거 파일:** `docs/v7/reports/acceleration_and_resume.md`, `issues/1st_issues_v0-v7.md`, `docs/pre_v1/reports/prep13_evaluation_contract_checklist.md`
+**근거 파일:** `docs/v7/reports/acceleration_and_resume.md`, `docs/issues/1st_issues_v0-v7.md`, `docs/pre_v1/reports/prep13_evaluation_contract_checklist.md`
 
 #### F28 · P0 · v7 export가 의도적으로 비활성화됨
 
@@ -535,13 +535,13 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 입력 순서 섞기, 동일 step 중복 호출, 연속 3경기, 새 경기 ID, 비정상 step에서 기대대로 작동하거나 fail closed한다.
 
-**근거 파일:** `code/v7/blackout_rl/v7_2/policy.py`, `code/v6/blackout_rl/mappo_v6.py`, `artifacts/submission/policy.py`, `issues/1st_issues_v0-v7.md`
+**근거 파일:** `code/v7/blackout_rl/v7_2/policy.py`, `code/v6/blackout_rl/mappo_v6.py`, `artifacts/submission/policy.py`, `docs/issues/1st_issues_v0-v7.md`
 
 #### F30 · P1 · 핵심 로그·가중치·그래프·Unity build가 저장소에 없음
 
 **상태:** tracked tree와 gitignore에서 확인
 
-**원인:** logs/, checkpoints/, artifacts/data/connectomes, builds/는 이 snapshot의 tracked tree에 없다. 문서의 주요 근거는 로컬 파일/절대 경로를 참조한다. 해시 기록은 있지만 bytes를 제공하는 버전 고정 artifact bundle은 이번 접근 범위에서 확인되지 않았다.
+**원인:** `logs/`, `artifacts/checkpoints/`, `artifacts/data/connectomes/`, `artifacts/builds/`는 이 snapshot의 tracked tree에 없다. 문서의 주요 근거는 로컬 파일/절대 경로를 참조한다. 해시 기록은 있지만 bytes를 제공하는 버전 고정 artifact bundle은 이번 접근 범위에서 확인되지 않았다.
 
 **영향:** 새 담당자가 clone만으로 1,380경기를 재집계하거나 학습된 A2/A3의 행동을 비교하거나 Unity 통합 시험을 실행할 수 없다.
 
@@ -549,7 +549,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 다른 호스트에서 manifest로 필요한 artifacts를 받아 hash 검증 후 같은 평가를 재현할 수 있다.
 
-**근거 파일:** `.gitignore`, `history.md`, `issues/1st_issues_v0-v7.md`, `code/v7/blackout_rl/v7_registry.py`
+**근거 파일:** `.gitignore`, `docs/common/history.md`, `docs/issues/1st_issues_v0-v7.md`, `code/v7/blackout_rl/v7_registry.py`
 
 #### F31 · P2 · resume는 물리 상태의 bitwise 연속 실행이 아님
 
@@ -577,7 +577,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 현재 terminal-score 회귀를 반드시 실패시키는 테스트가 생기고 모든 공식 entrypoint가 같은 평가 계약을 통과한다.
 
-**근거 파일:** `code/v7/tests/v7/test_contracts.py`, `code/v7/scripts/evaluate_v7.py`, `code/shared/eval/evaluator.py`, `issues/1st_issues_v0-v7.md`
+**근거 파일:** `code/v7/tests/v7/test_contracts.py`, `code/v7/scripts/evaluate_v7.py`, `code/shared/eval/evaluator.py`, `docs/issues/1st_issues_v0-v7.md`
 
 #### F33 · P2 · README·history·등록 문서의 상태가 어긋남
 
@@ -591,7 +591,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** README·history·실행 summary가 같은 run IDs와 상태를 가리키며 각 열린 이슈에 근거·owner 역할·완료 조건이 있다.
 
-**근거 파일:** `README.md`, `history.md`, `docs/v7/reports/main_study_preregistration.md`, `docs/v7/reports/acceleration_and_resume.md`, `issues/1st_issues_v0-v7.md`
+**근거 파일:** `README.md`, `docs/common/history.md`, `docs/v7/reports/main_study_preregistration.md`, `docs/v7/reports/acceleration_and_resume.md`, `docs/issues/1st_issues_v0-v7.md`
 
 #### F34 · P2 · v7 평가가 direct intervention 설정을 전달하지 않음
 
@@ -619,7 +619,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 증가·감소·0 도달·동시 약탈 fixture에서 raw shaping, Python reward, 경기 판정이 명시한 계약과 일치한다.
 
-**근거 파일:** `issues/1st_issues_v0-v7.md`, `code/shared/blackout_rl/reward.py`
+**근거 파일:** `docs/issues/1st_issues_v0-v7.md`, `code/shared/blackout_rl/reward.py`
 
 #### F36 · P2 · 특수 아이템 비활성 선택의 근거가 약한 상대·소표본에 제한됨
 
@@ -633,7 +633,7 @@ P0=결과 신뢰성/경기 종료/제출 게이트, P1=성능·관측·검증의
 
 **완료 조건:** 득점·승률·아이템 기회비용과 진영별 결과가 보고되며 현재 기본 선택의 적용 범위가 명시된다.
 
-**근거 파일:** `issues/1st_issues_v0-v7.md`, `docs/pre_v1/reports/base_s15_special_item_ablation.md`
+**근거 파일:** `docs/issues/1st_issues_v0-v7.md`, `docs/pre_v1/reports/base_s15_special_item_ablation.md`
 
 ## 6. 다음 실행 순서: 새 대규모 학습 전에 통과할 게이트
 

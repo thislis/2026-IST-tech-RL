@@ -391,10 +391,10 @@ F2의 ‘기억 제거’는 학습된 가소성 가중치만 학습 전으로 �
 
 ## 6. 구현 파일과 인터페이스 계획
 
-기존 v6 파일을 덮어쓰지 않는다. v7 파일은 아래와 같이 추가하고, 충분한 동치 테스트를 거친 유틸리티만 공통화한다. 아래 경로는 **신규 구현 제안**이다.
+기존 v6 파일을 덮어쓰지 않는다. v7 파일은 아래와 같이 추가하고, 충분한 동치 테스트를 거친 유틸리티만 공통화한다. 아래 파일명은 **당시 신규 구현 제안**이며, 상위 디렉터리는 현재 구조로 갱신했다. 실제 구현에는 공통 `v7_training.py`와 통합 계약 테스트 등이 사용된다. 현재 파일은 `code/v7/`, 실행 안내는 [구현 보고서](../reports/implementation_and_runbook.md)에서 확인한다.
 
 ```text
-blackout_rl/
+code/v7/blackout_rl/
   connectome/
     datasets.py              # 데이터 등록, 다운로드 manifest, 인증 분리
     graph_artifact.py        # ID·방향·집계·해시·노드/간선 검증
@@ -425,7 +425,7 @@ code/v7/configs
   v7_2_plasticity.yaml
   evaluation.yaml
 
-scripts/
+code/v7/scripts/
   prepare_v7_connectome.py
   audit_v7_connectome.py
   train_v7_1.py
@@ -433,7 +433,7 @@ scripts/
   evaluate_v7.py
   export_v7.py
 
-code/shared/tests/v7
+code/v7/tests/v7
   test_graph_artifact.py
   test_v7_1_contract.py
   test_v7_1_gradients.py
@@ -443,12 +443,14 @@ code/shared/tests/v7
   test_evaluation_isolation.py
   test_export_roundtrip.py
 
-logs/v7/reports
+docs/v7/reports/
   source_review.md
-  data_audit.json
   preregistration.md
   pilot_results.md
   final_results.md
+
+logs/v7/reports/
+  data_audit.json
 ```
 
 `v7_1/training.py`는 v6의 학습·수집 로직을 최대한 재사용하되, 모델 생성·체크포인트·logit 호출을 분리한다. 기존 `V6Model`의 엄격한 로더에 새 구조의 state dict를 억지로 넣지 않는다. `architecture_id`, `graph_sha256`, `observation_schema`, `action_schema`, `dynamics_id`를 검사하는 별도 로더를 둔다. [R02, R03]

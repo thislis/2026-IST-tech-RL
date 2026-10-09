@@ -1,7 +1,7 @@
 # BASE-S04 stuck detector
 
-구현은 [`blackout_rl/coordination.py`](../blackout_rl/coordination.py)의
-`StuckDetector`와 [`scripts/verify_base_s04_s07_s13.py`](../scripts/verify_base_s04_s07_s13.py)의
+구현은 [`code/shared/blackout_rl/coordination.py`](../../../code/shared/blackout_rl/coordination.py)의
+`StuckDetector`와 [`code/pre_v1/scripts/verify_base_s04_s07_s13.py`](../../../code/pre_v1/scripts/verify_base_s04_s07_s13.py)의
 재계획 처리에 있다.
 
 ## 판정과 복구 계약
@@ -18,4 +18,4 @@
 seed `240513`의 실제 5유닛 주행에서는 129 step 안에 전원이 정체 없이 목표를 회수해
 stuck/replan이 각각 0회였다. 따라서 실제 주행은 정상 경로를 검증하고, 정체 복구 branch는
 결정적인 주입 테스트로 검증했다. 실환경 결과는
-[`logs/base_s04_s07_s13_coordination.json`](../logs/base_s04_s07_s13_coordination.json)에 있다.
+[`logs/base_s04_s07_s13_coordination.json`](../../../logs/pre_v1/base_s04_s07_s13_coordination.json)에 있다.

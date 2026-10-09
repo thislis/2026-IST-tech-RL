@@ -7,10 +7,10 @@
 
 ## 실행
 
-이전과 같은 한 줄이다. 기존 수정 환경 실험을 재개하지 않고 새 등록의 실험을 실행한다.
+2026-10-09 재배치 후 기존 실험의 상태는 다음 명령으로 확인한다. 이 페이지의 학습·재개 설명은 당시 등록을 기준으로 한 기록이다. 현재 소스는 기존 등록 해시와 다르므로 옵션 없는 실행, `--check`, `--aggregate-only`는 등록 검사에서 거부된다. 실행기는 실험 이름을 바꾸는 옵션이 없으며, 새 v8 실험에는 별도 등록 경로를 준비해야 한다. 기존 등록 파일을 덮어쓰지 않는다.
 
 ```bash
-bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v8/scripts/run_v8_fast.sh
+bash /Users/safeailab_macmini/Desktop/2026-IST-tech-RL/code/v8/scripts/run_v8_fast.sh --status
 ```
 
 관리자는 백그라운드로 분리되며 터미널 종료 후에도 유지된다. 중복 실행 잠금, `caffeinate`,
@@ -18,7 +18,7 @@ worker별 포트 27000–27005, CPU/BLAS 1 thread, 최대 6개 worker를 사용�
 native protobuf overlay, UnityEnvironment 교체, `-nographics`, Unity renderer/타이머 패치는 사용하지 않는다.
 원본 API의 공개 인자인 `no_graphics=False`, `time_scale=50`을 사용한다.
 `env_path`에는 원본 실행 파일을 `exec ... -batchmode "$@"`로 호출하는
-`launchers/v8/BlackOutRendered.app` 실행 스크립트를 전달한다. 이 디렉터리는 ML-Agents의
+`code/v8/launchers/BlackOutRendered.app` 실행 스크립트를 전달한다. 이 디렉터리는 ML-Agents의
 macOS 경로 탐색을 위한 실행 스크립트 컨테이너이며 새 게임 빌드가 아니다.
 원본 앱·제공 API·obs 전처리기는 변경하지 않는다. `-nographics`는 사용하지 않으므로
 graphic 렌더링은 유지되며 Unity 게임 창은 표시하지 않는다.
@@ -49,7 +49,7 @@ bash code/v8/scripts/run_v8_fast.sh --status
 bash code/v8/scripts/run_v8_fast.sh --stop    # PPO update 완료 후 저장 요청
 ```
 
-중단 후 같은 시작 명령으로 재개한다. 물리 상태를 복원하지 않는 새 에피소드 재개다.
+당시에는 같은 소스·설정 등록을 유지한 채 중단 후 같은 시작 명령으로 재개했다. 물리 상태를 복원하지 않는 새 에피소드 재개다.
 실패 자동 재시도는 하지 않는다. 저장 후 재개 시 실패 구간 로그는 `recovery/`에 보존한다.
 원본 환경의 종료 이상은 watchdog 오류로 남기며 승리·무승부나 정상 timeout으로 바꾸지 않는다.
 30분 step 진전 없음, 중단 유예 5분, 디스크 20GiB reserve를 적용한다.
