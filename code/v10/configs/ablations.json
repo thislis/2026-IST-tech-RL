@@ -1,0 +1,23 @@
+{
+  "automatic": false,
+  "supported_structures": [
+    "C0",
+    "C1",
+    "C1-blind"
+  ],
+  "deferred_contract_gated": [
+    "ledger",
+    "self_id",
+    "goal_state",
+    "GRU",
+    "roles",
+    "BC",
+    "DAgger"
+  ],
+  "gae_lambda_candidates": [
+    0.999,
+    0.9995,
+    1.0
+  ],
+  "note": "Separate registered configs; never silently add to the primary C0/C1 study."
+}
