@@ -1,0 +1,57 @@
+{
+  "models": {
+    "v8": {
+      "version": "v8",
+      "run": "c1_s11",
+      "kind": "submission",
+      "bundle": "artifacts/submission/v8/37907297bcf0234e823b12bfdb95433b0490e7e7f2672b119c9929b98cd1e493",
+      "files": {
+        "policy.py": "05414780ac4ec64da167af50beda2e190cd1372153e1824e5f46d08c786017db",
+        "checkpoint.pt": "e0019c505d9b88ca4bbb1088d7a9747d02f12bc037904326eee7bee5a6953f1e"
+      },
+      "contract": "provided_two_tensor",
+      "step": null
+    },
+    "v9": {
+      "version": "v9",
+      "run": "B_s22",
+      "kind": "submission",
+      "bundle": "artifacts/submission/v9/4b6e8bae8713413fb65a557883ab1b1b9353f02273d4854b174654e6556cf18c",
+      "files": {
+        "policy.py": "61815043192938f2dce6415f8bd3b34a01687ec2fc06e833329f81bfe03f1d38",
+        "checkpoint.pt": "4b6e8bae8713413fb65a557883ab1b1b9353f02273d4854b174654e6556cf18c"
+      },
+      "contract": "provided_two_tensor",
+      "step": 1137886
+    },
+    "v6": {
+      "version": "v6",
+      "run": "v6 final (1,159,168 step)",
+      "kind": "legacy",
+      "checkpoint": "artifacts/checkpoints/v6/mappo_planner_residual_v6_latest.pt",
+      "sha256": "6429337e23e71c84e4fb618b3d0ff5edd102212be487d71b07b1e1721062be41",
+      "step": 1159168,
+      "contract": "legacy_exhibition",
+      "source_verifier": "code/shared/tools/watch_best_models.py"
+    },
+    "v7-1": {
+      "version": "v7-1",
+      "run": "v7-1 A3 FlyWire / seed 11 (2,000,000 step)",
+      "kind": "legacy",
+      "checkpoint": "logs/v7/v7_1_fafb783_flywire_main_2m_v1/11/evaluation_checkpoints/3598c52f6a8c3edd85af1eb86fe9f84f9ab397e6182b1aa84875f76dfa154ce0.pt",
+      "sha256": "3598c52f6a8c3edd85af1eb86fe9f84f9ab397e6182b1aa84875f76dfa154ce0",
+      "step": 2000000,
+      "contract": "legacy_exhibition",
+      "source_verifier": "code/shared/tools/watch_best_models.py"
+    }
+  },
+  "colors": {
+    "0": "Blue",
+    "1": "Red"
+  },
+  "color_evidence": [
+    "blackout/Assets/Project/Runtime/Resources/ScriptableObjects/Teams/TeamA.asset",
+    "blackout/Assets/Project/Runtime/Resources/ScriptableObjects/Teams/TeamB.asset",
+    "blackout_env/env/constants.py"
+  ]
+}

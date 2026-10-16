@@ -1,0 +1,29 @@
+{
+  "source": "docs/common/blackout_last_4_pages.md",
+  "vector": [
+    null,
+    96
+  ],
+  "graphic": [
+    null,
+    11,
+    96,
+    96
+  ],
+  "dtype": "float32",
+  "action": [
+    null,
+    2
+  ],
+  "range": [
+    -1,
+    1
+  ],
+  "files": [
+    "policy.py",
+    "checkpoint.pt"
+  ],
+  "state_dict_key": "policy_state",
+  "self_id": false,
+  "stateful": false
+}

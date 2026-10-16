@@ -4,7 +4,7 @@
 
 | 경로 | 내용 | Git 공유 |
 |---|---|---|
-| `code/v2/` ~ `code/v9/` | 버전별 구현·스크립트·설정·테스트 | 예 |
+| `code/v2/` ~ `code/v10/` | 버전별 구현·스크립트·설정·테스트 | 예 |
 | `code/shared/` | 여러 버전이 사용하는 Python 모듈·도구·의존성 목록 | 예 |
 | `code/pre_v1/` | 초기 구현·실험 코드 | 예 |
 | `docs/` | 버전별 계획·분석·직접 작성한 보고서 | 예 |
@@ -15,13 +15,22 @@
 
 v1 당시 구현은 후속 구현으로 발전했으며, 현재 별도 `code/v1/` 디렉터리는 없습니다. 공통 구현은 `code/shared/`에서 확인합니다. 이슈 문서는 `docs/issues/`, 초기 보고서는 `docs/pre_v1/reports/`에 있습니다.
 
-[실험 이력](docs/common/history.md) · [v9 안내](docs/v9/README.md) · [v9 계획](docs/v9/plans/v9_plan.md) · [제출 규격](docs/common/blackout_last_4_pages.md) · [재배치 안내](docs/common/project_layout.md)
+[실험 이력](docs/common/history.md) · [v9 안내](docs/v9/README.md) · [v9 계획](docs/v9/plans/v9_plan.md) · [v10 안내](docs/v10/README.md) · [v10 구현 계획](docs/v10/plans/v10_plan.md) · [제출 규격](docs/common/blackout_last_4_pages.md) · [재배치 안내](docs/common/project_layout.md)
 
 ## 실행
 
 프로젝트 루트에서 다음 명령을 사용합니다. 다른 작업 디렉터리에서는 스크립트의 절대 경로를 사용하세요.
 
 ```bash
+# v10 전체 비교 실험: 창 없는 백그라운드 실행
+bash code/v10/run_v10_fast.sh --name mapcritic_v1
+
+# v10 준비 검사: 실제 Unity·학습을 시작하지 않음
+bash code/v10/run_v10_fast.sh --check
+
+# 선택 모델 생성 후 v10 대 v9 관전 (게임 창 표시)
+bash code/v10/watch_v10_models.sh --study mapcritic_v1 --opponent v9
+
 # v9 상태 확인: 학습을 시작하지 않음
 bash code/v9/run_v9_fast.sh --status
 
