@@ -15,13 +15,19 @@
 
 v1 당시 구현은 후속 구현으로 발전했으며, 현재 별도 `code/v1/` 디렉터리는 없습니다. 공통 구현은 `code/shared/`에서 확인합니다. 이슈 문서는 `docs/issues/`, 초기 보고서는 `docs/pre_v1/reports/`에 있습니다.
 
-[실험 이력](docs/common/history.md) · [v9 안내](docs/v9/README.md) · [v9 계획](docs/v9/plans/v9_plan.md) · [v10 안내](docs/v10/README.md) · [v10 구현 계획](docs/v10/plans/v10_plan.md) · [제출 규격](docs/common/blackout_last_4_pages.md) · [재배치 안내](docs/common/project_layout.md)
+[전체 Agent 풀리그](docs/common/agent_league.md) · [실험 이력](docs/common/history.md) · [v9 안내](docs/v9/README.md) · [v9 계획](docs/v9/plans/v9_plan.md) · [v10 안내](docs/v10/README.md) · [v10 구현 계획](docs/v10/plans/v10_plan.md) · [제출 규격](docs/common/blackout_last_4_pages.md) · [재배치 안내](docs/common/project_layout.md)
 
 ## 실행
 
 프로젝트 루트에서 다음 명령을 사용합니다. 다른 작업 디렉터리에서는 스크립트의 절대 경로를 사용하세요.
 
 ```bash
+# 전체 Agent 풀리그: 구조·설정별 대표, 쌍당 양 진영 5세트
+bash code/shared/run_agent_league.sh --name all_agents_v1
+
+# 참가 목록만 확인: Unity 실행 없음
+bash code/shared/run_agent_league.sh --list
+
 # v10 전체 비교 실험: 창 없는 백그라운드 실행
 bash code/v10/run_v10_fast.sh --name mapcritic_v1
 
