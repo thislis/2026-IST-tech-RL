@@ -1,5 +1,7 @@
 # BlackOut Competition PPT 마지막 4페이지 정리
 
+> 이 문서는 기존 PPT의 예시를 보존한다. 이후 사용자 제공 [운영진 답변](organizer_qa_2026-10-24.md)에 따르면 최종 실행은 ONNX 기반이며, I/O를 지키면 내부 구조는 자유롭고 스텝 간 상태도 허용된다. 아래 `BaseModel`·`MyPolicy`·두 파일 예시를 필수 내부 구현 규칙으로 해석하지 않는다.
+
 ## 8페이지 — 관측 공간 (Observation Space)
 
 각 에이전트는 `vector`와 `graphic` 두 가지 관측값을 받습니다.

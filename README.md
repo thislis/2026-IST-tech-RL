@@ -5,6 +5,7 @@
 | 경로 | 내용 | Git 공유 |
 |---|---|---|
 | `code/v2/` ~ `code/v10/` | 버전별 구현·스크립트·설정·테스트 | 예 |
+| `code/v11/` | 목표·기억·planner 정책, recurrent PPO, CPU/MPS 자동 선택·백그라운드 실험 | 예 |
 | `code/shared/` | 여러 버전이 사용하는 Python 모듈·도구·의존성 목록 | 예 |
 | `code/pre_v1/` | 초기 구현·실험 코드 | 예 |
 | `docs/` | 버전별 계획·분석·직접 작성한 보고서 | 예 |
@@ -17,11 +18,20 @@ v1 당시 구현은 후속 구현으로 발전했으며, 현재 별도 `code/v1/
 
 [전체 Agent 풀리그](docs/common/agent_league.md) · [실험 이력](docs/common/history.md) · [v9 안내](docs/v9/README.md) · [v9 계획](docs/v9/plans/v9_plan.md) · [v10 안내](docs/v10/README.md) · [v10 구현 계획](docs/v10/plans/v10_plan.md) · [제출 규격](docs/common/blackout_last_4_pages.md) · [재배치 안내](docs/common/project_layout.md)
 
+[v11 안내](docs/v11/README.md) · [v11 리그 분석](docs/v11/reports/league_findings.md) · [v11 설계](docs/v11/plans/v11_design.md) · [v11 구현 계획](docs/v11/plans/v11_implementation_plan.md) · [운영진 답변 반영](docs/common/organizer_qa_2026-10-24.md)
+
 ## 실행
 
 프로젝트 루트에서 다음 명령을 사용합니다. 다른 작업 디렉터리에서는 스크립트의 절대 경로를 사용하세요.
 
 ```bash
+# v11 전체 실험: 작업별 CPU/MPS 측정 후 창 없는 백그라운드 실행
+bash code/v11/run_v11_fast.sh --name goal_memory_v1
+
+# v11 상태 확인 / 핵심 검사
+bash code/v11/run_v11_fast.sh --name goal_memory_v1 --status
+bash code/v11/run_v11_fast.sh --check
+
 # 전체 Agent 풀리그: 구조·설정별 대표, 쌍당 양 진영 5세트
 bash code/shared/run_agent_league.sh --name all_agents_v1
 

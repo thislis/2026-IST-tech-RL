@@ -1,0 +1,7 @@
+# Install with uv pip install --python .venv/bin/python --no-deps -r this-file.
+# Keep the provided Torch/NumPy/protobuf runtime unchanged.
+onnx==1.16.2
+onnxruntime==1.20.1
+flatbuffers==24.3.25
+coloredlogs==15.0.1
+humanfriendly==10.0

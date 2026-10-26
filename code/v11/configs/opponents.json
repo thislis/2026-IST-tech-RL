@@ -1,0 +1,1117 @@
+[
+  {
+    "id": "scripted-collector",
+    "kind": "strategy",
+    "path": null,
+    "config": {
+      "kind": "collector"
+    },
+    "seed": 0,
+    "step": 0,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {},
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "scripted-collector"
+  },
+  {
+    "id": "scripted-default",
+    "kind": "scripted",
+    "path": null,
+    "config": {
+      "special": false,
+      "radius": 5
+    },
+    "seed": 0,
+    "step": 0,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {},
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "scripted-default"
+  },
+  {
+    "id": "scripted-defender",
+    "kind": "strategy",
+    "path": null,
+    "config": {
+      "kind": "defender"
+    },
+    "seed": 0,
+    "step": 0,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {},
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "scripted-defender"
+  },
+  {
+    "id": "scripted-noop",
+    "kind": "strategy",
+    "path": null,
+    "config": {
+      "kind": "noop"
+    },
+    "seed": 0,
+    "step": 0,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {},
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "scripted-noop"
+  },
+  {
+    "id": "scripted-raider",
+    "kind": "strategy",
+    "path": null,
+    "config": {
+      "kind": "raider"
+    },
+    "seed": 0,
+    "step": 0,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {},
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "scripted-raider"
+  },
+  {
+    "id": "scripted-random",
+    "kind": "strategy",
+    "path": null,
+    "config": {
+      "kind": "random"
+    },
+    "seed": 0,
+    "step": 0,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {},
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "scripted-random"
+  },
+  {
+    "id": "scripted-rush",
+    "kind": "strategy",
+    "path": null,
+    "config": {
+      "kind": "rush"
+    },
+    "seed": 0,
+    "step": 0,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {},
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "scripted-rush"
+  },
+  {
+    "id": "scripted-special",
+    "kind": "scripted",
+    "path": null,
+    "config": {
+      "special": true,
+      "radius": 5
+    },
+    "seed": 0,
+    "step": 0,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {},
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "scripted-special"
+  },
+  {
+    "id": "scripted-weak",
+    "kind": "scripted",
+    "path": null,
+    "config": {
+      "special": false,
+      "radius": 12
+    },
+    "seed": 0,
+    "step": 0,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {},
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "scripted-weak"
+  },
+  {
+    "id": "v1-d4c8e00e",
+    "kind": "legacy",
+    "path": "artifacts/checkpoints/v1/mappo_vs_win70_latest.pt",
+    "config": {
+      "model": {
+        "vector_size": 96,
+        "n_channels": 11,
+        "slot_embedding_dim": 16,
+        "hidden_dim": 128,
+        "entity_dim": 32,
+        "context_dim": 32,
+        "graphic_dim": 128,
+        "map_encoder_version": "legacy",
+        "entity_order_version": "absolute",
+        "entity_encoder_version": "flatten_v1",
+        "auxiliary_targets": [],
+        "action_head_version": "categorical9",
+        "recurrent_version": "none",
+        "n_actions": 9
+      },
+      "guard": null
+    },
+    "seed": 8500,
+    "step": 2000384,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {
+      "artifacts/checkpoints/v1/mappo_vs_win70_latest.pt": "f9d818bb59ed42dc42a95f575c86d4c3eef6facaa56e536cec4bf873ed04b211"
+    },
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "v1-d4c8e00e"
+  },
+  {
+    "id": "v10-C1",
+    "kind": "bundle",
+    "path": "logs/v10/mapcritic_v1/runs/C1_s11/exports/final/checkpoint.pt",
+    "config": null,
+    "seed": 11,
+    "step": 1096887,
+    "selected": true,
+    "complete": true,
+    "main": true,
+    "contract": "provided_two_tensor",
+    "assets": {
+      "logs/v10/mapcritic_v1/runs/C1_s11/exports/final/policy.py": "217520d7d38e222f4dcbece634d717eb2be7ad77a23726c39f20b496f7bf1071",
+      "logs/v10/mapcritic_v1/runs/C1_s11/exports/final/checkpoint.pt": "8e2fd39ab09ddf6284946d6525b86cdee3fb62189dc1ee2fdf42b58684067d44"
+    },
+    "selection_reason": "prior selection",
+    "label": "v10-C1"
+  },
+  {
+    "id": "v2-80375a72",
+    "kind": "legacy",
+    "path": "artifacts/checkpoints/v2/mappo_vs_win70_v2_latest.pt",
+    "config": {
+      "model": {
+        "vector_size": 96,
+        "n_channels": 11,
+        "slot_embedding_dim": 16,
+        "hidden_dim": 128,
+        "entity_dim": 32,
+        "context_dim": 32,
+        "graphic_dim": 128,
+        "map_encoder_version": "global_local_v1",
+        "entity_order_version": "absolute",
+        "entity_encoder_version": "flatten_v1",
+        "auxiliary_targets": [],
+        "action_head_version": "categorical9",
+        "recurrent_version": "none",
+        "n_actions": 9
+      },
+      "guard": null
+    },
+    "seed": 8500,
+    "step": 2000896,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {
+      "artifacts/checkpoints/v2/mappo_vs_win70_v2_latest.pt": "5ef207573a1fec1dfc70af41b264201e843c25855a0e5d50b748974334df21f5"
+    },
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "v2-80375a72"
+  },
+  {
+    "id": "v3-80375a72",
+    "kind": "legacy",
+    "path": "artifacts/checkpoints/v3/mappo_teacher_curriculum_v3_latest.pt",
+    "config": {
+      "model": {
+        "vector_size": 96,
+        "n_channels": 11,
+        "slot_embedding_dim": 16,
+        "hidden_dim": 128,
+        "entity_dim": 32,
+        "context_dim": 32,
+        "graphic_dim": 128,
+        "map_encoder_version": "global_local_v1",
+        "entity_order_version": "absolute",
+        "entity_encoder_version": "flatten_v1",
+        "auxiliary_targets": [],
+        "action_head_version": "categorical9",
+        "recurrent_version": "none",
+        "n_actions": 9
+      },
+      "guard": null
+    },
+    "seed": 9500,
+    "step": 3000320,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {
+      "artifacts/checkpoints/v3/mappo_teacher_curriculum_v3_latest.pt": "aa1f38918c03c68ef167856a0f18c265b9138c57e6b2977dc1a3d0dcc6da62ec"
+    },
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "v3-80375a72"
+  },
+  {
+    "id": "v4-29794421",
+    "kind": "legacy",
+    "path": "artifacts/checkpoints/v4/mappo_planner_residual_v4_latest.pt",
+    "config": {
+      "model": {
+        "vector_size": 96,
+        "n_channels": 11,
+        "slot_embedding_dim": 16,
+        "hidden_dim": 128,
+        "entity_dim": 32,
+        "context_dim": 32,
+        "graphic_dim": 128,
+        "map_encoder_version": "global_local_v1",
+        "entity_order_version": "absolute",
+        "entity_encoder_version": "flatten_v1",
+        "auxiliary_targets": [],
+        "action_head_version": "categorical9",
+        "recurrent_version": "none",
+        "n_actions": 9
+      },
+      "guard": {
+        "version": "scripted_counter_v1",
+        "mode": "planner_residual_v1",
+        "roles": [
+          "worker",
+          "worker",
+          "worker",
+          "guard",
+          "guard"
+        ],
+        "chase_radius_cells": 48,
+        "fallback_action_index": 0,
+        "override_action_indices": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "reason": "retain audited planner while PPO learns explicit directional overrides"
+      }
+    },
+    "seed": 9500,
+    "step": 100352,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {
+      "artifacts/checkpoints/v4/mappo_planner_residual_v4_latest.pt": "d50dd9d05bbff3d8255af4168fcafa3fde2b38e0eca1b189bd68fb970d56455e"
+    },
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "v4-29794421"
+  },
+  {
+    "id": "v5-9c6b5f28",
+    "kind": "legacy",
+    "path": "artifacts/checkpoints/v5/mappo_planner_residual_v5_latest.pt",
+    "config": {
+      "model": {
+        "vector_size": 96,
+        "n_channels": 11,
+        "slot_embedding_dim": 16,
+        "hidden_dim": 128,
+        "entity_dim": 32,
+        "context_dim": 32,
+        "graphic_dim": 128,
+        "map_encoder_version": "global_local_v1",
+        "entity_order_version": "absolute",
+        "entity_encoder_version": "flatten_v1",
+        "auxiliary_targets": [],
+        "action_head_version": "categorical9",
+        "recurrent_version": "none",
+        "n_actions": 9
+      },
+      "guard": {
+        "version": "scripted_counter_v1",
+        "mode": "planner_residual_v2",
+        "roles": [
+          "worker",
+          "worker",
+          "worker",
+          "guard",
+          "guard"
+        ],
+        "chase_radius_cells": 48,
+        "fallback_action_index": 0,
+        "override_action_indices": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "override_action_semantics": [
+          "keep_planner",
+          "rotate_left_45",
+          "rotate_right_45",
+          "rotate_left_90",
+          "rotate_right_90",
+          "stop",
+          "reverse",
+          "rotate_left_135",
+          "rotate_right_135"
+        ],
+        "max_overrides_per_step": 1,
+        "fallback_logit_bias": 6.5,
+        "context_version": "planner_role_path_nearest_target_v1"
+      }
+    },
+    "seed": 10500,
+    "step": 317440,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {
+      "artifacts/checkpoints/v5/mappo_planner_residual_v5_latest.pt": "a92d947cf5e5bb0d025f07ff23bd030247bcd6e0a8c8b5939f1fcb2e596279ff"
+    },
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "v5-9c6b5f28"
+  },
+  {
+    "id": "v6-5c651487",
+    "kind": "legacy",
+    "path": "artifacts/checkpoints/v6/mappo_planner_residual_v6_latest.pt",
+    "config": {
+      "model": {
+        "vector_size": 96,
+        "n_channels": 11,
+        "slot_embedding_dim": 16,
+        "hidden_dim": 128,
+        "entity_dim": 32,
+        "context_dim": 32,
+        "graphic_dim": 128,
+        "map_encoder_version": "global_local_v1",
+        "entity_order_version": "absolute",
+        "entity_encoder_version": "flatten_v1",
+        "auxiliary_targets": [],
+        "action_head_version": "categorical9",
+        "recurrent_version": "none",
+        "n_actions": 9
+      },
+      "guard": {
+        "version": "scripted_counter_v1",
+        "mode": "planner_joint_residual_v6",
+        "roles": [
+          "worker",
+          "worker",
+          "worker",
+          "guard",
+          "guard"
+        ],
+        "chase_radius_cells": 48,
+        "max_overrides_per_step": 1,
+        "context_version": "actual_planner_history_mirrored_v6"
+      }
+    },
+    "seed": 10600,
+    "step": 1159168,
+    "selected": true,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {
+      "artifacts/checkpoints/v6/mappo_planner_residual_v6_latest.pt": "6429337e23e71c84e4fb618b3d0ff5edd102212be487d71b07b1e1721062be41"
+    },
+    "selection_reason": "prior selection",
+    "label": "v6-5c651487"
+  },
+  {
+    "id": "v7-residual_graph-23262e36b5",
+    "kind": "v7",
+    "path": "logs/v7/v7_1_fafb783_rewired_main_2m_v1/11/checkpoints/latest.pt",
+    "config": {
+      "base_commit": "2842fb17aeb6923f55c391d04de182df758f02e3",
+      "controller": {
+        "action_repeat": 1,
+        "action_schema": "keep_plus_5x8_v6",
+        "controlled_slots": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "data": {
+        "annotation_sha256": "9a4f8b2f843196074431ebd7cd883536afa1be86c8a4ce90970441e8be81d1be",
+        "dataset": "flywire_fafb",
+        "graph_artifact": "data/connectomes/fafb783/cx_rewired_1729.npz",
+        "graph_metadata_sha256": "1b8c918454ec69aa41796d5587a5b23129c326f5d3d09803710f7ca8ed51b12d",
+        "graph_sha256": "6ca8d0b0eb571716c9822340f5fa8778d8e3dd1ea4d78136708c263bc15982fc",
+        "source_manifest": "data/connectomes/fafb783/source_manifest.json",
+        "version": "783"
+      },
+      "environment": {
+        "build": "builds/BlackOut.app",
+        "executable": "builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "max_episode_steps": 22000,
+        "time_scale": 50.0
+      },
+      "evaluation": {
+        "final_test_after_model_lock": true,
+        "paired_sides": true,
+        "split_manifest": "configs/v7/splits.json",
+        "split_sha256": "f3d937321baed856dae11e0da9970fa4193ace2178e1ade250819ad84332e92c",
+        "terminal_winner_only": true
+      },
+      "experiment_id": "v7_1_fafb783_rewired_main_2m_v1",
+      "mode": "residual_graph",
+      "model": {
+        "carry_neural_state_between_calls": false,
+        "direct_feature_to_action_bypass": false,
+        "frozen_encoder_checkpoint": "checkpoints/win_70_vs_scripted.pt",
+        "frozen_encoder_checkpoint_sha256": "c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9",
+        "graph_rounds": 4,
+        "initial_override_probability": 0.1,
+        "input_context_dim": 49,
+        "input_port_count": 12,
+        "leak": 0.5,
+        "node_channels": 4,
+        "output_pool_count": 6,
+        "rewire_seed": 1729,
+        "slots": 5,
+        "variant": "rewired"
+      },
+      "runtime": {
+        "torch_threads": 2
+      },
+      "schema_version": "blackout.v7.experiment.v1",
+      "sensory": {
+        "mode": "S0_semantic_retina",
+        "sensor_interval_game_steps": 5
+      },
+      "training": {
+        "exploration": 0.0,
+        "failure_seed_priority": false,
+        "gae_lambda": 0.99,
+        "gamma": 0.9995,
+        "independent_training_seeds": [
+          11,
+          22,
+          33,
+          44,
+          55
+        ],
+        "learning_rate": 0.0001,
+        "max_environment_steps": 2000000,
+        "opponent_checkpoint": "checkpoints/win_70_vs_scripted.pt",
+        "opponent_checkpoint_sha256": "c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9",
+        "opponent_schedule": [
+          {
+            "probabilities": [
+              0.65,
+              0.25,
+              0.1
+            ],
+            "until": 200000
+          },
+          {
+            "probabilities": [
+              0.2,
+              0.3,
+              0.5
+            ],
+            "until": 600000
+          },
+          {
+            "probabilities": [
+              0.1,
+              0.0,
+              0.9
+            ],
+            "until": 2000001
+          }
+        ],
+        "ppo": {
+          "clip_coef": 0.2,
+          "entropy_coef": 0.003,
+          "max_grad_norm": 0.5,
+          "minibatch_size": 128,
+          "target_kl": 0.02,
+          "update_epochs": 4,
+          "value_clip_coef": 0.2,
+          "value_loss_coef": 0.5
+        },
+        "protocol": "fixed_comparison_schedule_v1",
+        "reward": "inherited_v6_score_delta_terminal",
+        "rollout_steps": 2048,
+        "save_every": 25000
+      }
+    },
+    "seed": 11,
+    "step": 2000000,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {
+      "logs/v7/v7_1_fafb783_rewired_main_2m_v1/11/resolved_config.json": "e4956bf160780962b55ed761d891cfb7f5af1416d3c48021e95c7a52c0d0bb94",
+      "artifacts/data/connectomes/fafb783/cx_rewired_1729.npz": "6ca8d0b0eb571716c9822340f5fa8778d8e3dd1ea4d78136708c263bc15982fc",
+      "artifacts/data/connectomes/fafb783/cx_rewired_1729.json": "1b8c918454ec69aa41796d5587a5b23129c326f5d3d09803710f7ca8ed51b12d",
+      "artifacts/data/connectomes/fafb783/source_manifest.json": "030c9b5c29e4e6289334ffdec2b2b0f8e1fc700d05f0a5139c3634d67785d020",
+      "artifacts/checkpoints/pre_v1/win_70_vs_scripted.pt": "c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9",
+      "logs/v7/v7_1_fafb783_rewired_main_2m_v1/11/checkpoints/latest.pt": "0ffd26c05bc41f41a6a44383fd03d6d7e6f3ce00c51e54d38a9b3cb57147f9aa",
+      "code/v7/configs/splits.json": "f3d937321baed856dae11e0da9970fa4193ace2178e1ade250819ad84332e92c"
+    },
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "v7_1_fafb783_rewired_main_2m_v1"
+  },
+  {
+    "id": "v7-residual_graph-27d97f725e",
+    "kind": "v7",
+    "path": "logs/v7/v7_1_fafb783_flywire_main_2m_v1/11/checkpoints/latest.pt",
+    "config": {
+      "base_commit": "2842fb17aeb6923f55c391d04de182df758f02e3",
+      "controller": {
+        "action_repeat": 1,
+        "action_schema": "keep_plus_5x8_v6",
+        "controlled_slots": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ]
+      },
+      "data": {
+        "annotation_sha256": "9a4f8b2f843196074431ebd7cd883536afa1be86c8a4ce90970441e8be81d1be",
+        "dataset": "flywire_fafb",
+        "graph_artifact": "data/connectomes/fafb783/cx_primary.npz",
+        "graph_metadata_sha256": "0382e744b48234303217da63ccd0a9ce74a14894d4b23e0149e9ad8e275e314b",
+        "graph_sha256": "4e1c5ae0f5280819480c754ff2169b19e66d0d5aae3c80d348b08b12c0e22d89",
+        "source_manifest": "data/connectomes/fafb783/source_manifest.json",
+        "version": "783"
+      },
+      "environment": {
+        "build": "builds/BlackOut.app",
+        "executable": "builds/BlackOut.app/Contents/MacOS/RLGame2026",
+        "executable_sha256": "49172f88b1ba2429677e7ec4a7876c4589876090be4888aeaef39269e29f4a69",
+        "max_episode_steps": 22000,
+        "time_scale": 50.0
+      },
+      "evaluation": {
+        "final_test_after_model_lock": true,
+        "paired_sides": true,
+        "split_manifest": "configs/v7/splits.json",
+        "split_sha256": "f3d937321baed856dae11e0da9970fa4193ace2178e1ade250819ad84332e92c",
+        "terminal_winner_only": true
+      },
+      "experiment_id": "v7_1_fafb783_flywire_main_2m_v1",
+      "mode": "residual_graph",
+      "model": {
+        "carry_neural_state_between_calls": false,
+        "direct_feature_to_action_bypass": false,
+        "frozen_encoder_checkpoint": "checkpoints/win_70_vs_scripted.pt",
+        "frozen_encoder_checkpoint_sha256": "c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9",
+        "graph_rounds": 4,
+        "initial_override_probability": 0.1,
+        "input_context_dim": 49,
+        "input_port_count": 12,
+        "leak": 0.5,
+        "node_channels": 4,
+        "output_pool_count": 6,
+        "slots": 5,
+        "variant": "graph"
+      },
+      "runtime": {
+        "torch_threads": 2
+      },
+      "schema_version": "blackout.v7.experiment.v1",
+      "sensory": {
+        "mode": "S0_semantic_retina",
+        "sensor_interval_game_steps": 5
+      },
+      "training": {
+        "exploration": 0.0,
+        "failure_seed_priority": false,
+        "gae_lambda": 0.99,
+        "gamma": 0.9995,
+        "independent_training_seeds": [
+          11,
+          22,
+          33,
+          44,
+          55
+        ],
+        "learning_rate": 0.0001,
+        "max_environment_steps": 2000000,
+        "opponent_checkpoint": "checkpoints/win_70_vs_scripted.pt",
+        "opponent_checkpoint_sha256": "c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9",
+        "opponent_schedule": [
+          {
+            "probabilities": [
+              0.65,
+              0.25,
+              0.1
+            ],
+            "until": 200000
+          },
+          {
+            "probabilities": [
+              0.2,
+              0.3,
+              0.5
+            ],
+            "until": 600000
+          },
+          {
+            "probabilities": [
+              0.1,
+              0.0,
+              0.9
+            ],
+            "until": 2000001
+          }
+        ],
+        "ppo": {
+          "clip_coef": 0.2,
+          "entropy_coef": 0.003,
+          "max_grad_norm": 0.5,
+          "minibatch_size": 128,
+          "target_kl": 0.02,
+          "update_epochs": 4,
+          "value_clip_coef": 0.2,
+          "value_loss_coef": 0.5
+        },
+        "protocol": "fixed_comparison_schedule_v1",
+        "reward": "inherited_v6_score_delta_terminal",
+        "rollout_steps": 2048,
+        "save_every": 25000
+      }
+    },
+    "seed": 11,
+    "step": 2000000,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "legacy_identity_state",
+    "assets": {
+      "logs/v7/v7_1_fafb783_flywire_main_2m_v1/11/resolved_config.json": "27e9029f4b7fa1d47e98b8ec578eed5b059cc192b0084281579b0ab602246394",
+      "artifacts/data/connectomes/fafb783/cx_primary.npz": "4e1c5ae0f5280819480c754ff2169b19e66d0d5aae3c80d348b08b12c0e22d89",
+      "artifacts/data/connectomes/fafb783/cx_primary.json": "0382e744b48234303217da63ccd0a9ce74a14894d4b23e0149e9ad8e275e314b",
+      "artifacts/data/connectomes/fafb783/source_manifest.json": "030c9b5c29e4e6289334ffdec2b2b0f8e1fc700d05f0a5139c3634d67785d020",
+      "artifacts/checkpoints/pre_v1/win_70_vs_scripted.pt": "c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9",
+      "logs/v7/v7_1_fafb783_flywire_main_2m_v1/11/checkpoints/latest.pt": "3598c52f6a8c3edd85af1eb86fe9f84f9ab397e6182b1aa84875f76dfa154ce0",
+      "code/v7/configs/splits.json": "f3d937321baed856dae11e0da9970fa4193ace2178e1ade250819ad84332e92c"
+    },
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "v7_1_fafb783_flywire_main_2m_v1"
+  },
+  {
+    "id": "v8-v8_comp-c1",
+    "kind": "v8_comp",
+    "path": "logs/v8/provided_competition_v1/runs/c1_s11/checkpoints/37907297bcf0234e823b12bfdb95433b0490e7e7f2672b119c9929b98cd1e493.pt",
+    "config": {
+      "steps": 1048576,
+      "rollout": 2048,
+      "save_every": 65536,
+      "max_episode_steps": 22000,
+      "train_seed_requests": [
+        3001,
+        3002,
+        3003,
+        3004,
+        3005,
+        3006,
+        3007,
+        3008,
+        3301,
+        3302,
+        3303,
+        3304,
+        3305,
+        3306,
+        3307,
+        3308,
+        3309,
+        3310,
+        3311,
+        3312,
+        3313,
+        3314,
+        3315,
+        3316,
+        3317,
+        3318,
+        3319,
+        3320,
+        3321,
+        3322,
+        3323,
+        3324,
+        3325,
+        3326,
+        3327,
+        3328,
+        3329,
+        3330,
+        3331,
+        3332
+      ],
+      "gamma": 0.9995,
+      "gae_lambda": 0.99,
+      "schedule": [
+        {
+          "until": 200000,
+          "probabilities": [
+            0.65,
+            0.25,
+            0.1
+          ]
+        },
+        {
+          "until": 600000,
+          "probabilities": [
+            0.2,
+            0.3,
+            0.5
+          ]
+        },
+        {
+          "until": 2000001,
+          "probabilities": [
+            0.1,
+            0.0,
+            0.9
+          ]
+        }
+      ],
+      "ppo": {
+        "learning_rate": 0.0001,
+        "epochs": 4,
+        "minibatch_size": 128,
+        "clip": 0.2,
+        "value_clip": 0.2,
+        "value_loss_coef": 0.5,
+        "entropy_coef": 0.003,
+        "max_grad_norm": 0.5,
+        "target_kl": 0.02
+      },
+      "reward": "mean_of_five_provided_agent_rewards",
+      "policy": "stateless_c1_obs9_or_equal_capacity_flat9",
+      "lifecycle": "fresh_unmodified_environment_per_episode",
+      "side_cycle": [
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "seed": 11,
+      "arm": "c1",
+      "opponent": {
+        "path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/win_70_vs_scripted.pt",
+        "sha256": "c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9",
+        "source_sha256": {
+          "blackout_rl/__init__.py": "a04924c723276fce75f662ba9ed83b56c099206733297f054ebfc6e0250be39c",
+          "blackout_rl/action_distribution.py": "d8520926980b16a7859697394d964af104c804fcf32fa7b7ab9d396b68ecd43d",
+          "blackout_rl/batching.py": "361a049e9d07ea7f6558b0772066b6790605d3bf3b66acd8543eca0fe9024fd2",
+          "blackout_rl/behavior_cloning.py": "e7aa6e939e92d1637f0d35e4b293cf959bb84da51457373c5045feaf5c6c4098",
+          "blackout_rl/connectome/__init__.py": "f142210f615248bbbc7906c41d5e6da62a5b94f01692232c717012d1d430521a",
+          "blackout_rl/connectome/datasets.py": "e3cf8e1a9794832f9ae0f77f224d2759533b41378d72e0c5689223375b633b1b",
+          "blackout_rl/connectome/extract_circuit.py": "d4bee3446a889e7efe0bca9e1b74cd1126b2ba48d4d9740aa0cd6377f0612eeb",
+          "blackout_rl/connectome/graph_artifact.py": "69e446a4cb1e27521acf739a4b6c79a988b27f1dc017220201acb12480ff5d70",
+          "blackout_rl/connectome/graph_controls.py": "48d55527e4fbb2a7d2a5a7663270fb76a62fce2afa1a19b17e137302c4b125d8",
+          "blackout_rl/connectome/sparse_ops.py": "fabcba050039ed2ef50d6411ebf90437cfde81db51dee14496c0aa38641e537d",
+          "blackout_rl/coordination.py": "71eb18a2d7deb93af5a8c8825036dc47a3996091adeec75122b0a718fed6d4e1",
+          "blackout_rl/curriculum.py": "f0f5bb87c16797c62a5041d03bb5a35ed2a810bd1085ea5fccccc60b2b8cb184",
+          "blackout_rl/env.py": "e8b3492997c6f5ee2d4fa30b1c267f83e389059f902d4a09b17bb758bfeba324",
+          "blackout_rl/evaluation_protocol.py": "355dae02ece870ea365b5b72d4ba43adf4068cce2940820a5e3e6b8aeec1cb45",
+          "blackout_rl/experiment_registry.py": "25c95cea70a1372bc98dc6b655f2c887397775941c1f1a6ee57c9d5762672303",
+          "blackout_rl/frozen_opponent.py": "99b373e02a0ae9a391cf0767f0379e1e61714a47abc3ab2d5bf648fbee1173a9",
+          "blackout_rl/ippo_model.py": "40e2b3f33a4297a1db217e880d7c70c9f9e88b712166677bc93d4c0c1ca04115",
+          "blackout_rl/ippo_training.py": "f4ba47112783b16c45091dfad0df1d2e6593f6e88be2f751210e1c1c7259b640",
+          "blackout_rl/logging_schema.py": "684f509ed318a209cc93631502a6b2631834c90bb759c0a1127024d6e34f67b6",
+          "blackout_rl/mappo.py": "ae1bb335119e226f454dbc6235ce4bc3dea9aa191d047b44bd94706ed30ca9e6",
+          "blackout_rl/mappo_curriculum.py": "41fe0102d36614c4618f139a9a8728352cbd6837989b65ee906749ec84786776",
+          "blackout_rl/mappo_curriculum_v5.py": "cf3cad68a2db79f37ece5d9066e5af8f8cc8fccb2542803b35ec5f36433c5a85",
+          "blackout_rl/mappo_curriculum_v6.py": "6d372ea03ddedc12cb025f934db9f2c6ae170bacb99886e088accbd571cf14a2",
+          "blackout_rl/mappo_v6.py": "af349bf85a9bfb98ff9b04cf3b6de54c6ec771928f14b06fedb5b8f40421e876",
+          "blackout_rl/mappo_v6_artifacts.py": "fb24851b17b98720b5843fe59b1147242a11d9d315bf1cf6dde408c642fb4305",
+          "blackout_rl/mappo_v6_training.py": "63fa8478e9afa75820710573da4941b2432343042e9ae51a8a3b4d5728bd2628",
+          "blackout_rl/model_contract.py": "a9928a9687d99a5e30f714adfa23f904dab3f7f2c70580830cfa289acc009764",
+          "blackout_rl/navigation.py": "1c4600b32578ece0ee62d351b5f279c3de7178bc15f249c3b5e14cfcd519725f",
+          "blackout_rl/observation.py": "002c96a15ff4384e54577b304ee311c09b196715a0a406ee2ae46843eb686774",
+          "blackout_rl/policy.py": "af72c8887dbc6ec5ce11709af1d8a71ecc5511718cb022a370890056bf91d3a7",
+          "blackout_rl/ppo.py": "cdc679a25839475b2a972119719fcc337988f037fc2dce8724ec3fea5411f9f4",
+          "blackout_rl/representation.py": "6299cf6e2a4900682ec5e2b8467e5f6df50efa58c5a8e956d9e78e2d66619cf9",
+          "blackout_rl/reward.py": "8c6d63f5091e7c2f107dbd0130fcdb210e24835959784a7b5091fbf7405c415c",
+          "blackout_rl/rollout.py": "96e8ce36989ed756b0d1595efcf980a055a629c5ff68adee1c622ea2650df658",
+          "blackout_rl/scripted_fsm.py": "1fa2b6ce0ca48e7188bc371d904e315f8fd8110f6ae91e00f7197ead67de753c",
+          "blackout_rl/self_play.py": "3b3b6a1b47993af63d8fb0eb76a48a4e90c64247281577a5035aeec288b93f6e",
+          "blackout_rl/semantic_map.py": "ab1dbe0d888511510bd15839987857de814cd03f79a0f072f7d2e1d0a90fab91",
+          "blackout_rl/strategy.py": "ee3b7ef18b6c0bd5f474360301d8fb070272ea00270b8215f21882e79aed6ac0",
+          "blackout_rl/submission_validation.py": "bbd270b946ac354b03e36e836fad953dea7473e215af6a1637e5d6279c5cd977",
+          "blackout_rl/team_state.py": "dcbade2c04c19e7f315d81474844ceeb0e1e83673d92b0b5d6a0d2966d0e373d",
+          "blackout_rl/training_reward.py": "1b44bac3fa009f0ef864cc4651a009e8300262f7ecbbcaffd0ae7d8eb4159c3e",
+          "blackout_rl/trajectory.py": "5285800e0c628eada7d52a294494a68b21ef494d5a2b7ccbdf89ab167f3b2b8f",
+          "blackout_rl/v7_1/__init__.py": "d0045bb5629e849080d62352f4640216d2b2f39ee14d50a4f5d04dbe5fe99bc4",
+          "blackout_rl/v7_1/model.py": "9d2ca00e106b25cb2fc6c61317186277597ca0d11fdd7aa539ea0be89c7a0448",
+          "blackout_rl/v7_1/policy.py": "17f3b6285712be541ecf0adf8437d41bcec24bb603f5023812339b91a3604931",
+          "blackout_rl/v7_1/training.py": "3b5485705b42d14ccea762cebda753e807211624fe49b9302bc78b7799c32816",
+          "blackout_rl/v7_2/__init__.py": "1c9a1913526452c84b1029e7d94b5f09325a651ffd195be690731295ca7560d2",
+          "blackout_rl/v7_2/decoder.py": "56cd928fb8ddeb7f36a1dba01f313e1d9b315dee6a793eab45cf8661736a561b",
+          "blackout_rl/v7_2/dynamics.py": "abf2e29fbea9355b7280ebc9b07f062d364ac41922771a387e3a2cd7e065a07c",
+          "blackout_rl/v7_2/plasticity.py": "03c870830aab6b2da855b45e2c220a663f678bc86b1b0a7d43a623ae464fccdc",
+          "blackout_rl/v7_2/policy.py": "dae13e1ce427c16607c7635ba1b6a5c66acb11b12afce93428d08a7f8107a8ce",
+          "blackout_rl/v7_2/sensory.py": "f49473b810d76d67a12634da0d611705e727287debc87b76fd4ffd10b79efe23",
+          "blackout_rl/v7_2/state.py": "31c1477aa16e6982c24fce97999d854aedf9b9f9199017fef34a4a108fd46016",
+          "blackout_rl/v7_2/teammates.py": "298da47d63f0260b1c76a99f0cc306d70aeb1643de5baa608f7aea794c4decd4",
+          "blackout_rl/v7_2/training.py": "a94f75a9c9e4c356ed01f9b3d6c951cd856da2352b8cc72bfe52b0adeaef3608",
+          "blackout_rl/v7_registry.py": "891578238bc92f85966daa28388713a6dffff9247f85a794b1b9c693237f311b",
+          "blackout_rl/v7_training.py": "4eccceac0959ed6e0661a53a17c97a6c6f582430d56e87788279d674ad0cbc86"
+        }
+      }
+    },
+    "seed": 11,
+    "step": 1048576,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "provided_two_tensor",
+    "assets": {
+      "logs/v8/provided_competition_v1/runs/c1_s11/checkpoints/37907297bcf0234e823b12bfdb95433b0490e7e7f2672b119c9929b98cd1e493.pt": "37907297bcf0234e823b12bfdb95433b0490e7e7f2672b119c9929b98cd1e493",
+      "artifacts/checkpoints/pre_v1/win_70_vs_scripted.pt": "c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9"
+    },
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "v8-v8_comp-c1"
+  },
+  {
+    "id": "v8-v8_comp-flat",
+    "kind": "v8_comp",
+    "path": "logs/v8/provided_competition_v1/runs/flat_s11/checkpoints/aab8fcd14fd97aaf8d264d759f2504c95a35d965289b5d5e1278a2959cfb4647.pt",
+    "config": {
+      "steps": 1048576,
+      "rollout": 2048,
+      "save_every": 65536,
+      "max_episode_steps": 22000,
+      "train_seed_requests": [
+        3001,
+        3002,
+        3003,
+        3004,
+        3005,
+        3006,
+        3007,
+        3008,
+        3301,
+        3302,
+        3303,
+        3304,
+        3305,
+        3306,
+        3307,
+        3308,
+        3309,
+        3310,
+        3311,
+        3312,
+        3313,
+        3314,
+        3315,
+        3316,
+        3317,
+        3318,
+        3319,
+        3320,
+        3321,
+        3322,
+        3323,
+        3324,
+        3325,
+        3326,
+        3327,
+        3328,
+        3329,
+        3330,
+        3331,
+        3332
+      ],
+      "gamma": 0.9995,
+      "gae_lambda": 0.99,
+      "schedule": [
+        {
+          "until": 200000,
+          "probabilities": [
+            0.65,
+            0.25,
+            0.1
+          ]
+        },
+        {
+          "until": 600000,
+          "probabilities": [
+            0.2,
+            0.3,
+            0.5
+          ]
+        },
+        {
+          "until": 2000001,
+          "probabilities": [
+            0.1,
+            0.0,
+            0.9
+          ]
+        }
+      ],
+      "ppo": {
+        "learning_rate": 0.0001,
+        "epochs": 4,
+        "minibatch_size": 128,
+        "clip": 0.2,
+        "value_clip": 0.2,
+        "value_loss_coef": 0.5,
+        "entropy_coef": 0.003,
+        "max_grad_norm": 0.5,
+        "target_kl": 0.02
+      },
+      "reward": "mean_of_five_provided_agent_rewards",
+      "policy": "stateless_c1_obs9_or_equal_capacity_flat9",
+      "lifecycle": "fresh_unmodified_environment_per_episode",
+      "side_cycle": [
+        0,
+        0,
+        1,
+        1,
+        1
+      ],
+      "seed": 11,
+      "arm": "flat",
+      "opponent": {
+        "path": "/Users/safeailab_macmini/Desktop/2026-IST-tech-RL/checkpoints/win_70_vs_scripted.pt",
+        "sha256": "c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9",
+        "source_sha256": {
+          "blackout_rl/__init__.py": "a04924c723276fce75f662ba9ed83b56c099206733297f054ebfc6e0250be39c",
+          "blackout_rl/action_distribution.py": "d8520926980b16a7859697394d964af104c804fcf32fa7b7ab9d396b68ecd43d",
+          "blackout_rl/batching.py": "361a049e9d07ea7f6558b0772066b6790605d3bf3b66acd8543eca0fe9024fd2",
+          "blackout_rl/behavior_cloning.py": "e7aa6e939e92d1637f0d35e4b293cf959bb84da51457373c5045feaf5c6c4098",
+          "blackout_rl/connectome/__init__.py": "f142210f615248bbbc7906c41d5e6da62a5b94f01692232c717012d1d430521a",
+          "blackout_rl/connectome/datasets.py": "e3cf8e1a9794832f9ae0f77f224d2759533b41378d72e0c5689223375b633b1b",
+          "blackout_rl/connectome/extract_circuit.py": "d4bee3446a889e7efe0bca9e1b74cd1126b2ba48d4d9740aa0cd6377f0612eeb",
+          "blackout_rl/connectome/graph_artifact.py": "69e446a4cb1e27521acf739a4b6c79a988b27f1dc017220201acb12480ff5d70",
+          "blackout_rl/connectome/graph_controls.py": "48d55527e4fbb2a7d2a5a7663270fb76a62fce2afa1a19b17e137302c4b125d8",
+          "blackout_rl/connectome/sparse_ops.py": "fabcba050039ed2ef50d6411ebf90437cfde81db51dee14496c0aa38641e537d",
+          "blackout_rl/coordination.py": "71eb18a2d7deb93af5a8c8825036dc47a3996091adeec75122b0a718fed6d4e1",
+          "blackout_rl/curriculum.py": "f0f5bb87c16797c62a5041d03bb5a35ed2a810bd1085ea5fccccc60b2b8cb184",
+          "blackout_rl/env.py": "e8b3492997c6f5ee2d4fa30b1c267f83e389059f902d4a09b17bb758bfeba324",
+          "blackout_rl/evaluation_protocol.py": "355dae02ece870ea365b5b72d4ba43adf4068cce2940820a5e3e6b8aeec1cb45",
+          "blackout_rl/experiment_registry.py": "25c95cea70a1372bc98dc6b655f2c887397775941c1f1a6ee57c9d5762672303",
+          "blackout_rl/frozen_opponent.py": "99b373e02a0ae9a391cf0767f0379e1e61714a47abc3ab2d5bf648fbee1173a9",
+          "blackout_rl/ippo_model.py": "40e2b3f33a4297a1db217e880d7c70c9f9e88b712166677bc93d4c0c1ca04115",
+          "blackout_rl/ippo_training.py": "f4ba47112783b16c45091dfad0df1d2e6593f6e88be2f751210e1c1c7259b640",
+          "blackout_rl/logging_schema.py": "684f509ed318a209cc93631502a6b2631834c90bb759c0a1127024d6e34f67b6",
+          "blackout_rl/mappo.py": "ae1bb335119e226f454dbc6235ce4bc3dea9aa191d047b44bd94706ed30ca9e6",
+          "blackout_rl/mappo_curriculum.py": "41fe0102d36614c4618f139a9a8728352cbd6837989b65ee906749ec84786776",
+          "blackout_rl/mappo_curriculum_v5.py": "cf3cad68a2db79f37ece5d9066e5af8f8cc8fccb2542803b35ec5f36433c5a85",
+          "blackout_rl/mappo_curriculum_v6.py": "6d372ea03ddedc12cb025f934db9f2c6ae170bacb99886e088accbd571cf14a2",
+          "blackout_rl/mappo_v6.py": "af349bf85a9bfb98ff9b04cf3b6de54c6ec771928f14b06fedb5b8f40421e876",
+          "blackout_rl/mappo_v6_artifacts.py": "fb24851b17b98720b5843fe59b1147242a11d9d315bf1cf6dde408c642fb4305",
+          "blackout_rl/mappo_v6_training.py": "63fa8478e9afa75820710573da4941b2432343042e9ae51a8a3b4d5728bd2628",
+          "blackout_rl/model_contract.py": "a9928a9687d99a5e30f714adfa23f904dab3f7f2c70580830cfa289acc009764",
+          "blackout_rl/navigation.py": "1c4600b32578ece0ee62d351b5f279c3de7178bc15f249c3b5e14cfcd519725f",
+          "blackout_rl/observation.py": "002c96a15ff4384e54577b304ee311c09b196715a0a406ee2ae46843eb686774",
+          "blackout_rl/policy.py": "af72c8887dbc6ec5ce11709af1d8a71ecc5511718cb022a370890056bf91d3a7",
+          "blackout_rl/ppo.py": "cdc679a25839475b2a972119719fcc337988f037fc2dce8724ec3fea5411f9f4",
+          "blackout_rl/representation.py": "6299cf6e2a4900682ec5e2b8467e5f6df50efa58c5a8e956d9e78e2d66619cf9",
+          "blackout_rl/reward.py": "8c6d63f5091e7c2f107dbd0130fcdb210e24835959784a7b5091fbf7405c415c",
+          "blackout_rl/rollout.py": "96e8ce36989ed756b0d1595efcf980a055a629c5ff68adee1c622ea2650df658",
+          "blackout_rl/scripted_fsm.py": "1fa2b6ce0ca48e7188bc371d904e315f8fd8110f6ae91e00f7197ead67de753c",
+          "blackout_rl/self_play.py": "3b3b6a1b47993af63d8fb0eb76a48a4e90c64247281577a5035aeec288b93f6e",
+          "blackout_rl/semantic_map.py": "ab1dbe0d888511510bd15839987857de814cd03f79a0f072f7d2e1d0a90fab91",
+          "blackout_rl/strategy.py": "ee3b7ef18b6c0bd5f474360301d8fb070272ea00270b8215f21882e79aed6ac0",
+          "blackout_rl/submission_validation.py": "bbd270b946ac354b03e36e836fad953dea7473e215af6a1637e5d6279c5cd977",
+          "blackout_rl/team_state.py": "dcbade2c04c19e7f315d81474844ceeb0e1e83673d92b0b5d6a0d2966d0e373d",
+          "blackout_rl/training_reward.py": "1b44bac3fa009f0ef864cc4651a009e8300262f7ecbbcaffd0ae7d8eb4159c3e",
+          "blackout_rl/trajectory.py": "5285800e0c628eada7d52a294494a68b21ef494d5a2b7ccbdf89ab167f3b2b8f",
+          "blackout_rl/v7_1/__init__.py": "d0045bb5629e849080d62352f4640216d2b2f39ee14d50a4f5d04dbe5fe99bc4",
+          "blackout_rl/v7_1/model.py": "9d2ca00e106b25cb2fc6c61317186277597ca0d11fdd7aa539ea0be89c7a0448",
+          "blackout_rl/v7_1/policy.py": "17f3b6285712be541ecf0adf8437d41bcec24bb603f5023812339b91a3604931",
+          "blackout_rl/v7_1/training.py": "3b5485705b42d14ccea762cebda753e807211624fe49b9302bc78b7799c32816",
+          "blackout_rl/v7_2/__init__.py": "1c9a1913526452c84b1029e7d94b5f09325a651ffd195be690731295ca7560d2",
+          "blackout_rl/v7_2/decoder.py": "56cd928fb8ddeb7f36a1dba01f313e1d9b315dee6a793eab45cf8661736a561b",
+          "blackout_rl/v7_2/dynamics.py": "abf2e29fbea9355b7280ebc9b07f062d364ac41922771a387e3a2cd7e065a07c",
+          "blackout_rl/v7_2/plasticity.py": "03c870830aab6b2da855b45e2c220a663f678bc86b1b0a7d43a623ae464fccdc",
+          "blackout_rl/v7_2/policy.py": "dae13e1ce427c16607c7635ba1b6a5c66acb11b12afce93428d08a7f8107a8ce",
+          "blackout_rl/v7_2/sensory.py": "f49473b810d76d67a12634da0d611705e727287debc87b76fd4ffd10b79efe23",
+          "blackout_rl/v7_2/state.py": "31c1477aa16e6982c24fce97999d854aedf9b9f9199017fef34a4a108fd46016",
+          "blackout_rl/v7_2/teammates.py": "298da47d63f0260b1c76a99f0cc306d70aeb1643de5baa608f7aea794c4decd4",
+          "blackout_rl/v7_2/training.py": "a94f75a9c9e4c356ed01f9b3d6c951cd856da2352b8cc72bfe52b0adeaef3608",
+          "blackout_rl/v7_registry.py": "891578238bc92f85966daa28388713a6dffff9247f85a794b1b9c693237f311b",
+          "blackout_rl/v7_training.py": "4eccceac0959ed6e0661a53a17c97a6c6f582430d56e87788279d674ad0cbc86"
+        }
+      }
+    },
+    "seed": 11,
+    "step": 1048576,
+    "selected": false,
+    "complete": true,
+    "main": true,
+    "contract": "provided_two_tensor",
+    "assets": {
+      "logs/v8/provided_competition_v1/runs/flat_s11/checkpoints/aab8fcd14fd97aaf8d264d759f2504c95a35d965289b5d5e1278a2959cfb4647.pt": "aab8fcd14fd97aaf8d264d759f2504c95a35d965289b5d5e1278a2959cfb4647",
+      "artifacts/checkpoints/pre_v1/win_70_vs_scripted.pt": "c6265abd1f8e51ce5fad641ab87c8323ed05e412bd4cf03b728454bb8d1c34d9"
+    },
+    "selection_reason": "completed main / lowest seed / final step; otherwise largest completed budget",
+    "label": "v8-v8_comp-flat"
+  },
+  {
+    "id": "v9-B",
+    "kind": "bundle",
+    "path": "logs/v9/attention_original_v1/runs/B_s22/exports/final/checkpoint.pt",
+    "config": null,
+    "seed": 22,
+    "step": 1137886,
+    "selected": true,
+    "complete": true,
+    "main": true,
+    "contract": "provided_two_tensor",
+    "assets": {
+      "logs/v9/attention_original_v1/runs/B_s22/exports/final/policy.py": "61815043192938f2dce6415f8bd3b34a01687ec2fc06e833329f81bfe03f1d38",
+      "logs/v9/attention_original_v1/runs/B_s22/exports/final/checkpoint.pt": "4b6e8bae8713413fb65a557883ab1b1b9353f02273d4854b174654e6556cf18c"
+    },
+    "selection_reason": "prior selection",
+    "label": "v9-B"
+  }
+]

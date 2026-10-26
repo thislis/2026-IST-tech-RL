@@ -1,0 +1,54 @@
+{
+  "enabled_by_default": false,
+  "seeds": [
+    11,
+    22,
+    33
+  ],
+  "training_steps": 524288,
+  "paired_control": "F",
+  "arms": [
+    {
+      "name": "no_gru",
+      "overrides": {
+        "use_memory": false
+      }
+    },
+    {
+      "name": "vectorcritic",
+      "overrides": {
+        "critic_arm": "C0"
+      }
+    },
+    {
+      "name": "blindcritic",
+      "overrides": {
+        "critic_arm": "C1-blind"
+      }
+    },
+    {
+      "name": "max2",
+      "overrides": {
+        "max_interventions": 2
+      }
+    },
+    {
+      "name": "max5",
+      "overrides": {
+        "max_interventions": 5
+      }
+    },
+    {
+      "name": "goal10",
+      "overrides": {
+        "goal_period": 10
+      }
+    },
+    {
+      "name": "goal50",
+      "overrides": {
+        "goal_period": 50
+      }
+    }
+  ]
+}
