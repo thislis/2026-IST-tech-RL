@@ -63,13 +63,13 @@ def project_path(value, root=None):
 def package_paths(package):
     base = project_root() / "code"
     return [str(p) for p in [base / "shared" / package,
-            *[base / f"v{i}" / package for i in range(1, 11)]] if p.is_dir()]
+            *[base / f"v{i}" / package for i in range(1, 12)]] if p.is_dir()]
 
 
 def activate():
     """Expose versioned Python packages and script modules to child processes."""
     base = project_root() / "code"
-    folders = [base / "shared", *[base / f"v{i}" for i in range(1, 11)], base / "pre_v1"]
+    folders = [base / "shared", *[base / f"v{i}" for i in range(1, 12)], base / "pre_v1"]
     paths = [str(p) for p in folders + [p / "scripts" for p in folders] if p.is_dir()]
     for path in reversed(paths):
         if path not in sys.path:
