@@ -69,11 +69,23 @@ class Adapter:
                 else:self.policy._safety_controller=planner
             self.policy.reset()
         elif kind=='v7':
+            import copy
             from blackout_rl.v7_registry import check_config,make_model
             from blackout_rl.connectome.graph_artifact import digest
             cfg=s['config'];d=torch.load(resolve(s['path']),map_location='cpu',weights_only=True)
             if digest(cfg)!=d['config_sha256']:raise ValueError('v7 config mismatch')
-            graph,_=check_config(cfg,verify_sources=False);model=make_model(cfg,graph);model.load_state_dict(d['model'],strict=True);model.eval()
+            # Keep the training config and its checkpoint digest intact. Only
+            # execution-provenance paths differ in a cross-platform evaluation.
+            validation_cfg=copy.deepcopy(cfg)
+            overrides=s.get('validation_overrides',{})
+            if overrides:
+                if set(overrides)!={'environment_executable','environment_sha256','split_manifest'}:
+                    raise ValueError('unsupported v7 evaluation validation override')
+                validation_cfg['environment']['executable']=overrides['environment_executable']
+                validation_cfg['environment']['executable_sha256']=overrides['environment_sha256']
+                validation_cfg['evaluation']['split_manifest']=overrides['split_manifest']
+            graph,_=check_config(validation_cfg,verify_sources=False)
+            model=make_model(cfg,graph);model.load_state_dict(d['model'],strict=True);model.eval()
             if cfg['mode']=='residual_graph':
                 from blackout_rl.mappo_v6 import V6Policy
                 self.policy=V6Policy(model,team=self.team,seed=self.seed);self.policy.reset()

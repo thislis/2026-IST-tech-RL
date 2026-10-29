@@ -10,7 +10,7 @@ def play(task,directory,env_factory,adapter_factory=None,heartbeat=lambda **k:No
     adapter_factory=adapter_factory or Adapter
     cfg=task['config'];start=time.monotonic();env=None;trace=Trace(directory/'trace',cfg);behavior=Behavior(cfg)
     totals={n:0. for n in NAMES};complete=False;steps=0;last_heartbeat=0.;previous_time=None
-    policies=[];initial=None;window_audits=[]
+    policies=[];initial=None;window_audits=[];map_hash=None;official_winner=None;official_available=False
     try:
         for i,s in enumerate(task['models']):
             heartbeat(phase='loading_model',steps=0)
@@ -20,7 +20,12 @@ def play(task,directory,env_factory,adapter_factory=None,heartbeat=lambda **k:No
         h=hashlib.sha256()
         for n in NAMES:
             h.update(np.asarray(obs[n]['vector']).tobytes());h.update(np.asarray(obs[n]['graphic']).tobytes())
-        initial=h.hexdigest();trace.snapshot(obs,0);game_start=time.monotonic()
+        initial=h.hexdigest()
+        # Fixed physical Blue view excludes agent-position channels so the two
+        # sides of a paired match can audit the actual generated terrain/items.
+        graphic=np.asarray(obs['unit_0']['graphic'],dtype=np.float32)
+        map_hash=hashlib.sha256(np.ascontiguousarray(graphic[..., [1,2,3,6,7,8,9,10]]).tobytes()).hexdigest()
+        trace.snapshot(obs,0);game_start=time.monotonic()
         for step in range(cfg['max_steps']):
             if stop():raise InterruptedError('match interrupted')
             if set(env.agents)!=set(NAMES) or set(obs)!=set(NAMES):raise ValueError('partial active observations')
@@ -44,7 +49,7 @@ def play(task,directory,env_factory,adapter_factory=None,heartbeat=lambda **k:No
             for a in actions.values():
                 if a.shape!=(2,) or a.dtype!=np.float32 or not np.isfinite(a).all() or (np.abs(a)>1).any():raise ValueError('invalid action')
             arr=np.stack([actions[n] for n in NAMES]);counts=map_stats(obs)
-            next_obs,rewards,terms,truncs,_=env.step(actions)
+            next_obs,rewards,terms,truncs,infos=env.step(actions)
             if any(set(x)!=set(NAMES) for x in (rewards,terms,truncs)):raise ValueError('partial transition')
             reward=np.array([rewards[n] for n in NAMES],np.float64)
             if not np.isfinite(reward).all():raise ValueError('nonfinite reward')
@@ -65,7 +70,12 @@ def play(task,directory,env_factory,adapter_factory=None,heartbeat=lambda **k:No
             behavior.observe(step,before,after,arr,cumulative,trace,terminal=done,obs=obs)
             if done or steps%cfg['snapshot_every']==0:trace.snapshot(next_obs,steps) if after_present else trace.snapshot(obs,step)
             if not valid_transition:raise ValueError('truncated/partial terminal; no result awarded')
-            if done:complete=True;break
+            if done:
+                complete=True
+                values=[infos.get(n,{}).get('winner') for n in NAMES]
+                official_available=all(w in (-1,0,1) for w in values) and len(set(values))==1
+                if official_available:official_winner=int(values[0])
+                break
             if task.get('probe_seconds') and time.monotonic()-game_start>=task['probe_seconds']:break
             obs=next_obs
         if not complete and not task.get('probe_seconds'):raise RuntimeError('step watchdog; no natural terminal')
@@ -76,7 +86,11 @@ def play(task,directory,env_factory,adapter_factory=None,heartbeat=lambda **k:No
                     winner=None if winner is None or not complete else task['a'] if winner==task['side'] else task['b'],
                     wall_seconds=time.monotonic()-start,game_seconds=time.monotonic()-game_start,
                     objective='provided_runner_v1',requested_environment_seed=task['environment_seed'],map_seed_verified=False,
-                    initial_observation_sha256=initial,window_audits=window_audits,behavior=behavior.report())
+                    initial_observation_sha256=initial,initial_map_sha256=map_hash,
+                    official_winner_available=official_available,official_winner_side=official_winner,
+                    official_winner=(None if official_winner in (None,-1) else task['a'] if official_winner==task['side'] else task['b']),
+                    winner_criteria_agree=(None if not official_available else (winner if winner is not None else -1)==official_winner),
+                    window_audits=window_audits,behavior=behavior.report())
     finally:
         try:trace.close(complete=complete)
         finally:

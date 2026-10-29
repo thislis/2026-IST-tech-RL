@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+V12_LEAGUE_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+V12_LEAGUE_PYTHON="${V12_PYTHON:-$V12_LEAGUE_ROOT/.venv/Scripts/python.exe}"
+if [[ ! -x "$V12_LEAGUE_PYTHON" && -x "$V12_LEAGUE_ROOT/.venv/bin/python" ]]; then
+    V12_LEAGUE_PYTHON="$V12_LEAGUE_ROOT/.venv/bin/python"
+fi
+[[ -x "$V12_LEAGUE_PYTHON" ]] || { echo "Python environment missing: $V12_LEAGUE_PYTHON. Set V12_PYTHON to an existing interpreter." >&2; exit 1; }
+export PYTHONUTF8=1 PYTHONUNBUFFERED=1 PYTHONHASHSEED=0
+export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+exec "$V12_LEAGUE_PYTHON" "$V12_LEAGUE_ROOT/code/run.py" -m agent_league.windows "$@"

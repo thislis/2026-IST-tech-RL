@@ -14,12 +14,12 @@ DEFAULTS = dict(rounds=5, seed=20261016, workers=4, threads=1, device='cpu',
                 probe_seconds=30, retries=1)
 
 def read(path):
-    return json.loads(Path(path).read_text())
+    return json.loads(Path(path).read_text(encoding='utf-8-sig'))
 
 def atomic(path, value):
     path = Path(path); path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_name(path.name + f'.{os.getpid()}.tmp')
-    temp.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + '\n')
+    temp.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + '\n', encoding='utf-8')
     os.replace(temp, path)
 
 def digest(value):

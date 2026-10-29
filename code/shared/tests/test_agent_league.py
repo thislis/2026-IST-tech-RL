@@ -66,6 +66,18 @@ class LeagueTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:r=play(task(1),Path(d),FakeEnv,ConstantAdapter)
         self.assertEqual(r['winner'],'b')
 
+    def test_official_result_is_recorded_without_changing_raw_reward_ranking(self):
+        class OfficialEnv(FakeEnv):
+            def step(self,actions):
+                obs,rewards,terms,truncs,_=super().step(actions)
+                return obs,rewards,terms,truncs,{n:{'winner':1} for n in NAMES}
+        with tempfile.TemporaryDirectory() as d:
+            result=play(task(),Path(d),OfficialEnv,ConstantAdapter)
+        self.assertEqual(result['winner'],'a')
+        self.assertEqual(result['official_winner'],'b')
+        self.assertFalse(result['winner_criteria_agree'])
+        self.assertEqual(len(result['initial_map_sha256']),64)
+
     def test_provided_match_scoring_parity(self):
         from blackout_v10.match import validated_match
         class Policy:
@@ -119,7 +131,7 @@ class LeagueTests(unittest.TestCase):
                 atomic(root/'cells'/(t['id']+'.json'),dict(task=t,result=r,directory=str(folder)))
             summary=generate(root);self.assertTrue(summary['complete']);self.assertEqual([r['rank'] for r in summary['ranking']],[1,1])
             self.assertTrue((root/'figures/score_matrix.svg').exists());self.assertTrue((root/'pairs/a__b.md').exists())
-            next((root/'cells').glob('*.json')).unlink();summary=generate(root);self.assertFalse(summary['complete']);self.assertIn('잠정',(root/'report.md').read_text())
+            next((root/'cells').glob('*.json')).unlink();summary=generate(root);self.assertFalse(summary['complete']);self.assertIn('잠정',(root/'report.md').read_text(encoding='utf-8'))
 
     def test_completed_cells_not_reexecuted_and_manifest_guard(self):
         from agent_league.runtime import run_league

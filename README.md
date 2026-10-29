@@ -6,6 +6,7 @@
 |---|---|---|
 | `code/v2/` ~ `code/v10/` | 버전별 구현·스크립트·설정·테스트 | 예 |
 | `code/v11/` | 목표·기억·planner 정책, recurrent PPO, CPU/MPS 자동 선택·백그라운드 실험 | 예 |
+| `code/v12/` | 왕복 작업·공동 배정 DP·event PPO, CPU/CUDA 측정·병렬 실행 | 예 |
 | `code/shared/` | 여러 버전이 사용하는 Python 모듈·도구·의존성 목록 | 예 |
 | `code/pre_v1/` | 초기 구현·실험 코드 | 예 |
 | `docs/` | 버전별 계획·분석·직접 작성한 보고서 | 예 |
@@ -20,11 +21,26 @@ v1 당시 구현은 후속 구현으로 발전했으며, 현재 별도 `code/v1/
 
 [v11 안내](docs/v11/README.md) · [v11 리그 분석](docs/v11/reports/league_findings.md) · [v11 설계](docs/v11/plans/v11_design.md) · [v11 구현 계획](docs/v11/plans/v11_implementation_plan.md) · [운영진 답변 반영](docs/common/organizer_qa_2026-10-24.md)
 
+[v12 안내](docs/v12/README.md) · [v12 풀리그 재분석](docs/v12/reports/league_findings.md) · [v12 경량 공동 배정 설계](docs/v12/plans/v12_design.md) · [v12 구현·검증 계획](docs/v12/plans/v12_implementation_plan.md)
+
 ## 실행
+
+**v12 포함 22개 풀리그 (Windows)**: `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v12\run_league.ps1 --resume`. 기존 21개 + 선택한 v12가 총 2,310경기를 최대 16개 병렬로 평가한다. 2026-10-28 사용자 실행에서 75경기 완료 후 발생한 heartbeat 접근 오류를 수정했고, 기존 결과를 보존해 재개 준비만 했다. 직접 재실행하지 않았다. [참가 모델·오류 수정·재개 안내](docs/v12/reports/full_league_windows.md).
+
+**현재 준비된 v12 수정 실행**: `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v12\finetune_learned.ps1`. 기존 추가 학습은 3,057,458스텝에서 중단했고, 그 가중치를 보존해 수동 prior·강제 작업 유지·근접 회피 override를 제거한 새 학습 모드를 준비했다. 새 실험은 아직 실행하지 않았다. [변경 범위와 한 줄 실행 안내](docs/v12/reports/learned_control.md).
+
+**v12 규칙 기반 9종 추가 학습**: `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v12\finetune_scripted.ps1` 한 줄로 시작·재개한다. 학습 경기 1개 표시 + 15개 백그라운드 수집, CUDA PPO를 사용한다. 초기·중간 평가는 창 없이 수행한다. [설정·승률 목표·상태 조회 안내](docs/v12/reports/finetune_scripted.md).
 
 프로젝트 루트에서 다음 명령을 사용합니다. 다른 작업 디렉터리에서는 스크립트의 절대 경로를 사용하세요.
 
 ```bash
+# v12 전체 파이프라인: 현재 사용 가능한 상대, 짧은 자원 측정 후 백그라운드 실행
+bash code/v12/run_v12.sh --name joint_trip_v12
+
+# v12 준비 검사 / 실행 계획만 확인 (Unity·학습 시작 안 함)
+bash code/v12/run_v12.sh --check
+bash code/v12/run_v12.sh --dry-run
+
 # v11 전체 실험: 작업별 CPU/MPS 측정 후 창 없는 백그라운드 실행
 bash code/v11/run_v11_fast.sh --name goal_memory_v1
 
@@ -62,6 +78,16 @@ bash code/shared/watch_best_models.sh
 # v9 회귀 테스트: 버전별 패키지 경로를 자동 설정
 .venv/bin/python code/run.py -m unittest tests.v9.test_v9
 ```
+
+Windows PowerShell에서는 `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v12\run_v12.ps1 --name joint_trip_v12` 한 줄로 실행합니다. 상태 조회는 같은 명령 뒤에 `--status`, 중단 요청은 `--stop`을 붙입니다. v12의 실행 범위·자원 배분·미측정 항목은 [v12 안내](docs/v12/README.md)와 [구현 기록](docs/v12/reports/implementation.md)을 참고하세요.
+
+`joint_trip_v12`를 중단한 뒤 이어가려면 다음 한 줄을 사용합니다. 저장된 runtime revision의 자원 설정으로 완료 결과와 체크포인트를 재사용해 백그라운드로 재개합니다. 2026-10-26 추가 요청에 따라 데이터 수집의 2-worker 제한을 해제하고, 실제 처리량을 8개부터 2개씩 늘려 측정하는 기능을 추가했습니다. 확정된 설정과 측정 결과는 아래 변경 기록을 참고하세요.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v12\run_v12.ps1 --name joint_trip_v12 --resume
+```
+
+`--resume` 대신 `--resume-check`를 붙이면 실행 없이 준비 상태만 확인합니다. [worker 변경과 재개 기록](docs/v12/reports/runtime_resume.md)에 보존 범위와 변경 이력을 정리했습니다.
 
 전체 버전의 테스트는 프로젝트 루트에서 아래처럼 각 테스트 디렉터리를 순회합니다. `discover -s code/shared/tests`만 실행하면 공통 테스트만 수집됩니다.
 

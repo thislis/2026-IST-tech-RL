@@ -1,0 +1,8 @@
+{
+  "Q0": {"candidate_mode": "one_way", "assignment_mode": "sequential", "learned_scorer": false, "role_mode": "fixed"},
+  "Q1": {"candidate_mode": "round_trip", "assignment_mode": "sequential", "learned_scorer": false, "role_mode": "fixed"},
+  "Q2": {"candidate_mode": "round_trip", "assignment_mode": "joint", "learned_scorer": false, "role_mode": "fixed"},
+  "S": {"candidate_mode": "round_trip", "assignment_mode": "sequential", "learned_scorer": true, "role_mode": "fixed"},
+  "J": {"candidate_mode": "round_trip", "assignment_mode": "joint", "learned_scorer": true, "role_mode": "fixed"},
+  "F": {"candidate_mode": "round_trip", "assignment_mode": "joint", "learned_scorer": true, "role_mode": "learned"}
+}

@@ -1,0 +1,11 @@
+{
+  "schema": "v12.splits.1",
+  "train": [2100000, 2999999],
+  "data": [3000000, 3099999],
+  "dev": [3100000, 3199999],
+  "confirmation": [3200000, 3299999],
+  "test": [3300000, 3399999],
+  "seed": 20261026,
+  "map_identity": "canonical full initial observation plus battery/storage/wall hashes",
+  "note": "Disjoint nominal seeds are insufficient; record and audit actual initial map hashes."
+}

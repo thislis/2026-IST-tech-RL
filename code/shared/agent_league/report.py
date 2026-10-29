@@ -50,8 +50,10 @@ def match_report(path,record):
         rel=__import__('os').path.relpath(trace/f'steps-{chunk:06d}.npz',path.parent)
         text.append(f"- [step {step}]({rel}): `{e}`")
     rel=__import__('os').path.relpath(trace,path.parent)
+    launcher=('powershell -NoProfile -ExecutionPolicy Bypass -File .\\code\\v12\\run_league.ps1'
+              if task['config'].get('execution_adapter') else 'bash code/shared/run_agent_league.sh')
     text += [f'\n[전체 trace 인덱스]({rel}/index.json) · [전체 이벤트]({rel}/events.jsonl.gz)',
-        f"\n상세 조회: `bash code/shared/run_agent_league.sh --name {path.parents[1].name} --trace {task['id']} --step 100`"]
+        f"\n상세 조회: `{launcher} --name {path.parents[1].name} --trace {task['id']} --step 100`"]
     write(path,'\n'.join(text)+'\n')
 
 
@@ -125,8 +127,19 @@ def generate(directory,detailed=True):
     status=read(directory/'status.json') if (directory/'status.json').exists() else {}
     summary=dict(complete=len(rows)==expected,completed=len(rows),expected=expected,ranking=ranking,ids=ids,score_matrix=matrix,
                  failed_cells=len(list((directory/'failures').glob('*.json'))),status=status)
+    paired_maps={}
+    for record in rows:
+        t=record['task'];r=record['result']
+        paired_maps.setdefault((t['a'],t['b'],t['repeat']),[]).append((t['side'],r.get('initial_map_sha256')))
+    audited=[(key,values) for key,values in paired_maps.items()
+             if len(values)==2 and {v[0] for v in values}=={0,1} and all(v[1] for v in values)]
+    audit=dict(official_winner_games=sum(bool(r['result'].get('official_winner_available')) for r in rows),
+               winner_disagreements=sum(r['result'].get('winner_criteria_agree') is False for r in rows),
+               map_pairs_checked=len(audited),
+               map_pair_mismatches=[dict(a=k[0],b=k[1],repeat=k[2]) for k,v in audited if v[0][1]!=v[1][1]])
+    summary['evaluation_audit']=audit
     atomic(directory/'summary.json',summary)
-    with (directory/'ranking.csv').open('w',newline='') as f:
+    with (directory/'ranking.csv').open('w',newline='',encoding='utf-8-sig') as f:
         w=csv.DictWriter(f,fieldnames=list(ranking[0]) if ranking else ['id']);w.writeheader();w.writerows(ranking)
     cycles=[]
     for a,b,c in itertools.combinations(range(len(ids)),3):
@@ -155,8 +168,11 @@ def generate(directory,detailed=True):
     text += ['- '+' → '.join(c+[c[0]]) for c in cycles[:20]]
     text+=['\n## 해석 범위','\n승패는 제공 runner 누적 raw reward 기준입니다. 관측 점수와 공식 대회 결과는 동일하다고 가정하지 않습니다. 초기 관측 해시를 기록하지만 seed가 서로 다른 맵을 생성한다고 검증하지 않았습니다.',
            '\nlegacy ID/planner/state 모델과 두 tensor 제출 모델이 함께 참가합니다. 입력 계약과 추론 동작을 보존한 탐색적 비교이며, 소수 반복으로 확정적 전략 우위를 주장하지 않습니다.',
-           '\n## 참가·제외 기록',f'\n[고정 manifest](manifest.json) · [실패 기록](failures/) · [자원 측정](benchmark.json)',
+           '\n## 참가·제외 기록',f'\n[고정 manifest 및 실행 자원 설정](manifest.json) · [실패 기록](failures/)',
            '\n| 후보 | 제외 사유 |','|---|---|']
     for e in manifest['roster']['excluded']:text.append(f"| {e['path']} | {e['reason']} |")
+    text += ['\n## 평가 보조 감사',
+             f"\n공식 terminal winner 확보 {audit['official_winner_games']}경기, 누적 보상 승패와 불일치 {audit['winner_disagreements']}경기.",
+             f"진영 교대 실제 초기 맵 비교 {audit['map_pairs_checked']}세트, 불일치 {len(audit['map_pair_mismatches'])}세트. 세부 내역은 summary.json의 evaluation_audit에 기록합니다."]
     write(directory/'report.md','\n'.join(text)+'\n')
     return summary

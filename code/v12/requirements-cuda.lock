@@ -1,0 +1,8 @@
+# Tested v12 overlay for the existing Windows CPython 3.10.12 environment.
+# The provided blackout-env + mlagents-envs installation remains unchanged.
+# Install after the shared runtime dependencies, using the official wheel index:
+# artifacts/tools/bin/uv.exe pip install --python .venv/Scripts/python.exe \
+#   --no-deps -r code/v12/requirements-cuda.lock \
+#   --extra-index-url https://download.pytorch.org/whl/cu126
+torch==2.13.0+cu126
+-r ../v11/requirements-export.lock

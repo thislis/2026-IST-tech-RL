@@ -1,0 +1,38 @@
+{
+  "experiment": "scripted9_finetune_v12",
+  "initial_checkpoint": "logs/v12/joint_trip_v12/runs/main_F_s11/latest.pt",
+  "seed": 20261027,
+  "device": "cuda",
+  "workers": 16,
+  "rollout_episodes_per_wave": 16,
+  "visible_training": true,
+  "actor_threads": 1,
+  "learner_threads": 1,
+  "time_scale": 50.0,
+  "max_steps": 8388608,
+  "eval_interval": 524288,
+  "dev_pairs": 4,
+  "confirmation_pairs": 32,
+  "prior_map_registry": "logs/v12/joint_trip_v12/map_splits.json",
+  "splits": {
+    "train": [4100000, 4999999],
+    "data": [5000000, 5099999],
+    "dev": [5100000, 5199999],
+    "confirmation": [5200000, 5299999],
+    "test": [5300000, 5399999]
+  },
+  "memory_reserve_gib": 4,
+  "worker_memory_gib": 1,
+  "disk_reserve_gib": 8,
+  "train_family_weights": {"scripted": 1.0},
+  "ppo": {
+    "actor_lr": 0.0001,
+    "critic_lr": 0.0003,
+    "clip": 0.2,
+    "epochs": 4,
+    "max_grad_norm": 0.5,
+    "target_kl": 0.02,
+    "entropy": 0.0,
+    "minibatch_events": 128
+  }
+}

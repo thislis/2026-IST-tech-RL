@@ -23,10 +23,17 @@ def project_path(value, root=None):
     """Resolve old project-relative/absolute metadata without rewriting it.
 
     Unknown relative paths keep normal Path semantics unless root is supplied.
-    Absolute paths outside the project are never redirected.
+    Only the portable package's recorded original project root is redirected;
+    other absolute paths outside the project are never redirected.
     """
     path = Path(value).expanduser()
     base = Path(root) if root is not None else project_root()
+    # Interpret the recorded POSIX path before Windows Path semantics (a path
+    # beginning /Users has no drive on Windows and is not is_absolute()).
+    portable_root = '/Users/safeailab_macmini/Desktop/2026-IST-tech-RL'
+    recorded = str(value).replace('\\', '/')
+    if recorded == portable_root or recorded.startswith(portable_root + '/'):
+        path = base / recorded[len(portable_root):].lstrip('/')
     if path.is_absolute():
         try:
             relative = path.relative_to(base).as_posix()
@@ -63,13 +70,13 @@ def project_path(value, root=None):
 def package_paths(package):
     base = project_root() / "code"
     return [str(p) for p in [base / "shared" / package,
-            *[base / f"v{i}" / package for i in range(1, 12)]] if p.is_dir()]
+            *[base / f"v{i}" / package for i in range(1, 13)]] if p.is_dir()]
 
 
 def activate():
     """Expose versioned Python packages and script modules to child processes."""
     base = project_root() / "code"
-    folders = [base / "shared", *[base / f"v{i}" for i in range(1, 12)], base / "pre_v1"]
+    folders = [base / "shared", *[base / f"v{i}" for i in range(1, 13)], base / "pre_v1"]
     paths = [str(p) for p in folders + [p / "scripts" for p in folders] if p.is_dir()]
     for path in reversed(paths):
         if path not in sys.path:
