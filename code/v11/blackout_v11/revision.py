@@ -20,6 +20,65 @@ ALLOWED_SOURCES = {
     "code/v11/blackout_v11/revision.py",
 }
 
+OBSERVABILITY_SOURCES = {
+    "code/v11/blackout_v11/runner.py",
+    "code/v11/blackout_v11/revision.py",
+    "code/v11/blackout_v11/stop_events.py",
+}
+
+
+def _observability_base(directory, current):
+    """Validate a separately pinned logging-only revision, retaining prior approval."""
+    path = directory / "observability_revision.json"
+    if not path.exists():
+        return current
+    receipt = read_json(path)
+    before = read_json(directory / "observability_revisions/stop-events-v1/before_source_registration.json")
+    if {k: v for k, v in before.items() if k != "sources"} != {
+        k: v for k, v in current.items() if k != "sources"
+    }:
+        raise ValueError("observability revision changed config/packages/contracts")
+    old, new = before["sources"], current["sources"]
+    changed = sorted(k for k in old.keys() | new.keys() if old.get(k) != new.get(k))
+    if (receipt.get("schema") != "blackout.v11.observability_revision.1"
+            or receipt.get("before_registration_sha256") != digest(before)
+            or receipt.get("source_registration_sha256") != digest(current)
+            or receipt.get("evaluation_revision_sha256") != file_hash(directory / "evaluation_revision.json")
+            or receipt.get("changed_sources") != changed
+            or not set(changed) <= OBSERVABILITY_SOURCES):
+        raise ValueError("observability revision provenance mismatch")
+    return before
+
+
+def create_observability_revision(directory, cfg):
+    """Pin logging-only edits for a stopped study; never rewrite training assets."""
+    from .runner import is_active
+    directory = Path(directory)
+    if is_active(directory) or read_json(directory / "status.json").get("state") != "stopped":
+        raise ValueError("observability continuation requires a stopped study")
+    current = registration(cfg)
+    if (directory / "observability_revision.json").exists():
+        validated_revision(directory, cfg, current)
+        return read_json(directory / "observability_revision.json")
+    before = read_json(directory / "observability_revisions/stop-events-v1/before_source_registration.json")
+    validated_revision(directory, cfg, before)
+    if {k: v for k, v in before.items() if k != "sources"} != {
+        k: v for k, v in current.items() if k != "sources"
+    }:
+        raise ValueError("observability revision changed config/packages/contracts")
+    old, new = before["sources"], current["sources"]
+    changed = sorted(k for k in old.keys() | new.keys() if old.get(k) != new.get(k))
+    if not set(changed) <= OBSERVABILITY_SOURCES:
+        raise ValueError("non-observability source changed: " + str(changed))
+    receipt = dict(schema="blackout.v11.observability_revision.1", created_at=time.time(),
+                   before_registration_sha256=digest(before), source_registration_sha256=digest(current),
+                   evaluation_revision_sha256=file_hash(directory / "evaluation_revision.json"),
+                   changed_sources=changed, training_and_evaluation_unchanged=True,
+                   purpose="Durable stop/signal/resource records; existing limits and training preserved")
+    atomic_json(directory / "observability_revision.json", receipt)
+    validated_revision(directory, cfg, current)
+    return receipt
+
 
 def _changes(original, current):
     if {k: v for k, v in original.items() if k != "sources"} != {
@@ -41,10 +100,11 @@ def validated_revision(directory, cfg, current=None):
     receipt = read_json(path)
     original = read_json(directory / "registration.json")
     current = registration(cfg) if current is None else current
-    changed = _changes(original, current)
+    approved = _observability_base(directory, current)
+    changed = _changes(original, approved)
     if (receipt.get("schema") != SCHEMA
             or receipt.get("training_registration_sha256") != digest(original)
-            or receipt.get("source_registration_sha256") != digest(current)
+            or receipt.get("source_registration_sha256") != digest(approved)
             or receipt.get("changed_sources") != changed):
         raise ValueError("evaluation revision provenance mismatch; source/config changed after approval")
     if receipt.get("runtime_profile_sha256") != file_hash(directory / "runtime_profile.json"):

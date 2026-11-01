@@ -15,6 +15,31 @@ import uuid
 from .contracts import CONFIG, config, registration, verify_original
 from .io import ROOT, atomic_json, digest, read_json
 from .runtime import child_environment, clean_orphans, process_birth, process_memory
+from .stop_events import StopRecorder, manual_stop
+
+
+def resource_limits(cfg):
+    return dict(memory_soft_gib=cfg.get("memory_soft_gib", 32),
+                disk_stop_gib=cfg.get("disk_stop_gib", 25),
+                disk_start_gib=cfg.get("disk_start_gib", 25),
+                critical_memory_pressure_level=4,
+                stop_grace_seconds=cfg.get("stop_grace_seconds"))
+
+
+def resource_snapshot(cfg, phase, *, root_pid=None, supervisor_mps=None):
+    from .telemetry import memory_pressure, mps_memory
+    processes = process_memory(root_pid)
+    metal = mps_memory() if supervisor_mps is None else supervisor_mps
+    active = phase.get("active", [])
+    child_mps = sum(row.get("mps_driver_bytes", 0) for row in active)
+    free = shutil.disk_usage(ROOT).free
+    return dict(sampled_at=time.time(), process_memory=processes,
+                process_rss_gib=processes["rss_gib"], mps_memory=metal,
+                child_mps_driver_bytes=child_mps,
+                conservative_unified_gib=processes["rss_gib"] + (metal["driver_bytes"] + child_mps) / 1024**3,
+                memory_pressure=memory_pressure(), disk_free_bytes=free, disk_free_gib=free / 1024**3,
+                active_workers=len(active), active=active, phase=phase.get("phase"),
+                run=phase.get("run"), step=phase.get("step"), limits=resource_limits(cfg))
 
 
 def directory_for(cfg, name=None):
@@ -130,65 +155,82 @@ def finish_behavior_report(directory):
 
 
 def supervise(args, cfg, directory):
-    import torch
-    from .benchmark import apply_profile, calibrate, smoke
-    from .telemetry import memory_pressure, mps_memory
-    torch.set_num_threads(1)
-    torch.set_num_interop_threads(1)
     operation = "benchmark" if args.benchmark else "smoke" if args.smoke else "study"
     stop_path = directory / "stop.request"
-    signal.signal(signal.SIGTERM, lambda *_: stop_path.touch())
-    signal.signal(signal.SIGINT, lambda *_: stop_path.touch())
+    recorder = StopRecorder(directory, resource_limits(cfg), args.start_token, operation)
+    signal.signal(signal.SIGTERM, recorder.signal_handler)
+    signal.signal(signal.SIGINT, recorder.signal_handler)
     awake = None
     last_update = last_console = 0.
     peak = 0.
     started = time.monotonic()
     phase_state = {}
+    last_resource = {}
+    outcome = dict(state="failed", error="supervisor did not finish initialization")
     def memory():
         nonlocal peak
         current = process_memory()["rss_gib"]
         peak = max(peak, current)
         return current
+    def snapshot(safe=False):
+        nonlocal peak, last_resource
+        try:
+            last_resource = resource_snapshot(cfg, phase_state)
+            peak = max(peak, last_resource["process_rss_gib"])
+        except Exception as exc:
+            if not safe:
+                raise
+            return dict(last_resource, snapshot_error=str(exc),
+                        snapshot_failed_at=time.time(), limits=resource_limits(cfg))
+        return last_resource
     def progress(**data):
         nonlocal last_update, last_console
         phase_state.update(data)
+        # Worker Metal memory belongs to this callback, not a previous wave.
+        phase_state["active"] = data.get("active", [])
         now = time.monotonic()
-        if now-last_update < 2:
+        if now-last_update < 2 and not recorder.needs_observation:
             return
-        current = memory()
-        pressure = memory_pressure()
-        metal = mps_memory()
-        child_mps = sum(row.get("mps_driver_bytes", 0) for row in data.get("active", []))
+        resource = snapshot()
+        recorder.observe(resource)
+        current = resource["process_rss_gib"]
+        pressure = resource["memory_pressure"]
+        metal = resource["mps_memory"]
         # RSS and Metal can overlap in unified memory; retain both measurements
         # and use their sum as a conservative soft-limit estimate.
-        conservative = current + (metal["driver_bytes"] + child_mps) / 1024**3
+        conservative = resource["conservative_unified_gib"]
         reason = None
         if pressure["critical"]:
             reason = "critical system memory pressure"
         elif conservative > cfg.get("memory_soft_gib", 32):
             reason = "unified memory soft limit reached"
-        elif shutil.disk_usage(ROOT).free < cfg.get("disk_stop_gib", 25)*1024**3:
+        elif resource["disk_free_bytes"] < cfg.get("disk_stop_gib", 25)*1024**3:
             reason = "disk reserve reached"
         if reason:
-            stop_path.touch()
-            phase_state["stop_reason"] = reason
+            recorder.guard(reason, resource)
+        recorder.sample(resource, now=now)
         record = dict(phase_state)
         record.update(
             state="stopping" if stop_path.exists() else "running", operation=operation,
             pid=os.getpid(), elapsed_seconds=now-started, updated_at=time.time(),
             process_rss_gib=current, peak_process_rss_gib=peak,
             mps_memory=metal, conservative_unified_gib=conservative,
-            memory_pressure=pressure)
+            memory_pressure=pressure, disk_free_bytes=resource["disk_free_bytes"],
+            resource=resource, **recorder.terminal_fields())
         atomic_json(directory / "status.json", record)
         last_update = now
         if now-last_console >= 10:
             print(json.dumps(dict(operation=operation, phase=phase_state.get("phase"),
                                   run=phase_state.get("run"), step=phase_state.get("step"),
-                                  active_workers=len(data.get("active", [])),
+                                  active_workers=resource["active_workers"],
                                   elapsed_seconds=round(now-started, 1)), ensure_ascii=False), flush=True)
             last_console = now
     with os.fdopen(args.supervisor_fd, "a"), os.fdopen(args.machine_fd, "a"):
         try:
+            import torch
+            from .benchmark import apply_profile, calibrate, smoke
+            torch.set_num_threads(1)
+            torch.set_num_interop_threads(1)
             if shutil.which("caffeinate"):
                 awake = subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())], stdin=subprocess.DEVNULL)
             clean_orphans(directory)
@@ -222,28 +264,47 @@ def supervise(args, cfg, directory):
                     else:
                         from .study import run_study
                         result = run_study(directory, resolved, registered, stop_path.exists, progress, memory)
-            atomic_json(directory / "status.json", dict(state="complete", operation=operation, result=result,
-                        submission=result.get("submission"), elapsed_seconds=time.monotonic()-started,
-                        updated_at=time.time()))
+            outcome = dict(state="complete", result=result, submission=result.get("submission"))
         except InterruptedError as exc:
-            atomic_json(directory / "status.json", dict(state="stopped", operation=operation, reason=str(exc),
-                        resume_command=f"bash {ROOT}/code/v11/run_v11_fast.sh --name {directory.name} --resume",
-                        updated_at=time.time()))
+            recorder.interrupted(str(exc), snapshot(safe=True))
+            outcome = dict(state="stopped", reason=str(exc),
+                           resume_command=f"bash {ROOT}/code/v11/run_v11_fast.sh --name {directory.name} --resume")
         except BaseException as exc:
-            atomic_json(directory / "status.json", dict(state="failed", operation=operation, error=str(exc),
-                                                        updated_at=time.time()))
+            recorder.failure(exc, snapshot(safe=True), stage=phase_state.get("phase"))
+            outcome = dict(state="failed", error=str(exc))
             raise
         finally:
-            clean_orphans(directory)
-            if awake is not None:
-                awake.terminate()
+            try:
+                recorder.observe(snapshot(safe=True))
+                clean_orphans(directory)
+                if awake is not None:
+                    awake.terminate()
+                    try:
+                        awake.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        awake.kill(); awake.wait()
+                (directory / "supervisor.json").unlink(missing_ok=True)
+            except BaseException as exc:
+                recorder.failure(exc, snapshot(safe=True), stage="cleanup")
+                outcome = dict(state="failed", error=str(exc))
+                raise
+            finally:
                 try:
-                    awake.wait(timeout=5)
-                except subprocess.TimeoutExpired:
-                    awake.kill(); awake.wait()
-            (directory / "supervisor.json").unlink(missing_ok=True)
-            if operation == "study":
-                finish_behavior_report(directory)
+                    if operation == "study":
+                        finish_behavior_report(directory)
+                finally:
+                    # Reporting can be slow; also flush signals received there.
+                    resource = snapshot(safe=True)
+                    fields = recorder.finish(outcome["state"], resource)
+                    terminal = dict(phase_state)
+                    terminal.update(outcome, operation=operation, pid=os.getpid(),
+                                    elapsed_seconds=time.monotonic()-started, updated_at=time.time(),
+                                    peak_process_rss_gib=peak, resource=resource, **fields)
+                    for key in ("process_rss_gib", "mps_memory", "conservative_unified_gib",
+                                "memory_pressure", "disk_free_bytes"):
+                        if key in resource:
+                            terminal[key] = resource[key]
+                    atomic_json(directory / "status.json", terminal)
 
 
 def main():
@@ -287,7 +348,19 @@ def main():
     if args.stop:
         if not is_active(directory):
             print("v11 is not running"); return
-        (directory / "stop.request").touch()
+        previous = read_json(directory / "status.json") if (directory / "status.json").exists() else {}
+        owner = read_json(directory / "supervisor.json") if (directory / "supervisor.json").exists() else {}
+        try:
+            resource = resource_snapshot(cfg, previous, root_pid=owner.get("pid", previous.get("pid")),
+                                         supervisor_mps=previous.get("mps_memory", {"available": None, "driver_bytes": 0}))
+        except Exception as exc:
+            resource = dict(previous.get("resource", {}), snapshot_error=str(exc),
+                            snapshot_failed_at=time.time(), limits=resource_limits(cfg))
+        resource["mps_measurement_source"] = "last supervisor status"
+        resource["mps_measured_at"] = previous.get("updated_at")
+        manual_stop(directory, resource=resource, limits=resource_limits(cfg),
+                    session_id=owner.get("token", previous.get("start_token")),
+                    operation=previous.get("operation"))
         print("v11 stop requested; committed checkpoints are retained. Use --status to confirm shutdown."); return
     if args.check:
         print(json.dumps(check(cfg), ensure_ascii=False, indent=2)); return
@@ -332,7 +405,8 @@ def main():
             command += ["--ablation", cfg["ablation"]]
         if operation != "study":
             command.append("--" + operation)
-        atomic_json(directory / "status.json", dict(state="starting", operation=operation, updated_at=time.time()))
+        atomic_json(directory / "status.json", dict(state="starting", operation=operation,
+                    start_token=token, last_stop=existing.get("last_stop"), updated_at=time.time()))
         with (directory / "console.log").open("ab", buffering=0) as log:
             process = subprocess.Popen(command, cwd=ROOT, env=child_environment(), stdin=subprocess.DEVNULL,
                                        stdout=log, stderr=log, start_new_session=True,
