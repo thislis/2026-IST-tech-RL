@@ -1,5 +1,7 @@
 # v11: 목표·기억을 사용하는 팀 정책
 
+> **2026-11-01 제출 규격:** 현재 제공된 공식 실행기는 `meta.json + ONNX`, canonical 행과 `slot`, 프레임 스택 및 `state_in* / state_out*`를 지원한다. 아래 `policy.py + checkpoint.pt`는 기존 v11 로컬 산출물 계약이며 새 공식 제출 형식이 아니다. [변경 내용과 적용 상태](../common/environment_update_2026-11-01.md). 기존 실험 코드·가중치는 이번 문서 갱신에서 변경하지 않았다.
+
 v11은 tensor planner, 작은 Attention, 목표·역할 선택, unit/team GRU, 제한된 방향 보정, 독립 지도 critic을 결합한다. 코드와 전체 실험 실행기를 구현했으며, 학습된 최종 후보의 성능은 P0–P6 실험 결과로 판단한다.
 
 ## 실행

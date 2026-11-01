@@ -1,5 +1,9 @@
 # v12: 왕복 작업을 함께 배정하는 경량 팀 정책
 
+**새 게임 풀리그 준비 완료 (2026-11-02)**: 22개 모델·2,310경기, 최대 16개 병렬(관전 창 1개 + 백그라운드 15개), 최종 점수 기준이다. 최신 소스의 Windows 빌드와 새 API를 별도 등록했다. `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v12\run_league_new_game.ps1` 한 줄로 시작한다. 실제 경기는 실행하지 않았다. [한 줄 실행·상태 확인](reports/full_league_new_game.md) · [빌드 기록](reports/new_game_build.md).
+
+**2026-11-01 새 게임·API 문서 반영**: [새 환경·ONNX 제출 계약](../common/environment_update_2026-11-01.md)을 확인했다. Hunter 2명 상한은 이제 엔진 규칙이고, 공식 판정은 최종 게임 점수다. 기존 v12 Python 정책·부분 ONNX·2,298경기 리그 결과는 새 버전 이식 또는 공식 제출 검증을 완료한 것이 아니다. 이번에는 문서만 갱신했다.
+
 **2026-10-29 풀리그 결과**: [인터랙티브 HTML 보고서](../../logs/shared/agent_league/v12_full_league_20261028/analysis.html). 2,298/2,310경기 완료, 12경기는 시간 제한으로 미완료다. 누적 보상 기준 v12는 179승 31패, 잠정 6위다. 전체 순위·상성 지도·경기 검색·행동 통계와 공식 종료 판정 비교를 제공한다.
 
 **2026-10-28 풀리그 오류 수정**: **22개·2,310경기, 최대 16개 병렬 평가**가 사용자 실행 후 75경기 완료 상태에서 heartbeat 파일 접근 오류로 중단됐다. 읽기·쓰기 재시도와 재개 호환 처리를 수정하고 기존 결과를 보존했다. 직접 재실행하지 않았다. `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v12\run_league.ps1 --resume`으로 재개한다. [수정 내역·검증·실행 안내](reports/full_league_windows.md).

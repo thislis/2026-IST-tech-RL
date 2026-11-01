@@ -1,7 +1,28 @@
-# PREP-01 Reproducible Environment
+# Environment versions and PREP-01 reproduction record
 
-Recorded on 2026-08-05 (Asia/Seoul). All experiment runs must retain the two
-source commits, Unity executable hash, Python lock, and container tag below.
+## Current documentation baseline — 2026-11-01
+
+The local source repositories have advanced to Unity `af4c5faaf2ef9eae24f536860737099ad56acba3`
+and Python API `bcd8aadad2f293bf45f3999286b1f174bae5586b`. See the
+[game/API update and adoption status](environment_update_2026-11-01.md) for the
+new Hunter limit, map edits, score-based match winner and stateful ONNX contract.
+
+These are **source revisions inspected**, not revisions installed or rebuilt by
+this documentation update. The current Windows `.venv` reports `blackout-env 0.1.0`
+installed from `artifacts/setup/blackout-env`; its installed API source hashes still
+match `logs/shared/agent_league/v12_full_league_20261028/manifest.json`.
+That league uses `artifacts/builds/windows-v1.1/Blackout.exe` (recorded executable
+SHA-256 `3d2b0639ccc2e3bf326257f74afcf6832808836a9bdb66b01473fe4d4d093889`).
+Its manifest also records the other build assets; the executable hash alone does
+not identify all Unity gameplay data. The new upstream package also says `0.1.0`,
+so the version string does not prove that the installed API is current.
+
+## Historical PREP-01 baseline
+
+Recorded on 2026-08-05 (Asia/Seoul). The following sections preserve that historical
+macOS experiment, not the current Windows machine or the new upstream source.
+Reproductions of PREP-01 retain the source commits, executable hash, lock and tag
+below. New-version experiments record their own revisions and hashes separately.
 
 ## Source revisions
 
@@ -94,7 +115,10 @@ hash remains valid, but it is superseded and must not be used as seed evidence.
 
 ## Reproduction commands
 
-From this repository root:
+From this repository root, with `../blackout-env` checked out at the historical
+`6ba7d9993cf1bdefe1ed480c8efbcabcb923f539` revision in a separate reproduction
+checkout. The updated sibling repository at `bcd8aad` is not that pinned source;
+installing it with these commands would create a different environment.
 
 ```bash
 uv venv .venv --python 3.10.12

@@ -1,5 +1,7 @@
 # v11 설계: 목표를 유지하는 계획 제어와 학습 정책의 결합
 
+> **2026-11-01 후속 규격:** 아래의 두 Python 파일 계약은 당시 로컬 구현 결정이다. 현재 공식 소스는 `meta.json + ONNX`, 팀 내 `slot`, 프레임 스택, float32 `state_in* / state_out*`를 명시한다. v11의 unit/team GRU와 계획 상태가 이 규약으로 export되어 검증됐다는 뜻은 아니다. [최신 계약과 이식 과제](../../common/environment_update_2026-11-01.md)를 참고한다.
+
 작성일: 2026-10-24. **계획 수립 완료를 위한 설계 문서이며 v11 모델 구현·학습·성능 달성 보고가 아니다.** 근거는 [리그 분석](../reports/league_findings.md), 실행 순서는 [구현 계획](v11_implementation_plan.md)이다.
 
 > 구현 시 확정한 계약: 사용자의 후속 지시에 따라 최종 제출은 `policy.py`·`checkpoint.pt`이며 공개 두 tensor 입력과 행동 출력을 유지한다. 제공 `run_match`가 `env.agents` 순서로 팀 입력을 구성하고 loader가 이를 보존하므로 canonical 팀 다섯 행으로 개체를 연결한다. 아래 초기 계획의 외부 이름 adapter·임의 행 재배열/partial 호출 검사는 최종 공개 정책에 요구하지 않는다. 경기별 내부 상태와 관측 시계/진영에 따른 reset을 사용한다. 현재 실행법과 구현 범위는 [v11 안내](../README.md)를 따른다.

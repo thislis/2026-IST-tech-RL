@@ -1,5 +1,7 @@
 # BlackOut Competition PPT 마지막 4페이지 정리
 
+> **2026-11-01 갱신:** 아래는 과거 PPT의 PyTorch 예시다. 현재 제공 소스에는 `meta.json + ONNX`, team/unit 모드, `slot`, `frame_stack`, `state_in* / state_out*`와 최종 게임 점수 기반 판정이 명시되어 있다. [최신 제출·환경 규격](environment_update_2026-11-01.md)을 우선 참고한다. 두 Python 파일을 최신 공식 제출 형식으로 해석하지 않는다.
+
 > 이 문서는 기존 PPT의 예시를 보존한다. 이후 사용자 제공 [운영진 답변](organizer_qa_2026-10-24.md)에 따르면 최종 실행은 ONNX 기반이며, I/O를 지키면 내부 구조는 자유롭고 스텝 간 상태도 허용된다. 아래 `BaseModel`·`MyPolicy`·두 파일 예시를 필수 내부 구현 규칙으로 해석하지 않는다.
 
 ## 8페이지 — 관측 공간 (Observation Space)

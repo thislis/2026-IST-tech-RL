@@ -1,5 +1,7 @@
 # v12 설계: 왕복 작업의 공동 배정과 작은 효용 모델
 
+> **2026-11-01 규격 갱신:** 이 설계의 과거 실험 조건과 새 게임 규칙을 구분한다. 새 엔진은 Hunter 팀당 2명 제한, 새 API는 최종 점수 승패와 `slot`·`frame_stack`·`state_in* / state_out*`를 지원한다. 아래의 기존 학습 objective와 개발 ONNX를 자동으로 새 공식 계약에 맞춘 구현으로 해석하지 않는다. [업데이트와 이식 과제](../../common/environment_update_2026-11-01.md).
+
 작성일: 2026-10-26. **구현에 앞서 작성한 설계**다. 현재 구현 범위와 차이는 [구현 기록](../reports/implementation.md)에 둔다. 수치 근거는 [풀리그 재분석](../reports/league_findings.md), 구현 순서와 채택 조건은 [검증 계획](v12_implementation_plan.md)을 따른다. 아래 차원·주기·비용 계수·예산은 프로젝트의 초기 제안값이며 실측 최적값이 아니다.
 
 ## 1. 선택한 방식
@@ -45,7 +47,7 @@
 - Team B 정규화는 기존 게임의 `y=x` 반사다. 좌표·map·행동·목표·캐시를 함께 변환한다. 180도 회전으로 바꾸지 않는다.
 - Unity는 nonzero action을 정규화하므로 작은 벡터로 감속하지 않는다. 정지는 정확한 `[0,0]`이다.
 - 한 policy instance는 한 팀 stream을 소유한다. 경기·진영 교체는 전체 reset, respawn은 해당 유닛 작업과 상태를 reset한다. 시계 증가·진영 변화 검출과 명시 reset을 같이 시험한다. 이 계약으로 임의 partial/shuffled batch를 지원한다고 주장하지 않는다.
-- 내부 개발 ONNX는 `obs,state_in → action,state_out`이다. Python 멤버 상태가 ONNX 안에서 자동 보존된다고 가정하지 않는다. 현재 두 파일 `policy.py`, `checkpoint.pt`와 개발 ONNX를 분리한다. 최종 서버의 state 전달 규약은 아직 인증되지 않았다.
+- 내부 개발 ONNX는 `obs,state_in → action,state_out`이다. Python 멤버 상태가 ONNX 안에서 자동 보존된다고 가정하지 않는다. 현재 두 파일 `policy.py`, `checkpoint.pt`와 개발 ONNX를 분리한다. 2026-11-01 제공된 서버 소스에는 float32 `(B,...)`의 `state_in* / state_out*`와 slot별 보관·episode 초기화가 명시됐다. 기존 부분 ONNX의 전체 제출 호환성 검증은 별도 미완료다.
 
 ## 4. 정책의 흐름
 
@@ -88,7 +90,7 @@ flowchart LR
 | transform-Carrier | 빈손 Collector → 본진 성소 | 기존 예약 포함 `max(0, 1−실제 Carrier 수)` |
 | private hold | 해당 유닛만 사용, 현재 안전 제어 유지 또는 STOP | 유닛별 1 |
 
-Hunter 상한 2와 intercept/defend 상한은 게임 규칙이 아닌 초기 실험 설정이다. 기존 guard 수를 상시 고정하지 않되, 모두 Hunter가 되는 붕괴를 먼저 방지한다. 상한 1/3 대조는 선택 실험으로 둔다. Carrier 동시 1기는 실제 게임 제약이다.
+설계 당시 Hunter 상한 2와 intercept/defend 상한은 정책의 초기 실험 설정이었다. 2026-11-01 확인한 새 엔진에서는 **Hunter 팀당 동시 2명도 실제 게임 제약**이다. intercept/defend 상한은 여전히 정책 설정이다. 새 버전에서 Hunter 목표 상한 대조는 1/2로 제한하며, 과거 제안한 3명 대조를 그대로 실행하지 않는다. Carrier 동시 1기는 기존과 같은 게임 제약이다.
 
 변신 task는 단일 resource로 두어 여러 Collector의 예약을 동시에 제한한다. `c_H=max(0,H_max−actual_H)`, `c_C=max(0,1−actual_C)`는 **기존 예약을 포함한 총 task capacity**다. 진행 중 변신에 묶인 유닛은 같은 task에 배정되고 이 용량을 차지한다. 신규 가용량만 `c−locked_reservations`이며, DP capacity에서 예약을 다시 빼지 않는다. 물리 class 전환 전까지 reservation을 유지하고, 사망·취소·완료 시 해제한다. 운반 중 변신은 금지한다. 변신 의도가 없는 Collector의 경로가 성소를 통과해 자동 변신하지 않도록 walkability도 일치시킨다.
 
@@ -253,9 +255,9 @@ actor의 입력은 현재 명시 상태에서 계산한 feature다. GRU가 없�
 
 ### 8.3 목적과 상대
 
-주 실험 objective는 현재 확인 가능한 `provided_runner_v1`을 유지한다. terminal 보상은 `z=sign(누적 raw reward 차)`이고 shaping은 `r_t=z_terminal+Φ(s_(t+1))−Φ(s_t)`, `|Φ|≤.25`, 자연 terminal `Φ=0`의 관측 score potential로 둔다. `γ=1`에서 중간 potential이 상쇄되어 수집/kill 반복 자체에 무제한 이득을 주지 않는다. chunk 경계는 terminal이 아니다.
+기존 등록 실험 objective는 당시 확인한 `provided_runner_v1`이다. terminal 보상은 `z=sign(누적 raw reward 차)`이고 shaping은 `r_t=z_terminal+Φ(s_(t+1))−Φ(s_t)`, `|Φ|≤.25`, 자연 terminal `Φ=0`의 관측 score potential로 둔다. `γ=1`에서 중간 potential이 상쇄되어 수집/kill 반복 자체에 무제한 이득을 주지 않는다. chunk 경계는 terminal이 아니다.
 
-관측 score 기반 성적, 실제 trip 처리량과 진영별 성적을 별도 평가한다. raw reward를 올리면서 score 경제를 크게 잃은 모델은 승격하지 않는다. 공식 판정이 확인되면 objective ID를 바꾸어 새 실험을 등록한다. 관측 score를 공식 승패라고 재명명하지 않는다.
+관측 score 기반 성적, 실제 trip 처리량과 진영별 성적을 별도 평가한다. raw reward를 올리면서 score 경제를 크게 잃은 모델은 승격하지 않는다. 2026-11-01 새 공식 runner가 최종 게임 점수 비교를 사용함을 확인했으므로, 새 버전 이식 때는 그 판정에 맞춰 objective ID를 바꾸어 새 실험을 등록해야 한다. 이 문서 갱신에서 학습 코드는 바꾸지 않았으며 기존 결과를 새 규약의 성적으로 재명명하지 않는다.
 
 주학습의 초기 step 비중은 강한 planner 40%, 기타 scripted 30%, self/history 20%, v8–v10 직접 정책 10%다. 이는 v11과 공유하는 통제 조건이다. 가족 내 균등 표집으로 시작하고 긴 경기가 노출을 지배하지 않도록 실제 step deficit을 기록한다. 같은 planner 계열 checkpoint 수가 많다고 과대 가중하지 않는다. 최종 test seed/결과로 상대 표집이나 모델을 수정하지 않는다.
 
