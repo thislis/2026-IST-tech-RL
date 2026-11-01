@@ -62,6 +62,9 @@ Confirmation의 핵심 상대는 noop·random·collector·v4·v6다. 최종 제�
 | 경로 | 내용 |
 |---|---|
 | `logs/v11/<name>/status.json` | 단계·진행량·메모리·실행 상태 |
+| `logs/v11/<name>/stop_events.jsonl` | 중단 원인·종료 신호·수동 요청·오류·종료 처리의 누적 기록; 각 항목 fsync |
+| `logs/v11/<name>/resources.jsonl` | 약 30초 간격 자원 기록과 종료 시점 기록; RSS·Metal·메모리 압박·디스크·worker 수 |
+| `logs/v11/<name>/observability_revision.json` | 학습·평가 설정을 유지한 중단 기록 기능 변경의 별도 소스 승인 |
 | `logs/v11/<name>/runtime_profile.json` | 작업별 CPU/MPS·thread·batch·worker 측정과 선택 |
 | `logs/v11/<name>/evaluation_revision.json` | 원본 등록을 보존한 승인 평가 변경·source override의 추적 기록 |
 | `logs/v11/<name>/runs/` | 학습 checkpoint·episode·loss·상대별 실제 step 노출 |
@@ -72,6 +75,8 @@ Confirmation의 핵심 상대는 noop·random·collector·v4·v6다. 최종 제�
 | `logs/v11/<name>/summary.json` | 최종 결과 또는 gate 미달 이유 |
 | `artifacts/data/v11/` | 압축 교사 replay |
 | `artifacts/submission/v11/<hash>/` | 최종 `policy.py`, `checkpoint.pt` |
+
+중단 기록은 재개해도 지우지 않으며 실행 세션 식별자로 구분한다. `status.json`의 종료 상태에도 최초 중단 사유와 당시 자원을 보존한다. 수동 `--stop`, SIGTERM/SIGINT, 자원 보호 조건, 출처를 알 수 없는 외부 `stop.request` 생성을 구분하며, 신호 발신 PID를 알 수 없는 경우 추정하지 않는다. OS의 SIGKILL이나 전원 차단은 프로세스가 기록할 기회가 없으므로 마지막 자원 표본과 시스템 로그를 확인해야 한다. 이 기능 추가 이전에 덮어써진 중단 원인은 복구되지 않는다.
 
 최종 정책은 `MyPolicy(vector_size=96, n_channels=11)`의 `forward(vector[B,96], graphic[B,11,96,96]) → action[B,2]`를 유지한다. 현재 제공된 runner의 팀당 canonical 다섯 행 순서로 자기 개체를 연결한다. 외부 ID·state 입력은 요구하지 않는다. 임의 순서나 일부 행만 전달하는 별도 실행기는 이 팀 정책의 지원 계약에 포함되지 않는다.
 
