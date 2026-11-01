@@ -6,6 +6,8 @@
 
 2026-10-26 승인 변경: 아래 §5–7의 **평가량만 축소**하고, 학습량·학습 설정·기존 checkpoint·완료된 baseline/pilot 결과는 보존한다. `goal_memory_v3`의 원본 `registration.json`을 수정하지 않고 `evaluation_revision.json`으로 평가 변경과 허용 source override를 추적한다. 이 변경 과정에서는 학습이나 실제 환경 실험을 재개하지 않는다.
 
+2026-11-01 승인 변경: 다음 수집부터 8경기 wave를 **16경기 FIFO 대기열/8개 동시 worker**로 바꾸고 행동 trace 정리를 증분화한다. 긴 경기 우선 배정은 하지 않는다. 같은 정책으로 전 경기를 자연 종료까지 수집하는 조건과 총 step 목표·seed·평가는 유지한다. 업데이트당 데이터량과 self-play snapshot 간격은 변경되므로 기존 결과와의 조건 차이를 `throughput_revision.json`과 [실행 안내](../README.md)에 남긴다. 원본 등록과 기존 revision은 유지하고, D_s33 553,144 step에서 이어간다. 완결 wave 초과량·디스크 최악치는 동시 worker 수가 아니라 wave 전체 16경기를 기준으로 계산한다.
+
 ## 1. 작업 순서와 완료 기준
 
 계획 완료, 구현 완료, 성능 목표 달성을 구별한다. 구현 완료에는 실제 planner·정책·collector·ONNX·평가기 검증이 필요하고, 성능 달성에는 §7의 동결 평가가 필요하다. export나 BC accuracy만으로 성능을 인증하지 않는다.

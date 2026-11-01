@@ -42,21 +42,45 @@ class RuntimeContracts(unittest.TestCase):
         self.assertEqual(report["selected_workers"], 4)
         self.assertTrue(all(row["training_steps"] == 0 for row in report["probes"]))
 
-    def test_worker_probe_skips_configuration_that_cannot_fit_a_training_wave(self):
+    def test_fewer_workers_cannot_hide_disk_needed_by_the_full_queue(self):
         cfg = {"workers": 2, "worker_cap": 8, "memory_soft_gib": 32,
                "benchmark_opponent": {"kind": "noop"}, "benchmark_workers": [2, 8]}
-        def tasks(task_list, directory, probe_cfg, stop, progress):
-            self.assertEqual(probe_cfg["workers"], 2)
-            return [dict(valid=True, attempt_steps=100, error=None,
-                         result={"natural_terminal": False}) for _ in task_list]
         with tempfile.TemporaryDirectory() as temp, \
-             patch("blackout_v11.runtime.run_tasks", side_effect=tasks), \
-             patch("blackout_v11.benchmark.shutil.disk_usage", return_value=SimpleNamespace(free=64*1024**3)), \
-             patch("blackout_v11.benchmark.time.perf_counter", side_effect=[0,10]):
-            report = benchmark_workers(temp, cfg)
-        self.assertEqual(report["selected_workers"], 2)
-        self.assertTrue(report["probes"][1]["skipped"])
-        self.assertFalse(report["probes"][1]["valid"])
+             patch("blackout_v11.runtime.run_tasks") as launch, \
+             patch("blackout_v11.benchmark.shutil.disk_usage", return_value=SimpleNamespace(free=100*1024**3)):
+            with self.assertRaisesRegex(RuntimeError, "insufficient disk"):
+                benchmark_workers(temp, cfg)
+            launch.assert_not_called()
+
+    def test_fifo_queue_refills_before_long_episode_finishes(self):
+        cfg = dict(workers=8, episode_wall_seconds=20, stall_seconds=20, stop_grace_seconds=1)
+        launched, active, peak = [], set(), [0]
+        def launch(command, **kwargs):
+            path = Path(command[-1]); task = read_json(path)
+            name = task['id']; launched.append(name); active.add(name)
+            peak[0] = max(peak[0], len(active))
+            atomic_json(path.parent/'result.json', dict(task_sha256=digest(task),
+                        result=dict(valid=True, env_steps=100, natural_terminal=True)))
+            class Process:
+                pid = 901234 + len(launched)
+                def poll(self):
+                    if name == '00' and len(launched) < 16:
+                        return None
+                    active.discard(name)
+                    return 0
+            return Process()
+        with tempfile.TemporaryDirectory() as temp, \
+             patch('blackout_v11.runtime.process_birth', return_value='birth'), \
+             patch('blackout_v11.runtime.owned_members', return_value=[]), \
+             patch('blackout_v11.runtime.terminate_owned'), \
+             patch('blackout_v11.runtime.time.sleep'), \
+             patch('blackout_v11.runtime.subprocess.Popen', side_effect=launch):
+            rows = run_tasks([dict(id=f'{i:02d}', kind='collect') for i in range(16)], temp, cfg)
+        self.assertEqual(launched, [f'{i:02d}' for i in range(16)])
+        self.assertEqual(peak[0], 8)
+        self.assertEqual(len(rows), 16)
+        self.assertNotEqual(rows[0]['id'], '00')
+        self.assertIn('00', [r['id'] for r in rows])
 
     def test_episode_accounting_counts_environment_steps_not_decision_events(self):
         cfg = dict(workers=1, episode_wall_seconds=20, stall_seconds=20, stop_grace_seconds=1)

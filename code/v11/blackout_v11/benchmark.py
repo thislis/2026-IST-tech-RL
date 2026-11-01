@@ -180,7 +180,8 @@ def benchmark_workers(directory, cfg, stop=lambda: False, progress=lambda **_: N
             raise InterruptedError("stopped during worker calibration")
         # Match the learner's complete-wave admission rule, including lossless
         # float graphic fallback. Fast workers must also fit a real train wave.
-        required = count * cfg.get("max_episode_steps", 22000) * (11*96*96*4 + 16384)
+        from .training import collection_wave_bytes
+        required = collection_wave_bytes(dict(cfg, workers=count))
         reserve = cfg.get("disk_stop_gib", 25) * 1024**3
         free = shutil.disk_usage(directory).free
         if free < required + reserve:

@@ -2,10 +2,12 @@ import os
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 import numpy as np
 
 from agent_league.trace import Trace
-from blackout_v11.behavior_reports import aggregate, enforce_retention, inspect_episode, write_report
+from blackout_v11 import behavior_reports
+from blackout_v11.behavior_reports import aggregate, enforce_retention, inspect_episode, notify_retention_episode, write_report
 from blackout_v11.io import atomic_json, read_json
 
 
@@ -18,6 +20,83 @@ def summary(steps=10):
 
 
 class BehaviorReportTests(unittest.TestCase):
+    def test_incremental_retention_does_not_rescan_closed_history(self):
+        with tempfile.TemporaryDirectory() as temp:
+            study = Path(temp)
+            root = study / "behavior/episodes"
+            def closed(name):
+                episode = root / name
+                (episode / "trace").mkdir(parents=True)
+                (episode / "trace/payload").write_bytes(b"a" * 1024)
+                atomic_json(episode / "summary.json", summary())
+                atomic_json(episode / "trace/index.json", dict(schema="blackout.league.trace.v2"))
+                return episode
+            old = closed("old")
+            first = enforce_retention(study)
+            self.assertEqual(first["mode"], "reconcile")
+            self.assertEqual(first["traces_measured"], 1)
+            new = closed("new")
+            notify_retention_episode(study, new)
+            with patch("blackout_v11.behavior_reports._bytes", wraps=behavior_reports._bytes) as measure:
+                second = enforce_retention(study)
+                self.assertEqual([call.args[0] for call in measure.call_args_list], [(new / "trace").resolve()])
+            with patch("blackout_v11.behavior_reports._bytes", side_effect=AssertionError("closed trace rescanned")), \
+                 patch.object(Path, "iterdir", side_effect=AssertionError("episode history enumerated")):
+                third = enforce_retention(study)
+            self.assertEqual(second["mode"], "incremental")
+            self.assertEqual(third["before_bytes"], second["after_bytes"])
+            self.assertTrue((old / "trace/index.json").exists())
+
+    def test_writer_notices_keep_active_trace_safe_until_close(self):
+        from blackout_v11.behavior import SituationRecorder
+        with tempfile.TemporaryDirectory() as temp:
+            study = Path(temp)
+            behavior = study / "behavior"
+            episode = behavior / "episodes/active"
+            cfg = dict(behavior_output_root=str(behavior))
+            recorder = SituationRecorder(episode, cfg)
+            self.assertTrue((behavior / ".retention_pending/active.json").exists())
+            active = enforce_retention(study, 0)
+            self.assertTrue(active["over_budget"])
+            self.assertTrue((episode / "trace/events.jsonl.gz").exists())
+            recorder.close(complete=False)
+            self.assertTrue((behavior / ".retention_pending/active.json").exists())
+            closed = enforce_retention(study, 0)
+            self.assertEqual(closed["pruned"], ["active"])
+            self.assertFalse(closed["over_budget"])
+            self.assertTrue(read_json(episode / "summary.json")["trace_pruned"])
+
+    def test_restart_recovers_unacknowledged_close_and_partial_prune(self):
+        with tempfile.TemporaryDirectory() as temp:
+            study = Path(temp)
+            episode = study / "behavior/episodes/interrupted"
+            trace = episode / "trace"
+            trace.mkdir(parents=True)
+            (trace / "payload").write_bytes(b"a" * 1024)
+            atomic_json(episode / "summary.json", summary())
+            atomic_json(trace / "index.json", dict(schema="blackout.league.trace.v2"))
+            enforce_retention(study)
+            def partial_delete(path):
+                (path / "index.json").unlink()
+                raise OSError("interrupted deletion")
+            with patch("blackout_v11.behavior_reports.shutil.rmtree", side_effect=partial_delete):
+                failed = enforce_retention(study, 0)
+            self.assertTrue(failed["errors"])
+            self.assertEqual(read_json(episode / "summary.json")["retention"]["state"], "failed")
+            # Simulate a fresh supervisor and a legacy close without a notice.
+            behavior_reports._RETENTION_READY.discard(((study / "behavior/episodes").resolve(), os.getpid()))
+            missed = study / "behavior/episodes/missed"
+            (missed / "trace").mkdir(parents=True)
+            (missed / "trace/payload").write_bytes(b"keep")
+            atomic_json(missed / "summary.json", summary())
+            atomic_json(missed / "trace/index.json", dict(schema="blackout.league.trace.v2"))
+            resumed = enforce_retention(study)
+            self.assertEqual(resumed["mode"], "reconcile")
+            self.assertIn("interrupted", resumed["pruned"])
+            self.assertTrue(read_json(episode / "summary.json")["trace_pruned"])
+            self.assertEqual(resumed["indexed_traces"], 1)
+            self.assertTrue((missed / "trace/payload").exists())
+
     def test_retention_preserves_active_traces_summaries_and_other_studies(self):
         with tempfile.TemporaryDirectory() as temp:
             study = Path(temp) / "study"

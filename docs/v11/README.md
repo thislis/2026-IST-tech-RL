@@ -37,6 +37,17 @@ bash code/v11/run_v11_fast.sh --name v11_profile --benchmark
 
 ## CPU와 MPS
 
+2026-11-01 승인된 수집 변경은 `throughput_revision.json`으로 별도 기록한다. 기존 평가·중단 기록 revision, 원본 등록, 완료 모델·평가 결과를 보존하며 `goal_memory_v3`의 D_s33 553,144 step checkpoint부터 다음 수집에 적용한다. 기존에 완료된 11개 본학습 run을 다시 학습하지 않는다. 재개 명령은 위의 `--resume` 한 줄과 같다.
+
+2026-11-02 재개 오류 수정은 `throughput_fix_revision.json`에 별도로 기록한다. 학습 전용 `wave_episodes` 설정은 평가 작업 구성에서 제외한다. 기존 평가 계획·완료 경기 파일을 수정하지 않으며, 상대·맵 수·모델 hash·평가 관련 설정의 변경 검증은 그대로 유지한다. `evaluation schedule/bundle changed`로 실패한 뒤에도 같은 `--resume` 명령을 사용한다.
+
+- 한 업데이트에 같은 동결 정책으로 **16경기**를 미리 배정하고, 측정된 **8개 worker**로 FIFO 실행한다. worker가 끝나면 다음 경기를 즉시 배정한다. 예상 경기 길이에 따른 우선순위는 없다. 16경기를 모두 자연 종료까지 수집한 뒤 PPO를 수행하며, 먼저 끝난 경기만 선택하거나 다른 정책의 데이터를 섞지 않는다.
+- 학습 step 목표·seed·평가 일정·장치·PPO minibatch 설정은 유지하지만, 업데이트당 데이터량과 업데이트/self-play snapshot 간격은 달라진다. 기존 8경기 수집 결과와 완전히 같은 학습 조건으로 해석하지 않는다. 후속 training.jsonl에는 `wave_episodes`, `concurrent_workers`를 기록한다.
+- 저장 공간 사전 검사는 동시 worker 수가 아니라 보관할 전체 16경기를 기준으로 한다. 기존 무손실 최악치와 25 GiB reserve를 합쳐 약 **163.3 GiB** 여유가 필요하다. 마지막 진행 경기까지 기다리는 구간은 여전히 남는다.
+- 행동 trace 정리는 크기 index와 시작·종료 알림을 이용해 증분 처리한다. 최초 사용/복구 시 기존 자료를 확인하며, 활성 trace 보호와 저장 한도, 상황별 행동 요약·보고서 생성을 유지한다.
+
+양 팀 모두 배터리 100개를 모으지 못해도 게임 제한 시간 **420초**에 도달해 정상 종료된 경기는 학습한다. 시간 종료 시 점수가 높은 팀이 이기고 동점이면 무승부다. 100개 도달은 학습 포함 조건이 아니다. 사용자 중지, step/wall watchdog 등으로 끊긴 미완료 경기는 학습에서 제외한다.
+
 actor, planner, learner 장치를 독립적으로 선택한다. 실제 실행 환경에서 MPS를 사용할 수 있으면 CPU/MPS의 전송·동기화·forward/backward 비용을 포함해 측정하고, 처리량이 개선되는 작업에 MPS를 사용한다. CPU 추론과 MPS 학습을 함께 사용할 수 있다.
 
 학습 배치는 64-event recurrent 구간의 backward까지 측정한다. Unity worker 2/4/8 중 메모리·디스크 조건을 만족하는 설정을 실제 경기 처리량으로 비교한다. 처리량 차이가 5% 이내면 적은 worker를 선택한다. 기본 RAM soft limit은 32GiB, 디스크 여유는 25GiB다. 선택 결과는 `runtime_profile.json`에 저장하고 본 비교에서 고정한다.

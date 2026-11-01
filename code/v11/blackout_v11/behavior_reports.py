@@ -13,6 +13,8 @@ import numpy as np
 from .io import ROOT, atomic_json, file_hash, read_json
 
 SCHEMA = "blackout.v11.behavior.v1"
+RETENTION_SCHEMA = "blackout.v11.behavior.retention.v1"
+_RETENTION_READY = set()
 
 
 def _episodes(study_root):
@@ -34,46 +36,152 @@ def _bytes(path):
     return total
 
 
-def enforce_retention(study_root, max_bytes=8 * 1024**3):
-    """Prune oldest CLOSED traces under this study; summaries are never removed.
+def notify_retention_episode(study_root, episode):
+    """Publish one changed episode; writers never scan the historical traces."""
+    root, episode = _episodes(study_root), Path(episode)
+    if episode.parent.resolve() != root.resolve() or not _inside(episode, root):
+        return False
+    pending = root.parent / ".retention_pending"
+    with (root.parent / ".retention.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if pending.is_symlink():
+            raise ValueError("retention notices must remain inside the behavior directory")
+        atomic_json(pending / (episode.name + ".json"), dict(episode=episode.name))
+    return True
 
-    An index is written only on close, including interrupted/capped episodes.
-    Active traces without an index remain untouched even if they exceed budget.
+
+def _retention_entry(root, name, report):
+    """Measure a new/open trace once; closed entries stay immutable until pruning."""
+    episode, trace = root / name, root / name / "trace"
+    summary, index = episode / "summary.json", trace / "index.json"
+    if not episode.is_dir() or not _inside(episode, root) or not _inside(trace, episode):
+        return None
+    row = None
+    if summary.is_file() and not summary.is_symlink():
+        try:
+            row = read_json(summary)
+        except (OSError, ValueError) as exc:
+            report["errors"].append(dict(episode=name, error=str(exc)))
+    prior = (row or {}).get("retention", {})
+    interrupted_prune = (prior.get("state") in ("pruning", "failed")
+                         and prior.get("reason") == "study_trace_budget"
+                         and prior.get("trace_path") == str(trace))
+    if not trace.is_dir():
+        if interrupted_prune:
+            atomic_json(summary, dict(row, trace_pruned=True,
+                                      retention=dict(prior, state="pruned", recovered_at=time.time())))
+        # A start notice precedes trace creation. Keep watching that entry.
+        return dict(bytes=0, closed=False) if row is None else None
+    size = _bytes(trace)
+    report["traces_measured"] += 1
+    entry = dict(bytes=size, closed=False)
+    try:
+        if row is None or row.get("schema") != SCHEMA:
+            return entry
+        if interrupted_prune:
+            return dict(entry, closed=True, closed_at=prior.get("pruned_at", 0), cleanup_pending=True)
+        if not index.is_file() or index.is_symlink():
+            return entry
+        closed = read_json(index)
+        if not closed.get("schema", "").startswith("blackout.league.trace."):
+            raise ValueError("unrecognized behavior/trace schema")
+        return dict(entry, closed=True, closed_at=index.stat().st_mtime)
+    except (OSError, ValueError) as exc:
+        report["errors"].append(dict(episode=name, error=str(exc)))
+        return entry
+
+
+def enforce_retention(study_root, max_bytes=8 * 1024**3):
+    """Prune oldest closed traces with a persistent, incrementally updated index.
+
+    Reconcile the filesystem once per process (also after an invalid/lost index).
+    Later waves inspect only writer notices and still-open traces. No summary is
+    removed, and an open trace cannot become a deletion candidate without its
+    completed index and summary. A partially interrupted prune is recoverable.
     """
+    started = time.monotonic()
     if max_bytes < 0:
         raise ValueError("trace budget must be nonnegative")
     root = _episodes(study_root)
     report = dict(max_bytes=int(max_bytes), before_bytes=0, after_bytes=0,
-                  freed_bytes=0, pruned=[], errors=[], active_or_unprunable_bytes=0)
+                  freed_bytes=0, pruned=[], errors=[], active_or_unprunable_bytes=0,
+                  traces_measured=0, episodes_refreshed=0, notices_consumed=0,
+                  mode="incremental", elapsed_seconds=0.)
     if not root.exists():
         return dict(report, over_budget=False)
     if root.is_symlink() or not _inside(root, Path(study_root).resolve()):
         raise ValueError("behavior episodes root must remain inside its study")
     with (root.parent / ".retention.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        candidates = []
-        for episode in sorted(root.iterdir()):
-            trace = episode / "trace"
-            if not episode.is_dir() or not _inside(episode, root) or not trace.is_dir() or not _inside(trace, episode):
-                continue
-            size = _bytes(trace)
-            report["before_bytes"] += size
-            index, summary = trace / "index.json", episode / "summary.json"
-            if not index.is_file() or not summary.is_file() or index.is_symlink() or summary.is_symlink():
-                report["active_or_unprunable_bytes"] += size
-                continue
+        catalog_path, pending = root.parent / "retention_index.json", root.parent / ".retention_pending"
+        entries = {}
+        session = (root, os.getpid())
+        rebuild = session not in _RETENTION_READY
+        if catalog_path.exists() and not catalog_path.is_symlink():
             try:
-                row, closed = read_json(summary), read_json(index)
-                if row.get("schema") != SCHEMA or not closed.get("schema", "").startswith("blackout.league.trace."):
-                    raise ValueError("unrecognized behavior/trace schema")
-                candidates.append((index.stat().st_mtime, episode.name, trace, summary, size, row))
-            except (OSError, ValueError) as exc:
-                report["errors"].append(dict(episode=episode.name, error=str(exc)))
-                report["active_or_unprunable_bytes"] += size
+                saved = read_json(catalog_path)
+                if saved.get("schema") != RETENTION_SCHEMA or saved.get("episodes_root") != str(root):
+                    raise ValueError("retention index identity changed")
+                entries = saved["entries"]
+                if not isinstance(entries, dict) or any(
+                    not re.fullmatch(r"[A-Za-z0-9_-]+", name) or not isinstance(row, dict)
+                    or not isinstance(row.get("bytes"), int) or row["bytes"] < 0
+                    or not isinstance(row.get("closed"), bool)
+                    or (row["closed"] and not isinstance(row.get("closed_at"), (int, float)))
+                    for name, row in entries.items()
+                ):
+                    raise ValueError("invalid retention index entries")
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                report["errors"].append(dict(error=str(exc), source="retention_index"))
+                rebuild = True
+        else:
+            rebuild = True
+        if pending.is_symlink():
+            raise ValueError("retention notices must remain inside the behavior directory")
+        notices = list(pending.glob("*.json")) if pending.exists() else []
+        if rebuild:
+            report["mode"] = "reconcile"
+            entries = {}
+            names = {episode.name for episode in root.iterdir() if re.fullmatch(r"[A-Za-z0-9_-]+", episode.name)}
+        else:
+            names = {name for name, entry in entries.items() if not entry["closed"] or entry.get("cleanup_pending")}
+        names.update(path.stem for path in notices if re.fullmatch(r"[A-Za-z0-9_-]+", path.stem))
+        report["episodes_refreshed"] = len(names)
+        report["notices_consumed"] = len(notices)
+        for name in sorted(names):
+            entry = _retention_entry(root, name, report)
+            if entry is None:
+                entries.pop(name, None)
+            else:
+                entries[name] = entry
+        report["before_bytes"] = sum(entry["bytes"] for entry in entries.values())
+        report["active_or_unprunable_bytes"] = sum(entry["bytes"] for entry in entries.values() if not entry["closed"])
+        candidates = sorted((entry["closed_at"], name) for name, entry in entries.items() if entry["closed"])
         remaining = report["before_bytes"]
-        for _, name, trace, summary, size, row in sorted(candidates):
-            if remaining <= max_bytes:
-                break
+        for _, name in candidates:
+            entry = entries[name]
+            if remaining <= max_bytes and not entry.get("cleanup_pending"):
+                continue
+            episode, trace = root / name, root / name / "trace"
+            summary = episode / "summary.json"
+            if not _inside(episode, root) or not _inside(trace, episode) or summary.is_symlink():
+                report["errors"].append(dict(episode=name, error="unsafe trace or summary path"))
+                continue
+            # Re-check closure immediately before deleting a cached candidate.
+            try:
+                row = read_json(summary)
+                index = trace / "index.json"
+                valid = row.get("schema") == SCHEMA and (entry.get("cleanup_pending") or
+                    (index.is_file() and not index.is_symlink() and
+                     read_json(index).get("schema", "").startswith("blackout.league.trace.")))
+            except (OSError, ValueError) as exc:
+                report["errors"].append(dict(episode=name, error=str(exc)))
+                valid = False
+            if not valid:
+                entry["closed"] = False
+                report["active_or_unprunable_bytes"] += entry["bytes"]
+                continue
+            size = entry["bytes"]
             retention = dict(state="pruning", reason="study_trace_budget", pruned_at=time.time(),
                              removed_bytes=size, max_bytes=int(max_bytes), trace_path=str(trace))
             try:
@@ -84,13 +192,24 @@ def enforce_retention(study_root, max_bytes=8 * 1024**3):
                 remaining -= size
                 report["freed_bytes"] += size
                 report["pruned"].append(name)
+                entries.pop(name)
             except OSError as exc:
                 report["errors"].append(dict(episode=name, error=str(exc)))
                 # A partial deletion is disclosed instead of pretending retention succeeded.
                 retention.update(state="failed", error=str(exc))
                 atomic_json(summary, dict(row, retention=retention))
-                remaining -= size - (_bytes(trace) if trace.exists() else 0)
-        report.update(after_bytes=remaining, over_budget=remaining > max_bytes, updated_at=time.time())
+                rest = _bytes(trace) if trace.exists() else 0
+                remaining -= size - rest
+                entries[name].update(bytes=rest, cleanup_pending=True)
+        atomic_json(catalog_path, dict(schema=RETENTION_SCHEMA, episodes_root=str(root),
+                                       entries=entries, updated_at=time.time()))
+        # Commit the index before acknowledging notices; retries are idempotent.
+        for path in notices:
+            path.unlink(missing_ok=True)
+        _RETENTION_READY.add(session)
+        report.update(after_bytes=remaining, over_budget=remaining > max_bytes,
+                      indexed_traces=len(entries), updated_at=time.time(),
+                      elapsed_seconds=time.monotonic()-started)
         atomic_json(root.parent / "retention.json", report)
     return report
 

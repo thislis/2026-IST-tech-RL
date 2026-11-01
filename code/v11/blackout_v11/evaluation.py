@@ -139,6 +139,10 @@ def evaluate_bundle(bundle,directory,cfg,replicates=None,split='dev',*,opponents
                     stop=lambda:False,progress=lambda **_:None):
     from .runtime import run_tasks
     from .statistics import summarize
+    # This setting controls PPO collection only. Keep it out of evaluation
+    # tasks so legacy plans/cell hashes retain their exact identity on resume.
+    # All evaluation-relevant settings still undergo the full plan comparison.
+    cfg = {key: value for key, value in cfg.items() if key != 'wave_episodes'}
     directory=Path(directory); directory.mkdir(parents=True,exist_ok=True)
     pool=frozen_catalog() if opponents is None else opponents
     pool_ids={s['id'] for s in pool}
