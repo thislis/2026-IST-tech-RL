@@ -191,6 +191,10 @@ class SituationRecorder:
         cfg = cfg or {}
         self.path = Path(path)
         self.path.mkdir(parents=True, exist_ok=True)
+        self.retention_study = Path(cfg["behavior_output_root"]).parent if cfg.get("behavior_output_root") else None
+        if self.retention_study is not None:
+            from .behavior_reports import notify_retention_episode
+            notify_retention_episode(self.retention_study, self.path)
         self.cfg = {k: cfg.get(k, v) for k, v in DEFAULTS.items()}
         self.cfg["chunk_steps"] = min(512, max(1, int(cfg.get("behavior_chunk_steps", 512))))
         self.cfg["snapshot_every"] = max(1, int(cfg.get("behavior_snapshot_every", 1000)))
@@ -420,6 +424,9 @@ class SituationRecorder:
                 dropped_snapshots=self.trace.dropped_snapshots, complete=bool(complete and not self.trace.capped),
                 graphic="initial/final and periodic two-team snapshots, not full graphic replay"))
         atomic_json(self.path/"summary.json", report)
+        if self.retention_study is not None:
+            from .behavior_reports import notify_retention_episode
+            notify_retention_episode(self.retention_study, self.path)
         self.closed = dict(enabled=True, schema=SCHEMA, summary_path=str(self.path/"summary.json"),
             trace_path=str(self.trace.path), steps=self.steps, trace_steps=self.trace.count,
             trace_capped=self.trace.capped, complete=bool(complete))

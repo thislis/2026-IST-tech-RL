@@ -20,6 +20,19 @@ from .trajectory import WaveBatch
 ACCOUNTING_VERSION = 2
 
 
+def collection_wave_size(cfg):
+    """FIFO episode queue size, independent of the concurrent worker limit."""
+    episodes = cfg.get("wave_episodes", 16)
+    if isinstance(episodes, bool) or not isinstance(episodes, int) or episodes < int(cfg["workers"]):
+        raise ValueError("wave_episodes must be an integer at least as large as workers")
+    return episodes
+
+
+def collection_wave_bytes(cfg):
+    # Completed trajectories remain on disk while queued episodes run.
+    return collection_wave_size(cfg)*cfg.get("max_episode_steps", 22000)*(11*96*96*4+16384)
+
+
 def interruption_evidence(row):
     """A supervisor stop flag alone must not conceal a simultaneous failure."""
     if not row.get("interrupted"):
@@ -308,9 +321,9 @@ def train_run(directory, cfg, arm, seed, registration_sha, device, *, pilot=Fals
     while state["step"] < budget and not stop():
         if memory() > cfg.get("memory_soft_gib", 32):
             raise RuntimeError("memory soft limit reached before new wave")
-        workers = int(cfg["workers"])
+        wave_episodes = collection_wave_size(cfg)
         # Worst case every primitive step is a decision and every graphic nonbinary.
-        required = workers*cfg.get("max_episode_steps", 22000)*(11*96*96*4+16384)
+        required = collection_wave_bytes(cfg)
         if shutil.disk_usage(directory).free < required+cfg.get("disk_stop_gib", 25)*1024**3:
             raise RuntimeError("insufficient space for worst-case lossless wave and disk reserve")
         wave = directory/"waves"/f"wave-{state['wave']:06d}-{time.time_ns()}"
@@ -320,7 +333,9 @@ def train_run(directory, cfg, arm, seed, registration_sha, device, *, pilot=Fals
                                    "arm": arm, "critic_arm": critic.arm, "decoder": cfg.get("decoder", "sample")})
         behavior_hash = file_hash(behavior_path)
         tasks, reservations = [], {}
-        for i in range(workers):
+        # Preassign the entire FIFO queue with one frozen policy. The runtime
+        # refills free worker slots, then waits for every episode to finish.
+        for i in range(wave_episodes):
             serial = state["attempts"]+i
             if serial >= cfg.get("max_attempts", 100000):
                 raise RuntimeError("registered attempt cap reached")
@@ -333,7 +348,8 @@ def train_run(directory, cfg, arm, seed, registration_sha, device, *, pilot=Fals
         save()
         started = time.monotonic()
         def report_progress(**kw):
-            progress(run=directory.name, step=state["step"], budget=budget, **kw)
+            progress(run=directory.name, step=state["step"], budget=budget,
+                     wave_episodes=wave_episodes, concurrent_workers=int(cfg["workers"]), **kw)
         results = run_tasks(tasks, wave, cfg, stop, report_progress)
         collection_seconds = time.monotonic()-started
         paths = []
@@ -413,6 +429,7 @@ def train_run(directory, cfg, arm, seed, registration_sha, device, *, pilot=Fals
         else:
             removed = []
         append(log, {"step": state["step"], "decisions": state["decisions"], "wave": state["wave"],
+                     "wave_episodes": wave_episodes, "concurrent_workers": int(cfg["workers"]),
                      "valid_env_steps": batch.env_steps, "collection_seconds": collection_seconds,
                      "collection_steps_per_second": batch.env_steps/max(collection_seconds, 1e-9),
                      "end_to_end_steps_per_second": batch.env_steps/max(time.monotonic()-started, 1e-9),

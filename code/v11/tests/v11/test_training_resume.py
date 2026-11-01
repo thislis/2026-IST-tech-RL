@@ -4,7 +4,8 @@ from pathlib import Path
 import tempfile
 import unittest
 from blackout_v11.io import atomic_json
-from blackout_v11.training import account_episode, repair_interruption_accounting
+from blackout_v11.training import (account_episode, repair_interruption_accounting,
+                                  collection_wave_size, collection_wave_bytes)
 
 
 def state(**changes):
@@ -36,6 +37,14 @@ def ledger(root, rows):
 
 
 class InterruptedEpisodeAccounting(unittest.TestCase):
+    def test_wave_storage_counts_queued_and_finished_episodes(self):
+        cfg = dict(workers=8, max_episode_steps=22000)
+        self.assertEqual(collection_wave_size(cfg), 16)
+        self.assertEqual(collection_wave_bytes(cfg), 16*22000*(11*96*96*4+16384))
+        self.assertEqual(collection_wave_bytes(dict(cfg, workers=2)), collection_wave_bytes(cfg))
+        with self.assertRaises(ValueError):
+            collection_wave_size(dict(cfg, wave_episodes=4))
+
     def test_deliberate_stop_does_not_add_or_clear_real_failures(self):
         with tempfile.TemporaryDirectory() as temp:
             s = state(invalid_episodes=2, consecutive_invalid=2)

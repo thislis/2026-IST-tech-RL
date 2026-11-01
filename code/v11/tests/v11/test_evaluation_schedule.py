@@ -37,6 +37,56 @@ class FakePolicy:
 
 
 class EvaluationScheduleTests(unittest.TestCase):
+    def test_training_queue_change_reuses_completed_evaluation_without_mutating_config(self):
+        cfg=config(); pool=dev_catalog()[:1]
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            with patch('blackout_v11.runtime.run_tasks',side_effect=fake_matches):
+                expected=evaluate_bundle(None,root,cfg,replicates=1,split='baseline',opponents=pool)
+            protected={p:p.read_bytes() for p in [root/'plan.json', *sorted((root/'cells').glob('*.json'))]}
+            current=dict(cfg,wave_episodes=16); before=copy.deepcopy(current)
+            with patch('blackout_v11.runtime.run_tasks') as execute:
+                actual=evaluate_bundle(None,root,current,replicates=1,split='baseline',opponents=pool)
+                execute.assert_not_called()
+            self.assertEqual(actual,expected)
+            self.assertEqual(current,before)
+            for path,content in protected.items(): self.assertEqual(path.read_bytes(),content)
+
+    def test_partial_evaluation_resumes_only_missing_cell_with_original_task_identity(self):
+        cfg=config(); pool=dev_catalog()[:1]
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            with patch('blackout_v11.runtime.run_tasks',side_effect=fake_matches):
+                evaluate_bundle(None,root,cfg,replicates=1,split='baseline',opponents=pool)
+            plan=read_json(root/'plan.json'); missing=plan['tasks'][0]
+            (root/'cells'/(missing['id']+'.json')).unlink()
+            def resume(tasks,directory,configuration,**kwargs):
+                self.assertEqual(tasks,[missing])
+                self.assertNotIn('wave_episodes',configuration)
+                return fake_matches(tasks)
+            with patch('blackout_v11.runtime.run_tasks',side_effect=resume) as execute:
+                result=evaluate_bundle(None,root,dict(cfg,wave_episodes=16),replicates=1,split='baseline',opponents=pool)
+                execute.assert_called_once()
+            self.assertTrue(result['complete'])
+            self.assertEqual(read_json(root/'plan.json'),plan)
+
+    def test_queue_exclusion_does_not_allow_evaluation_or_bundle_changes(self):
+        cfg=config(); pool=dev_catalog()[:1]
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp); bundle=root/'bundle'; bundle.mkdir()
+            for name in ('policy.py','checkpoint.pt'): (bundle/name).write_bytes(b'original')
+            with patch('blackout_v11.runtime.run_tasks',side_effect=fake_matches):
+                evaluate_bundle(bundle,root/'eval',cfg,replicates=1,split='baseline',opponents=pool)
+            for key,value in [('decoder','different'),('time_scale',51),('max_episode_steps',23000)]:
+                with self.subTest(key=key), patch('blackout_v11.runtime.run_tasks') as execute:
+                    with self.assertRaisesRegex(ValueError,'evaluation schedule/bundle changed'):
+                        evaluate_bundle(bundle,root/'eval',dict(cfg,wave_episodes=16,**{key:value}),
+                                        replicates=1,split='baseline',opponents=pool)
+                    execute.assert_not_called()
+            (bundle/'checkpoint.pt').write_bytes(b'changed')
+            with self.assertRaisesRegex(ValueError,'evaluation schedule/bundle changed'):
+                evaluate_bundle(bundle,root/'eval',dict(cfg,wave_episodes=16),replicates=1,split='baseline',opponents=pool)
+
     def test_counts_and_training_budget_remain_explicit_and_separate(self):
         cfg=config(); original=copy.deepcopy(cfg)
         schedule=build_evaluation_schedule(cfg)

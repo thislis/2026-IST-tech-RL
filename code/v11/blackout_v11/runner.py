@@ -252,6 +252,9 @@ def supervise(args, cfg, directory):
                 else:
                     progress(phase="calibration_preserved", profile=str(directory / "runtime_profile.json"))
                 resolved = apply_profile(cfg, profile)
+                from .revision import throughput_overrides
+                resolved.update(throughput_overrides(directory, cfg))
+                resolved.setdefault("wave_episodes", 16)
                 resolved["behavior_output_root"] = str(directory / "behavior")
                 atomic_json(directory / "resolved_config.json", resolved)
                 if operation == "benchmark":
