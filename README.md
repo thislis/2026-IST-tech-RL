@@ -1,6 +1,6 @@
 # BlackOut 강화학습 실험
 
-**새 게임 풀리그 준비 완료 (2026-11-02)**: 최신 게임 소스를 Unity 6000.3.8f1로 Windows 빌드하고 별도 등록했습니다. `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v12\run_league_new_game.ps1` 한 줄로 22개 모델·2,310경기를 최대 16개 병렬(관전 1개 + 백그라운드 15개) 실행합니다. [새 게임 리그 안내](docs/v12/reports/full_league_new_game.md) · [빌드 기록](docs/v12/reports/new_game_build.md). 실제 경기는 실행하지 않았습니다.
+**새 게임 풀리그 결과 (2026-11-02)**: [한눈에 보는 HTML 보고서](logs/shared/agent_league/v12_full_league_new_game_20261101/analysis.html). 실행은 종료됐으며 **2,294/2,310경기 완료**, worker 오류로 16경기가 미완료입니다. 최종 게임 점수 기준 v12는 **188승 0무 20패, 잠정 1위**입니다. 전체 순위·상대별 성적·경기 검색·미완료 목록을 제공합니다. [새 게임 리그 안내](docs/v12/reports/full_league_new_game.md) · [빌드 기록](docs/v12/reports/new_game_build.md). 보고서 작성 중 재실행하지 않았습니다.
 
 **2026-11-01 환경·제출 규격 갱신**: 새 소스의 팀당 Hunter 2명 제한, 맵 변경, 점수 기반 승패, `slot`·프레임 스택·RNN 상태를 지원하는 ONNX 제출 규격을 [업데이트 문서](docs/common/environment_update_2026-11-01.md)에 반영했습니다. 현재 `.venv`와 Windows 게임 빌드는 기존 실험 환경이며 이번 작업에서 교체하거나 실행하지 않았습니다.
 
