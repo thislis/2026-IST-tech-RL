@@ -1,6 +1,6 @@
 # v12: 왕복 작업을 함께 배정하는 경량 팀 정책
 
-**새 게임 풀리그 준비 완료 (2026-11-02)**: 22개 모델·2,310경기, 최대 16개 병렬(관전 창 1개 + 백그라운드 15개), 최종 점수 기준이다. 최신 소스의 Windows 빌드와 새 API를 별도 등록했다. `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v12\run_league_new_game.ps1` 한 줄로 시작한다. 실제 경기는 실행하지 않았다. [한 줄 실행·상태 확인](reports/full_league_new_game.md) · [빌드 기록](reports/new_game_build.md).
+**새 게임 풀리그 결과 (2026-11-02)**: [한눈에 보는 HTML 보고서](../../logs/shared/agent_league/v12_full_league_new_game_20261101/analysis.html). 실행 종료, **2,294/2,310경기 완료**, worker 오류로 16경기는 미완료다. 최종 점수 기준 v12는 **188승 0무 20패, 잠정 1위**다. 전체 순위·상대별 성적·경기 검색·미완료 목록을 제공한다. v12 참가자는 추가 학습 전 고정 모델 `v12-before-learned`다. 보고서 작성 중 재실행하지 않았다. [실행·상태 확인](reports/full_league_new_game.md) · [빌드 기록](reports/new_game_build.md).
 
 **2026-11-01 새 게임·API 문서 반영**: [새 환경·ONNX 제출 계약](../common/environment_update_2026-11-01.md)을 확인했다. Hunter 2명 상한은 이제 엔진 규칙이고, 공식 판정은 최종 게임 점수다. 기존 v12 Python 정책·부분 ONNX·2,298경기 리그 결과는 새 버전 이식 또는 공식 제출 검증을 완료한 것이 아니다. 이번에는 문서만 갱신했다.
 
