@@ -1,0 +1,8 @@
+{
+  "B1": {"lags": [0], "recurrent": false, "worker_mode": "planner"},
+  "B2": {"lags": [0], "recurrent": false},
+  "B3": {"lags": [0], "recurrent": true},
+  "B4": {"lags": [0, 4, 8, 16, 32, 64], "recurrent": false},
+  "B5": {"lags": [0, 4, 8, 16, 32, 64], "recurrent": true},
+  "B6": {"lags": [0, 13, 26, 38, 51, 64], "recurrent": false}
+}

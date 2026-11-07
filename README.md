@@ -1,5 +1,7 @@
 # BlackOut 강화학습 실험
 
+**v13 평가 축소·재개 준비 (2026-11-04)**: 기존 실험은 정상 중단했고 5,242,880 step까지의 학습 상태를 보존했습니다. 재개는 `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v13\run_v13.ps1 --name hierarchical_v13_eval_light`입니다. 중간 평가만 2,097,152 step마다 88경기로 축소하고, 종료220·최종확인1,720경기와 학습량을 유지했습니다. **재실행하지 않았습니다.** [변경·검증·재개 방법](docs/v13/reports/evaluation_reduction_20261104.md).
+
 **새 게임 풀리그 결과 (2026-11-02)**: [한눈에 보는 HTML 보고서](logs/shared/agent_league/v12_full_league_new_game_20261101/analysis.html). 실행은 종료됐으며 **2,294/2,310경기 완료**, worker 오류로 16경기가 미완료입니다. 최종 게임 점수 기준 v12는 **188승 0무 20패, 잠정 1위**입니다. 전체 순위·상대별 성적·경기 검색·미완료 목록을 제공합니다. [새 게임 리그 안내](docs/v12/reports/full_league_new_game.md) · [빌드 기록](docs/v12/reports/new_game_build.md). 보고서 작성 중 재실행하지 않았습니다.
 
 **2026-11-01 환경·제출 규격 갱신**: 새 소스의 팀당 Hunter 2명 제한, 맵 변경, 점수 기반 승패, `slot`·프레임 스택·RNN 상태를 지원하는 ONNX 제출 규격을 [업데이트 문서](docs/common/environment_update_2026-11-01.md)에 반영했습니다. 현재 `.venv`와 Windows 게임 빌드는 기존 실험 환경이며 이번 작업에서 교체하거나 실행하지 않았습니다.
@@ -13,6 +15,7 @@
 | `code/v2/` ~ `code/v10/` | 버전별 구현·스크립트·설정·테스트 | 예 |
 | `code/v11/` | 목표·기억·planner 정책, recurrent PPO, CPU/MPS 자동 선택·백그라운드 실험 | 예 |
 | `code/v12/` | 왕복 작업·공동 배정 DP·event PPO, CPU/CUDA 측정·병렬 실행 | 예 |
+| `code/v13/` | 배정망·이동망, 지수 간격 기억, 분리 PPO·full ONNX·자원 자동 조정 실행기 | 예 |
 | `code/shared/` | 여러 버전이 사용하는 Python 모듈·도구·의존성 목록 | 예 |
 | `code/pre_v1/` | 초기 구현·실험 코드 | 예 |
 | `docs/` | 버전별 계획·분석·직접 작성한 보고서 | 예 |
@@ -29,7 +32,11 @@ v1 당시 구현은 후속 구현으로 발전했으며, 현재 별도 `code/v1/
 
 [v12 안내](docs/v12/README.md) · [v12 풀리그 재분석](docs/v12/reports/league_findings.md) · [v12 경량 공동 배정 설계](docs/v12/plans/v12_design.md) · [v12 구현·검증 계획](docs/v12/plans/v12_implementation_plan.md)
 
+[v13 실행 안내](docs/v13/README.md) · [배정망·이동망과 지수 간격 기억](docs/v13/plans/v13_design.md) · [v13 구현·검증 계획](docs/v13/plans/v13_implementation_plan.md) · [구현 범위·병목 대응·검증](docs/v13/reports/implementation.md). 구현과 게임 없는 검사를 마쳤으며, 실험은 사용자가 시작합니다.
+
 ## 실행
+
+**v13 (Windows)**: `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v13\run_v13.ps1` 한 줄로 백그라운드 실행·재개합니다. 첫 실행 시 ONNX 검사와 CPU/CUDA·병렬 환경 수 측정 후 teacher → 대조 실험 → 본 학습 → 확인 평가를 진행합니다. **이번 구현 작업에서는 실험을 실행하지 않았습니다.** `--check`, `--dry-run`, `--status`는 게임·학습을 시작하지 않습니다. [옵션·예산·결과 경로](docs/v13/README.md).
 
 **v12 포함 22개 풀리그 (Windows)**: `powershell -NoProfile -ExecutionPolicy Bypass -File .\code\v12\run_league.ps1 --resume`. 기존 21개 + 선택한 v12가 총 2,310경기를 최대 16개 병렬로 평가한다. 2026-10-28 사용자 실행에서 75경기 완료 후 발생한 heartbeat 접근 오류를 수정했고, 기존 결과를 보존해 재개 준비만 했다. 직접 재실행하지 않았다. [참가 모델·오류 수정·재개 안내](docs/v12/reports/full_league_windows.md).
 
